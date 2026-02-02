@@ -24,3 +24,6 @@ Homestead.yaml
 Thumbs.db
 pw10
 docs/*.sql
+*.sql
+*.sqlite
+*.db

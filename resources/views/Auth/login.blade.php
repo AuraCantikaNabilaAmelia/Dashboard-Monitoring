@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="id" data-bs-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,6 +11,13 @@
     
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    
+    <script>
+        // Forced dark default logic
+        const savedTheme = localStorage.getItem('theme');
+        const themeToApply = savedTheme || 'dark';
+        document.documentElement.setAttribute('data-bs-theme', themeToApply);
+    </script>
     
     <style>
         :root {
@@ -560,26 +567,17 @@
             const themeCheckbox = document.getElementById('theme-checkbox');
             const htmlElement = document.documentElement;
 
-            // Check local storage
-            if (localStorage.getItem('theme') === 'dark') {
-                htmlElement.setAttribute('data-bs-theme', 'dark');
-                themeCheckbox.checked = true;
-            } else {
-                htmlElement.setAttribute('data-bs-theme', 'light');
-            }
+            // Sync toggle state with current theme
+            const currentTheme = htmlElement.getAttribute('data-bs-theme') || 'dark';
+            if(themeCheckbox) themeCheckbox.checked = currentTheme === 'dark';
 
             themeCheckbox.addEventListener('change', function() {
-                if(this.checked) {
-                    htmlElement.setAttribute('data-bs-theme', 'dark');
-                    localStorage.setItem('theme', 'dark');
-                } else {
-                    htmlElement.setAttribute('data-bs-theme', 'light');
-                    localStorage.setItem('theme', 'light');
-                }
+                const newTheme = this.checked ? 'dark' : 'light';
+                htmlElement.setAttribute('data-bs-theme', newTheme);
+                localStorage.setItem('theme', newTheme);
             });
         });
     </script>
-
 
     <div class="login-wrapper" id="loginCard">
         <div class="login-sidebar">
@@ -671,7 +669,5 @@
             </div>
         </div>
     </div>
-
-
 </body>
 </html>
