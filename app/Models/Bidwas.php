@@ -8,7 +8,7 @@ class Bidwas extends Model
 {
     protected $table = 'r_bidwas';
     protected $primaryKey = 'id_bidwas';
-    public $timestamps = false; // Karena ini table master lama
+    public $timestamps = false;
 
     protected $fillable = [
         'id_bidwas',

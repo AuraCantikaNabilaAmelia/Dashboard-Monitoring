@@ -9,8 +9,7 @@
         tailwind.config = {
             darkMode: ['selector', '[data-theme="dark"]'],
         }
-        
-        // Forced dark default logic
+
         const savedTheme = localStorage.getItem('theme');
         const themeToApply = savedTheme || 'dark';
         document.documentElement.setAttribute('data-theme', themeToApply);
@@ -46,7 +45,6 @@
             }
         }
 
-        /* Custom Scrollbar Premium */
         ::-webkit-scrollbar {
             width: 5px;
             height: 5px;
@@ -74,7 +72,6 @@
             background: rgba(59, 130, 246, 0.4);
         }
 
-        /* Firefox Support */
         * {
             scrollbar-width: thin;
             scrollbar-color: rgba(148, 163, 184, 0.2) transparent;
@@ -87,7 +84,7 @@
         .webkit-scrollbar::-webkit-scrollbar {
             width: 4px;
         }
-        
+
         body {
             font-family: 'Plus Jakarta Sans', sans-serif;
             background-color: #020617;
@@ -263,7 +260,7 @@
             --bpkp-text-muted: #475569;
             --glass-border: rgba(0, 0, 0, 0.15);
         }
-        
+
         [data-theme="light"] body {
             background-color: #f8fafc;
         }
@@ -277,7 +274,7 @@
         [data-theme="light"] .sidebar-link {
             color: #64748b;
         }
-        
+
         [data-theme="light"] .sidebar-link:hover:not(.active) {
             background: rgba(0, 0, 0, 0.02);
         }
@@ -368,21 +365,20 @@
     </div>
 
     <div x-data="{ sidebarOpen: false }" class="flex relative h-screen overflow-hidden">
-        {{-- Overlay for mobile --}}
-        <div x-show="sidebarOpen" 
-             @click="sidebarOpen = false" 
-             x-transition:enter="transition ease-out duration-300" 
-             x-transition:enter-start="opacity-0" 
-             x-transition:enter-end="opacity-100" 
-             x-transition:leave="transition ease-in duration-200" 
-             x-transition:leave-start="opacity-100" 
-             x-transition:leave-end="opacity-0" 
-             class="fixed inset-0 z-[60] bg-slate-900/60 backdrop-blur-sm lg:hidden" 
+        <div x-show="sidebarOpen"
+             @click="sidebarOpen = false"
+             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter-start="opacity-0"
+             x-transition:enter-end="opacity-100"
+             x-transition:leave="transition ease-in duration-200"
+             x-transition:leave-start="opacity-100"
+             x-transition:leave-end="opacity-0"
+             class="fixed inset-0 z-[90] bg-slate-900/60 backdrop-blur-sm lg:hidden"
              style="display: none;">
         </div>
 
         <aside :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'"
-               class="fixed lg:sticky top-0 left-0 z-[70] w-64 h-full glass transform transition-transform duration-300 ease-in-out flex flex-col p-6 space-y-8">
+               class="fixed lg:sticky top-0 left-0 z-[95] w-64 h-full glass transform transition-transform duration-300 ease-in-out flex flex-col p-6 space-y-8">
             <div class="flex flex-col items-center space-y-4 px-2 mb-4 relative">
                 <button @click="sidebarOpen = false" class="lg:hidden absolute -top-2 -right-2 p-2 text-slate-500 hover:text-white transition-colors">
                     <i data-lucide="x" class="w-6 h-6"></i>
@@ -394,7 +390,7 @@
                     <span class="text-[10px] uppercase tracking-widest text-slate-500 font-bold">Monitoring System</span>
                 </div>
             </div>
-            
+
             <nav class="flex-1 space-y-2 overflow-y-auto pr-2 custom-scrollbar">
                 <a href="/dashboard" class="sidebar-link {{ Request::is('dashboard') && !Request::is('dashboard/*') ? 'active' : '' }} flex items-center space-x-3 px-4 py-3 rounded-xl transition-all">
                     <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
@@ -457,7 +453,7 @@
                             </div>
                             <i data-lucide="chevron-down" class="w-3 h-3 md:w-4 md:h-4 text-slate-500 transition-transform duration-200" id="dropdownIcon"></i>
                         </button>
-                        
+
                         <div class="dropdown-content">
                             <div class="px-4 py-3 border-b border-slate-100 dark:border-white/10 mb-2">
                                 <p class="text-[10px] text-slate-500 uppercase font-black mb-1">Signed in as</p>
@@ -508,13 +504,13 @@
             event.stopPropagation();
             const dropdown = document.getElementById('accountDropdown');
             const icon = document.getElementById('dropdownIcon');
-            
+
             document.querySelectorAll('.status-filter-dropdown input[type="checkbox"]').forEach(checkbox => {
                 checkbox.checked = false;
             });
 
             dropdown.classList.toggle('active');
-            
+
             if (dropdown.classList.contains('active')) {
                 icon.style.transform = 'rotate(180deg)';
             } else {
@@ -534,7 +530,6 @@
         const themeToggle = document.getElementById('theme-toggle-dashboard');
         const root = document.documentElement;
 
-        // Sync toggle state with current theme
         const currentTheme = root.getAttribute('data-theme') || 'dark';
         if(themeToggle) themeToggle.checked = currentTheme === 'dark';
 
@@ -567,7 +562,7 @@
                 confirmText: 'Ya, Lanjutkan',
                 cancelText: 'Batal',
                 onConfirm: null,
-                
+
                 ask(message, onConfirm, title = 'Konfirmasi', confirmText = 'Ya, Lanjutkan') {
                     this.title = title;
                     this.message = message;
@@ -575,7 +570,7 @@
                     this.confirmText = confirmText;
                     this.show = true;
                 },
-                
+
                 execute() {
                     if (this.onConfirm) this.onConfirm();
                     this.show = false;
@@ -583,15 +578,15 @@
             });
         });
     </script>
-    
-    <div x-data x-show="$store.notify.show" 
+
+    <div x-data x-show="$store.notify.show"
          x-transition:enter="transition ease-out duration-300"
          x-transition:enter-start="opacity-0 translate-y-10"
          x-transition:enter-end="opacity-100 translate-y-0"
          x-transition:leave="transition ease-in duration-200"
          x-transition:leave-start="opacity-100 translate-y-0"
          x-transition:leave-end="opacity-0 translate-y-10"
-         class="fixed bottom-8 right-8 z-[9999]" 
+         class="fixed bottom-8 right-8 z-[9999]"
          style="display: none;">
         <div :class="{
             'bg-green-500': $store.notify.type === 'success',
@@ -605,7 +600,7 @@
         </div>
     </div>
 
-    <div x-data x-show="$store.confirm.show" 
+    <div x-data x-show="$store.confirm.show"
          class="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-md"
          x-transition:enter="transition ease-out duration-300"
          x-transition:enter-start="opacity-0"
@@ -619,19 +614,19 @@
              x-transition:enter="transition ease-out duration-300"
              x-transition:enter-start="opacity-0 scale-95 translate-y-4"
              x-transition:enter-end="opacity-100 scale-100 translate-y-0">
-            
+
             <div class="w-24 h-24 bg-amber-100 dark:bg-amber-500/20 rounded-full flex items-center justify-center mx-auto mb-8 text-amber-500">
                 <i data-lucide="help-circle" class="w-12 h-12"></i>
             </div>
-            
+
             <h3 class="text-3xl font-black mb-4 dark:text-white text-slate-900" x-text="$store.confirm.title"></h3>
             <p class="text-lg text-slate-500 dark:text-slate-400 mb-10 px-4" x-text="$store.confirm.message"></p>
-            
+
             <div class="flex gap-6">
-                <button @click="$store.confirm.show = false" 
+                <button @click="$store.confirm.show = false"
                         class="flex-1 px-8 py-5 bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 rounded-[1.5rem] font-bold text-lg transition-all text-slate-700 dark:text-slate-300"
                         x-text="$store.confirm.cancelText"></button>
-                <button @click="$store.confirm.execute()" 
+                <button @click="$store.confirm.execute()"
                         class="flex-1 px-8 py-5 bg-blue-500 hover:bg-blue-600 text-white rounded-[1.5rem] font-bold text-lg transition-all shadow-xl shadow-blue-500/30"
                         x-text="$store.confirm.confirmText"></button>
             </div>

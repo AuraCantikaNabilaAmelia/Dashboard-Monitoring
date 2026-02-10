@@ -1,197 +1,195 @@
 @extends('layouts.app')
 
-@section('title', 'Detail Surat Masuk')
+@section('title', 'Detail Tindak Lanjut')
 
 @section('content')
-<div class="max-w-4xl mx-auto">
-    <div class="mb-6">
-        <a href="{{ route('tindaklanjut.index') }}" class="text-blue-500 hover:text-blue-600 text-sm font-bold flex items-center gap-1">
-            <i data-lucide="arrow-left" class="w-4 h-4"></i>
-            Kembali ke Daftar
-        </a>
-    </div>
+<div class="mb-6">
+    <a href="{{ route('tindaklanjut.index') }}" class="text-blue-600 dark:text-blue-400 hover:text-blue-500 flex items-center space-x-2 text-sm font-bold transition-colors group">
+        <i data-lucide="chevron-left" class="w-4 h-4 transition-transform group-hover:-translate-x-1"></i>
+        <span>Kembali ke Monitoring</span>
+    </a>
+</div>
 
-    <div class="glass p-6 rounded-3xl mb-6">
-        <div class="flex flex-col md:flex-row justify-between items-start gap-4">
-            <div>
-                <p class="text-xs text-slate-500 uppercase font-bold mb-1">Nomor Surat</p>
-                <h2 class="text-2xl font-black">{{ $surat->nomor_surat }}</h2>
-            </div>
-            <span class="px-4 py-2 bg-{{ $surat->status_color }}-100 dark:bg-{{ $surat->status_color }}-500/20 text-{{ $surat->status_color }}-600 dark:text-{{ $surat->status_color }}-400 text-sm font-bold rounded-full">
-                {{ $surat->status_label }}
+{{-- Standard Header from detail.blade.php --}}
+<div class="glass p-8 rounded-3xl shadow-xl border border-slate-200/50 dark:border-white/5 mb-8">
+    <div class="flex flex-col md:flex-row justify-between items-start mb-6 gap-4">
+        <div>
+            <span class="px-3 py-1 bg-blue-500/10 text-blue-600 dark:text-blue-400 text-[10px] font-black rounded-lg uppercase tracking-widest mb-2 inline-block border border-blue-500/10">Surat Tugas</span>
+            <h2 class="text-2xl md:text-3xl font-black text-slate-900 dark:text-white tracking-tight">{{ $st->nama_penugasan }}</h2>
+            <p class="text-slate-500 dark:text-slate-400 mt-1 font-mono text-xs font-bold">ID: #{{ $st->id_st }}</p>
+        </div>
+        <div class="text-right">
+            @php
+                $statusClass = match(strtolower($st->status_st)) {
+                    'batal' => 'bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/20',
+                    'final', 'selesai' => 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20',
+                    'tidak aktif' => 'bg-slate-500/10 text-slate-600 dark:text-slate-400 border-slate-500/20',
+                    default => 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20'
+                };
+                $statusIcon = match(strtolower($st->status_st)) {
+                    'batal' => 'x-circle',
+                    'final', 'selesai' => 'check-circle',
+                    'tidak aktif' => 'minus-circle',
+                    default => 'clock'
+                };
+            @endphp
+            <span class="px-4 py-2 {{ $statusClass }} text-sm font-black rounded-xl border shadow-sm inline-flex items-center gap-2">
+                <i data-lucide="{{ $statusIcon }}" class="w-4 h-4"></i>
+                {{ $st->status_st }}
             </span>
         </div>
+    </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 border-t border-slate-100 dark:border-white/5 pt-8">
+        <div class="space-y-6">
             <div>
-                <p class="text-xs text-slate-500 uppercase font-bold mb-1">Tanggal Surat</p>
-                <p class="font-bold">{{ $surat->tanggal_surat->format('d F Y') }}</p>
+                <p class="text-slate-500 dark:text-slate-400 text-[10px] uppercase tracking-[0.2em] font-black mb-1">Tanggal Mulai</p>
+                <p class="text-lg font-bold text-slate-900 dark:text-slate-100">{{ $st->start_date ? date('d F Y', strtotime($st->start_date)) : '-' }}</p>
             </div>
             <div>
-                <p class="text-xs text-slate-500 uppercase font-bold mb-1">Dari</p>
-                <p class="font-bold">{{ $surat->pengirim }}</p>
+                <p class="text-slate-500 dark:text-slate-400 text-[10px] uppercase tracking-[0.2em] font-black mb-1">Nomor Surat Tugas</p>
+                <p class="text-slate-700 dark:text-slate-300 font-bold font-mono">{{ $st->no_surat_tugas ?? '-' }}</p>
+            </div>
+        </div>
+        <div class="space-y-6">
+            <div>
+                <p class="text-slate-500 dark:text-slate-400 text-[10px] uppercase tracking-[0.2em] font-black mb-1">Tanggal Selesai</p>
+                <p class="text-lg font-bold text-slate-900 dark:text-slate-100">{{ $st->end_date ? date('d F Y', strtotime($st->end_date)) : '-' }}</p>
             </div>
             <div>
-                <p class="text-xs text-slate-500 uppercase font-bold mb-1">Kepada / Bidang Tujuan</p>
-                @if($surat->target_bidang_id)
-                    <p class="font-bold text-blue-600 dark:text-blue-400">{{ $surat->targetBidang->nm_bidwas }}</p>
-                @else
-                    <p class="font-bold text-slate-400">Belum Ditentukan (Disposisi)</p>
-                @endif
+                <p class="text-slate-500 dark:text-slate-400 text-[10px] uppercase tracking-[0.2em] font-black mb-1">Bidang / Koordinator</p>
+                <p class="text-slate-700 dark:text-slate-300 font-bold">{{ $st->nm_bidwas }}</p>
             </div>
         </div>
+    </div>
+</div>
 
-        <div class="mt-6">
-            <p class="text-xs text-slate-500 uppercase font-bold mb-1">Perihal</p>
-            <p class="text-slate-700 dark:text-slate-300">{{ $surat->perihal }}</p>
+{{-- Timeline Tindak Lanjut Section --}}
+<div class="glass p-8 rounded-3xl min-h-[400px]">
+    <div class="flex items-center justify-between mb-10">
+        <div>
+            <h3 class="text-xl font-black bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-400">Catatan Tindak Lanjut</h3>
+            <p class="text-xs text-slate-500 mt-1 uppercase tracking-widest font-black opacity-60 italic">Riwayat naratif perkembangan penugasan</p>
         </div>
-
-        @if($surat->catatan)
-        <div class="mt-4 p-4 bg-amber-50 dark:bg-amber-500/10 rounded-xl border border-amber-100 dark:border-amber-500/20">
-            <p class="text-xs text-amber-600 dark:text-amber-400 uppercase font-bold mb-1">Catatan Awal</p>
-            <p class="text-slate-700 dark:text-slate-300">{{ $surat->catatan }}</p>
+        <div class="w-12 h-12 bg-blue-500/10 rounded-2xl flex items-center justify-center text-blue-500">
+            <i data-lucide="history" class="w-6 h-6"></i>
         </div>
-        @endif
+    </div>
 
-        @if($surat->file_path)
-        <div class="mt-4 p-4 bg-blue-50 dark:bg-blue-500/10 rounded-xl border border-blue-100 dark:border-blue-500/20">
-            <p class="text-xs text-blue-600 dark:text-blue-400 uppercase font-bold mb-2">File Lampiran</p>
-            <a href="{{ asset('storage/' . $surat->file_path) }}" target="_blank" 
-               class="inline-flex items-center gap-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-bold text-sm transition-all">
-                <i data-lucide="file-down" class="w-4 h-4"></i>
-                {{ $surat->file_name }}
-            </a>
-        </div>
-        @endif
-
-        <div class="mt-6 flex gap-3 flex-wrap">
-            @if($surat->status !== 'keputusan')
-                {{-- Tombol Klaim (Jika belum ada bidang yang dituju) --}}
-                @if(!$surat->target_bidang_id && auth()->user()->bidang_id)
-                <form method="POST" action="{{ route('tindaklanjut.claim', $surat->id) }}" class="inline">
-                    @csrf
-                    <button type="submit" class="px-4 py-2 bg-purple-500 hover:bg-purple-600 text-white rounded-xl font-bold text-sm flex items-center gap-2 transition-all">
-                        <i data-lucide="hand" class="w-4 h-4"></i>
-                        Klaim untuk Bidang Saya
-                    </button>
-                </form>
-                @endif
-            @else
-                <form method="POST" action="{{ route('tindaklanjut.reopen', $surat->id) }}" class="inline">
-                    @csrf
-                    <button type="submit" class="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-xl font-bold text-sm flex items-center gap-2 transition-all">
-                        <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
-                        Buka Kembali ke Disposisi
-                    </button>
-                </form>
-            @endif
-
-            <form id="delete-surat-form-{{ $surat->id }}" method="POST" action="{{ route('tindaklanjut.destroy', $surat->id) }}" class="inline">
+    @if(auth()->user()->role === 'pimpinan' || auth()->user()->bidang_id == $st->id_bidwas)
+    <div class="mb-12">
+        <div class="glass bg-blue-500/5 border-blue-500/20 p-6 rounded-2xl">
+            <div class="flex items-center gap-3 mb-4">
+                <div class="w-8 h-8 rounded-lg bg-blue-500 flex items-center justify-center text-white">
+                    <i data-lucide="plus" class="w-5 h-5"></i>
+                </div>
+                <h4 class="font-black text-slate-800 dark:text-white uppercase tracking-wider text-xs">Tambah Catatan Tindak Lanjut</h4>
+            </div>
+            <form action="{{ route('tindaklanjut.addEntry', $st->id_st) }}" method="POST" enctype="multipart/form-data" class="space-y-4">
                 @csrf
-                @method('DELETE')
-                <button type="button" 
-                        @click="$store.confirm.ask('Yakin ingin menghapus surat ini beserta semua catatan tindak lanjutnya?', () => document.getElementById('delete-surat-form-{{ $surat->id }}').submit(), 'Hapus Surat', 'Ya, Hapus')"
-                        class="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-xl font-bold text-sm flex items-center gap-2 transition-all">
-                    <i data-lucide="trash-2" class="w-4 h-4"></i>
-                    Hapus
-                </button>
+                <div class="space-y-1">
+                    <textarea name="catatan" rows="3" class="w-full glass bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl px-5 py-4 text-sm font-medium focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500/50 transition-all outline-none" placeholder="Tuliskan perkembangan tindak lanjut atau penugasan di sini..."></textarea>
+                    @error('catatan') <p class="text-red-500 text-[10px] font-bold mt-1 ml-1 uppercase">{{ $message }}</p> @enderror
+                </div>
+                
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div class="relative group">
+                        <input type="file" name="file" id="file" class="hidden" onchange="updateFileName(this)">
+                        <label for="file" class="inline-flex items-center gap-2 px-4 py-2 border border-slate-200 dark:border-white/10 rounded-xl text-xs font-bold text-slate-500 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-white/5 transition-all cursor-pointer">
+                            <i data-lucide="paperclip" class="w-4 h-4"></i>
+                            <span id="file-label">Lampirkan File (Opsional)</span>
+                        </label>
+                        <p class="text-[9px] text-slate-400 mt-1 ml-1 italic">*Max 20MB: PDF, Word, Excel, JPG, PNG</p>
+                    </div>
+                    
+                    <button type="submit" class="px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white font-black text-xs uppercase tracking-widest rounded-xl transition-all shadow-lg shadow-blue-500/20 flex items-center justify-center gap-2">
+                        Simpan Catatan
+                        <i data-lucide="send" class="w-4 h-4"></i>
+                    </button>
+                </div>
             </form>
         </div>
     </div>
+    @else
+    <div class="mb-12 p-6 bg-slate-50 dark:bg-white/5 border-2 border-dashed border-slate-200 dark:border-white/10 rounded-2xl text-center">
+        <p class="text-slate-500 italic text-sm font-medium">Hanya anggota bidang terkait yang dapat menambahkan catatan tindak lanjut.</p>
+    </div>
+    @endif
 
-    <div class="glass p-6 rounded-3xl mb-6">
-        <h3 class="text-lg font-bold mb-6 flex items-center gap-2">
-            <i data-lucide="list-checks" class="w-5 h-5 text-purple-500"></i>
-            Catatan Tindak Lanjut ({{ $surat->tindakLanjutEntries->count() }})
-        </h3>
-
-        <div class="mb-6">
-            @if($surat->status !== 'keputusan')
-                @if($surat->target_bidang_id == auth()->user()->bidang_id || auth()->user()->role == \App\Models\User::ROLE_PIMPINAN)
-                <a href="{{ route('tindaklanjut.addEntryForm', $surat->id) }}" class="w-full py-4 border-2 border-dashed border-slate-300 dark:border-white/10 rounded-2xl flex items-center justify-center gap-3 text-slate-500 hover:border-blue-500 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-500/5 transition-all font-bold group">
-                    <i data-lucide="plus-circle" class="w-6 h-6 group-hover:scale-110 transition-transform"></i>
-                    Tambah Catatan Tindak Lanjut
-                </a>
-                @else
-                <div class="p-4 bg-slate-100 dark:bg-white/5 rounded-2xl text-center text-slate-500 text-sm italic">
-                    Hanya staf dari bidang terkait yang dapat menambahkan catatan tindak lanjut.
-                </div>
-                @endif
-            @endif
-        </div>
-
-        <div class="space-y-6">
-            @forelse($surat->tindakLanjutEntries as $entry)
-            <div class="p-6 bg-white dark:bg-white/5 rounded-2xl border border-slate-100 dark:border-white/5 shadow-sm">
-                <div class="flex justify-between items-start mb-4">
+    <div class="relative space-y-10">
+        <div class="absolute left-6 top-0 bottom-0 w-[2px] bg-slate-100 dark:bg-white/5"></div>
+        
+        @forelse($entries as $entry)
+        <div class="relative pl-16 group">
+            <div class="absolute left-4 top-1 w-4 h-4 rounded-full border-4 border-white dark:border-slate-900 bg-blue-500 z-10 group-hover:scale-125 transition-transform"></div>
+            
+            <div class="glass p-6 rounded-2xl group-hover:border-blue-500/30 transition-all border border-transparent shadow-sm hover:shadow-xl hover:shadow-blue-500/5">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-4">
                     <div class="flex items-center gap-3">
-                        <div class="w-2.5 h-2.5 bg-blue-500 rounded-full"></div>
-                        <span class="text-base font-bold">{{ $entry->tanggal->format('d M Y') }}</span>
+                        <span class="text-sm font-black text-slate-900 dark:text-white">{{ $entry->created_by_nama }}</span>
+                        <span class="text-[10px] font-bold px-2 py-0.5 bg-slate-100 dark:bg-white/10 text-slate-500 rounded-lg uppercase tracking-wider italic">{{ $entry->created_by_nip }}</span>
                     </div>
                     <div class="flex items-center gap-4">
-                        <span class="text-xs text-slate-400 font-medium">
-                            oleh <span class="text-slate-600 dark:text-slate-300 font-bold ml-1">{{ $entry->created_by_nama ?? 'System' }}</span>
-                        </span>
+                        <span class="text-[11px] font-bold text-slate-400 uppercase tracking-widest font-mono">{{ $entry->created_at->format('d M Y - H:i') }}</span>
                         
-                        @if($surat->status !== 'selesai' && $entry->created_by_nip === auth()->user()->nip)
-                        <div class="flex items-center gap-2">
-                            <a href="{{ route('tindaklanjut.editEntryForm', $entry->id) }}" 
-                                    class="p-2 text-slate-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-500/10 rounded-xl transition-all"
-                                    title="Edit">
-                                <i data-lucide="edit-3" class="w-4 h-4"></i>
-                            </a>
-                            
-                            <form id="delete-entry-{{ $entry->id }}" action="{{ route('tindaklanjut.deleteEntry', $entry->id) }}" method="POST" class="inline">
-                                @csrf
-                                @method('DELETE')
-                                <button type="button" 
-                                        @click="$store.confirm.ask('Apakah Anda yakin ingin menghapus catatan tindak lanjut ini?', () => document.getElementById('delete-entry-{{ $entry->id }}').submit(), 'Hapus Catatan', 'Ya, Hapus')"
-                                        class="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-xl transition-all"
-                                        title="Hapus">
-                                    <i data-lucide="trash-2" class="w-4 h-4"></i>
-                                </button>
-                            </form>
-                        </div>
+                        @if($entry->created_by_nip === auth()->user()->nip)
+                        <form id="delete-entry-{{ $entry->id }}" action="{{ route('tindaklanjut.deleteEntry', $entry->id) }}" method="POST">
+                            @csrf
+                            @method('DELETE')
+                            <button type="button" 
+                                    @click="$store.confirm.ask('Hapus catatan ini?', () => document.getElementById('delete-entry-{{ $entry->id }}').submit(), 'Hapus Catatan', 'Ya, Hapus')"
+                                    class="text-red-400 hover:text-red-500 p-1 rounded-lg hover:bg-red-50 dark:hover:bg-red-500/10 transition-all">
+                                <i data-lucide="trash-2" class="w-4 h-4"></i>
+                            </button>
+                        </form>
                         @endif
                     </div>
                 </div>
-                @if($entry->keterangan)
-                <p class="text-slate-700 dark:text-slate-300 pl-6 mb-4 whitespace-pre-line leading-relaxed">{{ $entry->keterangan }}</p>
-                @endif
+                
+                <div class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed font-bold whitespace-pre-line mb-6 italic opacity-90">
+                    "{{ $entry->catatan }}"
+                </div>
+                
                 @if($entry->file_path)
-                <div class="pl-6">
-                    <a href="{{ asset('storage/' . $entry->file_path) }}" target="_blank" 
-                       class="inline-flex items-center gap-2 px-4 py-2 bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 rounded-xl text-xs font-bold hover:bg-blue-100 dark:hover:bg-blue-500/20 transition-all border border-blue-100 dark:border-blue-500/20">
-                        <i data-lucide="file-down" class="w-4 h-4"></i>
-                        {{ $entry->file_name }}
+                <div class="pt-4 border-t border-slate-100 dark:border-white/5">
+                    <a href="{{ asset('storage/' . $entry->file_path) }}" target="_blank" class="inline-flex items-center gap-3 px-4 py-2 bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 rounded-xl text-xs font-bold hover:bg-blue-100 dark:hover:bg-blue-500/20 transition-all group/file">
+                        <div class="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white group-hover/file:scale-110 transition-transform">
+                            <i data-lucide="file-text" class="w-4 h-4"></i>
+                        </div>
+                        <div class="flex flex-col">
+                            <span class="line-clamp-1 truncate max-w-[200px]">{{ $entry->file_name }}</span>
+                            <span class="text-[9px] opacity-60 uppercase font-black uppercase tracking-widest mt-0.5">Lihat Lampiran</span>
+                        </div>
                     </a>
                 </div>
                 @endif
             </div>
-            @empty
-            <div class="text-center py-12 text-slate-500 border-2 border-dashed border-slate-100 dark:border-white/5 rounded-[2rem]">
-                <i data-lucide="clipboard-list" class="w-16 h-16 mx-auto text-slate-200 mb-4"></i>
-                <p class="font-bold text-lg">Belum ada catatan tindak lanjut.</p>
-                <p class="text-sm">Klik tombol di atas untuk menambahkan catatan.</p>
+        </div>
+        @empty
+        <div class="py-20 text-center">
+            <div class="w-20 h-20 bg-slate-500/5 rounded-full flex items-center justify-center mx-auto mb-6">
+                <i data-lucide="clipboard-list" class="w-10 h-10 text-slate-400 opacity-20"></i>
             </div>
-            @endforelse
+            <p class="text-slate-400 font-black uppercase tracking-[0.2em] text-sm italic opacity-50">Belum ada riwayat tindak lanjut</p>
         </div>
+        @endforelse
     </div>
-
-    @if($surat->status === 'keputusan')
-    <div class="glass p-6 rounded-3xl text-center">
-        <div class="w-16 h-16 bg-green-100 dark:bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
-            <i data-lucide="check-circle-2" class="w-8 h-8 text-green-500"></i>
-        </div>
-        <h3 class="text-lg font-bold text-green-600 dark:text-green-400">Keputusan Akhir Tercapai</h3>
-        <p class="text-slate-500 text-sm mt-1">Proses tindak lanjut telah sampai pada tahap akhir pada {{ $surat->updated_at->format('d M Y H:i') }}.</p>
-    </div>
-    @endif
 </div>
-@endsection
 
 @push('scripts')
 <script>
+    function updateFileName(input) {
+        const label = document.getElementById('file-label');
+        if (input.files && input.files[0]) {
+            label.textContent = input.files[0].name;
+            label.classList.add('text-blue-600');
+        } else {
+            label.textContent = 'Lampirkan File (Opsional)';
+            label.classList.remove('text-blue-600');
+        }
+    }
+
     lucide.createIcons();
 </script>
 @endpush
+@endsection

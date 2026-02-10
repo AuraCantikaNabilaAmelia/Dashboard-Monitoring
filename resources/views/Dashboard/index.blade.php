@@ -110,7 +110,7 @@
                     <p class="text-slate-500 font-medium">Tidak ada penugasan terlambat!</p>
                 </div>
                 @endforelse
-                
+
                 @if($totalUnfinished > 5)
                 <div class="text-center pt-2">
                     <p class="text-sm text-slate-500">dan {{ $totalUnfinished - 5 }} lainnya yang perlu perhatian.</p>
@@ -262,11 +262,11 @@
                 <i data-lucide="x" class="w-6 h-6"></i>
             </button>
         </div>
-        
+
         <div class="flex-1 min-h-0 w-full mb-6 relative bg-slate-50/50 dark:bg-white/5 rounded-3xl p-4 md:p-8 border border-slate-100 dark:border-white/5 shadow-inner">
             <canvas id="expandedChart"></canvas>
         </div>
-        
+
         <div id="chartDescription" class="bg-gradient-to-r from-blue-500/10 to-purple-500/10 dark:from-blue-500/20 dark:to-purple-500/20 p-6 rounded-3xl border border-blue-500/10 dark:border-white/10 shadow-lg flex-shrink-0">
         </div>
     </div>
@@ -296,7 +296,7 @@
     const bidwasLabelsFull = {!! json_encode($bidwasStats->pluck('nama')) !!}.map(shortenBidwasLabel);
     const bidwasLabelsShort = {!! json_encode($bidwasStats->pluck('kode')) !!};
     const bidwasData = {!! json_encode($bidwasStats->pluck('total')) !!};
-    
+
     const trendData = {!! json_encode(collect(range(1, 12))->map(function($m) use ($monthlyTrend) {
         return $monthlyTrend->where('month', $m)->first()->total ?? 0;
     })) !!};
@@ -320,7 +320,7 @@
         if (canvasBidwas) {
             const ctxBidwas = canvasBidwas.getContext('2d');
             const colors = getChartColors();
-            
+
             const createGrad = (c1, c2) => {
                 const g = ctxBidwas.createLinearGradient(0, 0, 0, 300);
                 g.addColorStop(0, c1);
@@ -346,7 +346,7 @@
             charts['bidwasChart'] = new Chart(ctxBidwas, {
                 type: 'bar',
                 data: {
-                    labels: bidwasLabelsFull, 
+                    labels: bidwasLabelsFull,
                     datasets: [{
                         label: 'Penugasan',
                         data: bidwasData,
@@ -361,19 +361,19 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: { 
+                    plugins: {
                         legend: { display: false },
                         datalabels: { display: false }
                     },
                     scales: {
-                        y: { 
-                            beginAtZero: true, 
-                            grid: { color: colors.grid }, 
-                            ticks: { color: colors.text, font: { weight: '500' } } 
+                        y: {
+                            beginAtZero: true,
+                            grid: { color: colors.grid },
+                            ticks: { color: colors.text, font: { weight: '500' } }
                         },
-                        x: { 
-                            grid: { display: false }, 
-                            ticks: { color: colors.text, autoSkip: false, maxRotation: 45, minRotation: 45, font: { weight: '500' } } 
+                        x: {
+                            grid: { display: false },
+                            ticks: { color: colors.text, autoSkip: false, maxRotation: 45, minRotation: 45, font: { weight: '500' } }
                         }
                     }
                 }
@@ -409,19 +409,19 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: { 
+                    plugins: {
                         legend: { display: false },
                         datalabels: { display: false }
                     },
                     scales: {
-                        y: { 
-                            beginAtZero: true, 
-                            grid: { color: colors.grid }, 
-                            ticks: { color: colors.text, font: { weight: '500' } } 
+                        y: {
+                            beginAtZero: true,
+                            grid: { color: colors.grid },
+                            ticks: { color: colors.text, font: { weight: '500' } }
                         },
-                        x: { 
-                            grid: { display: false }, 
-                            ticks: { color: colors.text, font: { weight: '500' } } 
+                        x: {
+                            grid: { display: false },
+                            ticks: { color: colors.text, font: { weight: '500' } }
                         }
                     }
                 }
@@ -460,10 +460,10 @@
                     plugins: {
                         legend: {
                             position: 'bottom',
-                            labels: { 
-                                color: colors.text, 
-                                padding: 20, 
-                                font: { size: 11, weight: '500' } 
+                            labels: {
+                                color: colors.text,
+                                padding: 20,
+                                font: { size: 11, weight: '500' }
                             }
                         },
                         datalabels: {
@@ -500,12 +500,12 @@
         const canvas = document.getElementById('expandedChart');
         const ctx = canvas.getContext('2d');
         const desc = document.getElementById('chartDescription');
-        
+
         const isLight = document.documentElement.getAttribute('data-theme') === 'light';
-        const textColor = isLight ? '#020617' : '#ffffff'; 
+        const textColor = isLight ? '#020617' : '#ffffff';
         const mutedTextColor = isLight ? '#334155' : '#94a3b8';
         const gridColor = isLight ? 'rgba(0,0,0,0.15)' : 'rgba(255,255,255,0.1)';
-        
+
         modalTitle.innerText = title;
         modal.classList.remove('hidden');
         document.body.style.overflow = 'hidden';
@@ -514,19 +514,19 @@
 
         const original = charts[chartId];
         let expandedData = JSON.parse(JSON.stringify(original.data));
-        
+
         let expandedOptions = {
             responsive: true,
             maintainAspectRatio: false,
             plugins: {
-                legend: { 
-                    display: true, 
+                legend: {
+                    display: true,
                     position: 'top',
-                    labels: { color: textColor, font: { size: 14, weight: '700' } } 
+                    labels: { color: textColor, font: { size: 14, weight: '700' } }
                 },
-                tooltip: { 
-                    backgroundColor: isLight ? 'rgba(255, 255, 255, 0.98)' : 'rgba(15, 23, 42, 0.95)', 
-                    titleColor: isLight ? '#020617' : '#fff', 
+                tooltip: {
+                    backgroundColor: isLight ? 'rgba(255, 255, 255, 0.98)' : 'rgba(15, 23, 42, 0.95)',
+                    titleColor: isLight ? '#020617' : '#fff',
                     bodyColor: isLight ? '#020617' : '#fff',
                     borderColor: isLight ? 'rgba(0,0,0,0.2)' : 'rgba(255,255,255,0.2)',
                     borderWidth: 1,
@@ -535,32 +535,32 @@
                 datalabels: { display: false }
             },
             scales: {
-                y: { 
-                    beginAtZero: true, 
-                    grid: { color: gridColor }, 
-                    ticks: { color: textColor, font: { size: 13, weight: '500' } } 
+                y: {
+                    beginAtZero: true,
+                    grid: { color: gridColor },
+                    ticks: { color: textColor, font: { size: 13, weight: '500' } }
                 },
-                x: { 
-                    grid: { display: false }, 
-                    ticks: { color: textColor, font: { size: 13, weight: '500' } } 
+                x: {
+                    grid: { display: false },
+                    ticks: { color: textColor, font: { size: 13, weight: '500' } }
                 }
             }
         };
 
         if (chartId === 'bidwasChart') {
             expandedData.labels = bidwasLabelsFull;
-            expandedOptions.indexAxis = 'y'; 
+            expandedOptions.indexAxis = 'y';
             expandedOptions.scales.x.beginAtZero = true;
             expandedOptions.scales.y.ticks.autoSkip = false;
-            
+
             const vibrantColors = [
                 '#6366f1', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4', '#ec4899', '#60a5fa'
             ];
-            
+
             expandedData.datasets[0].backgroundColor = vibrantColors.map(c => {
                 const g = ctx.createLinearGradient(0, 0, 800, 0);
                 g.addColorStop(0, c);
-                g.addColorStop(1, c + '33'); 
+                g.addColorStop(1, c + '33');
                 return g;
             });
             expandedData.datasets[0].borderColor = vibrantColors;

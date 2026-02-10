@@ -3,154 +3,432 @@
 @section('title', 'Daftar Surat Tugas')
 
 @section('content')
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-4 mb-8 items-end">
-        <div class="lg:col-span-4">
-            <div class="glass dark:bg-white/5 bg-white px-5 py-2.5 rounded-xl flex items-center space-x-3 border border-slate-200 dark:border-white/10 focus-within:border-blue-500/50 focus-within:ring-4 focus-within:ring-blue-500/10 transition-all h-[48px]">
-                <i data-lucide="search" class="w-4 h-4 text-slate-400"></i>
-                <form action="/dashboard/st" method="GET" class="flex-1" id="filterForm">
-                    <input type="text" name="search" value="{{ $search }}" placeholder="Cari No ST atau Nama Penugasan..." class="bg-transparent border-none outline-none text-xs w-full text-slate-900 dark:text-white font-bold" autocomplete="off">
-                    <input type="hidden" name="status" id="status_input" value="{{ $status }}">
-                    <input type="hidden" name="start_date" id="start_date_hidden" value="{{ $startDate }}">
-                    <input type="hidden" name="end_date" id="end_date_hidden" value="{{ $endDate }}">
-                </form>
-            </div>
-        </div>
 
-        <div class="lg:col-span-4">
-            <div class="flex items-center space-x-1.5 h-[48px]">
-                <div class="glass dark:bg-white/5 bg-white rounded-xl px-2 flex items-center border border-slate-200 dark:border-white/10 focus-within:border-blue-500/50 transition-all h-full flex-1">
-                    <span class="text-[8px] uppercase font-black text-slate-400 ml-1 mr-2 flex-shrink-0">DARI</span>
-                    <input type="date" id="start_date" value="{{ $startDate }}" class="bg-transparent border-none outline-none text-[10px] text-slate-900 dark:text-white font-bold w-full" onchange="syncDateAndSubmit()">
-                </div>
-                <div class="glass dark:bg-white/5 bg-white rounded-xl px-2 flex items-center border border-slate-200 dark:border-white/10 focus-within:border-blue-500/50 transition-all h-full flex-1">
-                    <span class="text-[8px] uppercase font-black text-slate-400 ml-1 mr-2 flex-shrink-0">SD</span>
-                    <input type="date" id="end_date" value="{{ $endDate }}" class="bg-transparent border-none outline-none text-[10px] text-slate-900 dark:text-white font-bold w-full" onchange="syncDateAndSubmit()">
-                </div>
-            </div>
-        </div>
+    <div class="glass dark:bg-slate-900/50 bg-white rounded-2xl p-6 mb-8 border border-slate-200/50 dark:border-white/5 shadow-xl shadow-slate-200/20 dark:shadow-black/20 relative z-[40] overflow-visible">
+        <form action="/dashboard/st" method="GET" id="filterForm">
+            <input type="hidden" name="status" id="status_input" value="{{ $status }}">
+            <input type="hidden" name="start_date" id="start_date_hidden" value="{{ $startDate }}">
+            <input type="hidden" name="end_date" id="end_date_hidden" value="{{ $endDate }}">
 
-        <div class="lg:col-span-3">
-            <div class="custom-dropdown-container w-full">
-                <div class="status-filter-dropdown dark:bg-white/5 bg-white h-[48px] border border-slate-200 dark:border-white/10 rounded-xl">
-                    <input hidden="" class="sr-only" name="state-dropdown" id="state-dropdown" type="checkbox" />
-                    <label aria-label="dropdown scrollbar" for="state-dropdown" class="status-filter-trigger h-full rounded-xl">
-                        <span class="text-[9px] uppercase tracking-widest text-slate-500 mr-2 font-black">Status:</span>
-                        <span class="text-blue-600 dark:text-blue-400 font-black text-xs truncate">{{ $status ?: 'Semua' }}</span>
-                    </label>
+            <div class="flex flex-col lg:flex-row gap-4 items-end">
 
-                    <ul class="status-filter-list" role="list">
-                        <li class="status-filter-listitem">
-                            <div onclick="applyStatus('')" class="status-filter-article {{ !$status ? 'active' : '' }}">Semua Status</div>
-                        </li>
-                        @foreach($statuses as $s)
-                        <li class="status-filter-listitem">
-                            <div onclick="applyStatus('{{ $s }}')" class="status-filter-article {{ $status == $s ? 'active' : '' }}">{{ $s }}</div>
-                        </li>
-                        @endforeach
-                    </ul>
-                </div>
-            </div>
-        </div>
-
-        <div class="lg:col-span-1 flex items-center gap-2">
-            <button type="submit" form="filterForm" class="flex-1 bg-slate-900 dark:bg-blue-600 hover:bg-blue-600 dark:hover:bg-blue-700 text-white h-[48px] rounded-xl transition-all font-black shadow-lg shadow-blue-500/20 flex items-center justify-center group">
-                <i data-lucide="filter" class="w-4 h-4 group-hover:rotate-12 transition-transform"></i>
-            </button>
-            @if($search || $status || $startDate || $endDate)
-                <a href="/dashboard/st" class="w-[48px] h-[48px] bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-xl transition-all font-black border border-red-500/20 flex items-center justify-center group" title="Reset Filter">
-                    <i data-lucide="x" class="w-4 h-4 group-hover:rotate-90 transition-transform"></i>
-                </a>
-            @endif
-        </div>
-    </div>
-
-<div class="glass rounded-3xl overflow-hidden shadow-xl">
-    <div class="overflow-x-auto">
-        <table class="w-full text-left">
-            <thead>
-                <tr class="border-b border-slate-200 dark:border-white/10 bg-slate-100/50 dark:bg-white/5">
-                    <th class="px-6 py-4 text-[10px] uppercase tracking-widest font-black text-slate-600 dark:text-slate-300">No. Surat Tugas</th>
-                    <th class="px-6 py-4 text-[10px] uppercase tracking-widest font-black text-slate-600 dark:text-slate-300">Nama Penugasan</th>
-                    <th class="px-6 py-4 text-[10px] uppercase tracking-widest font-black text-slate-600 dark:text-slate-300">Periode</th>
-                    <th class="px-6 py-4 text-[10px] uppercase tracking-widest font-black text-slate-600 dark:text-slate-300 text-center">Status</th>
-                    <th class="px-6 py-4 text-[10px] uppercase tracking-widest font-black text-slate-600 dark:text-slate-300 text-center">Aksi</th>
-                </tr>
-            </thead>
-            <tbody class="divide-y divide-slate-100 dark:divide-white/5">
-                @forelse($stList as $st)
-                <tr class="hover:bg-slate-50 dark:hover:bg-white/5 transition-all group">
-                    <td class="px-6 py-4">
-                        <span class="text-sm font-bold text-blue-700 dark:text-blue-400 font-mono">{{ $st->no_surat_tugas ?? '-' }}</span>
-                    </td>
-                    <td class="px-6 py-4">
-                        <div class="text-sm font-black text-slate-800 dark:text-slate-200 line-clamp-1 max-w-xs group-hover:text-blue-600 transition-colors" title="{{ $st->nama_penugasan }}">
-                            {{ $st->nama_penugasan }}
+                <div class="flex-1 min-w-0">
+                    <label class="block text-[10px] uppercase tracking-widest text-slate-400 font-black mb-2 ml-1">Pencarian</label>
+                    <div class="relative group">
+                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                            <i data-lucide="search" class="w-4 h-4 text-slate-400 group-focus-within:text-blue-500 transition-colors"></i>
                         </div>
-                    </td>
-                    <td class="px-6 py-4">
-                        <div class="text-[10px] font-black text-slate-500 uppercase tracking-tight whitespace-nowrap bg-slate-50 dark:bg-white/2 px-3 py-1.5 rounded-lg w-fit">
-                            {{ \Carbon\Carbon::parse($st->start_date)->format('d M Y') }} - {{ \Carbon\Carbon::parse($st->end_date)->format('d M Y') }}
+                        <input type="text" name="search" value="{{ $search }}"
+                               placeholder="Cari nomor ST atau nama penugasan..."
+                               class="w-full h-12 pl-11 pr-4 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl text-sm text-slate-800 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-medium"
+                               autocomplete="off">
+                    </div>
+                </div>
+
+<div class="w-full lg:w-80">
+                    <label class="block text-[10px] uppercase tracking-widest text-slate-400 font-black mb-2 ml-1">Periode Penugasan</label>
+                    <div class="relative group" id="date_range_container">
+                        <div class="absolute inset-0 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl transition-all group-hover:border-blue-500/50 group-hover:bg-blue-50/5 dark:group-hover:bg-blue-500/10"></div>
+
+                        <div class="relative flex items-center h-12 px-1 cursor-pointer">
+
+                            <div class="flex-1 flex items-center gap-3 pl-3 pr-2 border-r border-slate-200 dark:border-white/10 h-8">
+                                <i data-lucide="calendar" class="w-3.5 h-3.5 text-slate-400 group-hover:text-blue-500 transition-colors"></i>
+                                <span id="display_start_date" class="text-sm font-medium {{ $startDate ? 'text-slate-800 dark:text-white' : 'text-slate-400' }}">
+                                    {{ $startDate ? \Carbon\Carbon::parse($startDate)->format('d M Y') : 'Mulai' }}
+                                </span>
+                            </div>
+
+<div class="px-2 text-slate-400">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                            </div>
+
+<div class="flex-1 flex items-center gap-3 pl-2 pr-3 h-8">
+                                <i data-lucide="calendar" class="w-3.5 h-3.5 text-slate-400 group-hover:text-blue-500 transition-colors"></i>
+                                <span id="display_end_date" class="text-sm font-medium {{ $endDate ? 'text-slate-800 dark:text-white' : 'text-slate-400' }}">
+                                    {{ $endDate ? \Carbon\Carbon::parse($endDate)->format('d M Y') : 'Selesai' }}
+                                </span>
+                            </div>
+
+<input type="text" id="date_range_picker"
+                                   class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                                   placeholder="Select Date Range"
+                                   readonly>
                         </div>
-                    </td>
-                    <td class="px-6 py-4 text-center">
-                        @php
-                            $statusClass = match($st->status_st) {
-                                'Realisasi' => 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20',
-                                'Perpanjangan ST' => 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20',
-                                'Batal' => 'bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/20',
-                                'Konsep', 'Final', 'Selesai' => 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20',
-                                default => 'bg-slate-500/10 text-slate-600 dark:text-slate-400 border-slate-500/20'
-                            };
-                        @endphp
-                        <span class="px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest border {{ $statusClass }} shadow-sm">
-                            {{ $st->status_st }}
-                        </span>
-                    </td>
-                    <td class="px-6 py-4 text-center">
-                        <a href="{{ route('st.detail', $st->id_st) }}" class="p-2.5 bg-blue-500/10 text-blue-600 dark:text-blue-400 rounded-xl hover:bg-blue-600 hover:text-white transition-all inline-flex items-center shadow-sm border border-blue-500/10">
-                            <i data-lucide="eye" class="w-4 h-4"></i>
+                    </div>
+                </div>
+
+<div class="w-full lg:w-52 relative z-[45]">
+                    <label class="block text-[10px] uppercase tracking-widest text-slate-400 font-black mb-2 ml-1">Status</label>
+                    <div class="custom-dropdown-container w-full">
+                        <div class="status-filter-dropdown dark:bg-white/5 bg-white h-12 border border-slate-200 dark:border-white/10 rounded-xl">
+                            <input hidden="" class="sr-only" name="state-dropdown" id="state-dropdown" type="checkbox" />
+                            <label aria-label="dropdown scrollbar" for="state-dropdown" class="status-filter-trigger h-full rounded-xl">
+                                <span class="text-blue-600 dark:text-blue-400 font-bold text-sm truncate">{{ $status ?: 'Semua Status' }}</span>
+                            </label>
+
+                            <ul class="status-filter-list rounded-xl border border-white/10 shadow-2xl backdrop-blur-xl" role="list">
+                                <li class="status-filter-listitem">
+                                    <div onclick="applyStatus('')" class="status-filter-article {{ !$status ? 'active' : '' }}">Semua Status</div>
+                                </li>
+                                @foreach($statuses as $s)
+                                <li class="status-filter-listitem">
+                                    <div onclick="applyStatus('{{ $s }}')" class="status-filter-article {{ $status == $s ? 'active' : '' }}">{{ $s }}</div>
+                                </li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+<div class="flex items-end gap-2">
+                    <button type="submit" class="h-12 px-6 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 text-white rounded-xl transition-all font-bold shadow-lg shadow-blue-500/25 flex items-center justify-center gap-2 group">
+                        <i data-lucide="filter" class="w-4 h-4 group-hover:scale-110 transition-transform"></i>
+                        <span class="text-sm">Filter</span>
+                    </button>
+                    @if($search || $status || $startDate || $endDate)
+                        <a href="/dashboard/st" class="h-12 w-12 bg-red-50 dark:bg-red-500/10 hover:bg-red-100 dark:hover:bg-red-500/20 text-red-500 rounded-xl transition-all flex items-center justify-center border border-red-200 dark:border-red-500/20 group" title="Reset Filter">
+                            <i data-lucide="x" class="w-4 h-4 group-hover:scale-110 transition-transform"></i>
                         </a>
-                    </td>
-                </tr>
-                @empty
-                <tr>
-                    <td colspan="5" class="px-6 py-12 text-center text-slate-500 italic">
-                        Tidak ada data surat tugas ditemukan.
-                    </td>
-                </tr>
-                @endforelse
-            </tbody>
-        </table>
+                    @endif
+                </div>
+            </div>
+        </form>
     </div>
-    
-    @if($stList->hasPages())
-    <div class="px-6 py-4 border-t border-white/10 bg-white/5">
-        {{ $stList->appends(['search' => $search])->links() }}
+
+<div class="flex flex-wrap gap-3 mb-6">
+        <div class="glass dark:bg-blue-500/10 bg-blue-50 border border-blue-200/50 dark:border-blue-500/20 rounded-xl px-4 py-2.5 flex items-center gap-3">
+            <div class="w-8 h-8 bg-blue-500/20 rounded-lg flex items-center justify-center">
+                <i data-lucide="clipboard-list" class="w-4 h-4 text-blue-500"></i>
+            </div>
+            <div>
+                <div class="text-[10px] uppercase tracking-widest text-blue-500 font-black">Total ST</div>
+                <div class="text-lg font-black text-blue-600 dark:text-blue-400">{{ $stList->total() }}</div>
+            </div>
+        </div>
+        @if($search || $status || $startDate || $endDate)
+        <div class="glass dark:bg-amber-500/10 bg-amber-50 border border-amber-200/50 dark:border-amber-500/20 rounded-xl px-4 py-2.5 flex items-center gap-3">
+            <div class="w-8 h-8 bg-amber-500/20 rounded-lg flex items-center justify-center">
+                <i data-lucide="filter" class="w-4 h-4 text-amber-500"></i>
+            </div>
+            <div>
+                <div class="text-[10px] uppercase tracking-widest text-amber-500 font-black">Filter Aktif</div>
+                <div class="text-sm font-bold text-amber-600 dark:text-amber-400">
+                    {{ collect([$search ? 'Pencarian' : null, $status ?: null, ($startDate && $endDate) ? 'Periode' : null])->filter()->implode(', ') }}
+                </div>
+            </div>
+        </div>
+        @endif
     </div>
-    @endif
-</div>
+
+<div class="glass dark:bg-slate-900/30 bg-white rounded-2xl overflow-hidden shadow-xl shadow-slate-200/20 dark:shadow-black/20 border border-slate-200/50 dark:border-white/5">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left">
+                <thead>
+                    <tr class="bg-gradient-to-r from-slate-50 to-slate-100 dark:from-white/5 dark:to-white/[0.02]">
+                        <th class="px-6 py-4 text-[10px] uppercase tracking-widest font-black text-slate-500 dark:text-slate-400">
+                            <div class="flex items-center gap-2">
+                                <i data-lucide="hash" class="w-3 h-3"></i>
+                                No. ST
+                            </div>
+                        </th>
+                        <th class="px-6 py-4 text-[10px] uppercase tracking-widest font-black text-slate-500 dark:text-slate-400">
+                            <div class="flex items-center gap-2">
+                                <i data-lucide="briefcase" class="w-3 h-3"></i>
+                                Nama Penugasan
+                            </div>
+                        </th>
+                        <th class="px-6 py-4 text-[10px] uppercase tracking-widest font-black text-slate-500 dark:text-slate-400">
+                            <div class="flex items-center gap-2">
+                                <i data-lucide="calendar" class="w-3 h-3"></i>
+                                Periode
+                            </div>
+                        </th>
+                        <th class="px-6 py-4 text-[10px] uppercase tracking-widest font-black text-slate-500 dark:text-slate-400 text-center">Status</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 dark:divide-white/5">
+                    @forelse($stList as $index => $st)
+                    <tr class="hover:bg-blue-50/50 dark:hover:bg-white/[0.02] transition-all group">
+                        <td class="px-6 py-5">
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center text-white text-xs font-bold shadow-sm">
+                                    {{ $stList->firstItem() + $index }}
+                                </div>
+                                <span class="text-sm font-bold text-blue-600 dark:text-blue-400 font-mono tracking-tight">{{ $st->no_surat_tugas ?? '-' }}</span>
+                            </div>
+                        </td>
+                        <td class="px-6 py-5">
+                            <div class="max-w-md">
+                                <a href="{{ route('st.detail', $st->id_st) }}" class="group/link">
+                                    <p class="text-sm font-bold text-slate-800 dark:text-slate-200 line-clamp-1 group-hover/link:text-blue-600 transition-colors" title="{{ $st->nama_penugasan }}">
+                                        {{ $st->nama_penugasan }}
+                                    </p>
+                                    <span class="text-[10px] font-mono font-bold text-slate-400 group-hover/link:text-blue-400/70 transition-colors">{{ $st->nomor_lhp ?? 'Belum ada LHP' }}</span>
+                                </a>
+                            </div>
+                        </td>
+                        <td class="px-6 py-5">
+                            <div class="flex flex-col gap-1">
+                                <div class="inline-flex items-center gap-2 bg-blue-50 dark:bg-blue-500/10 px-2 py-1 rounded-lg w-fit">
+                                    <i data-lucide="calendar-plus" class="w-3 h-3 text-blue-500"></i>
+                                    <span class="text-[10px] font-bold text-blue-600 dark:text-blue-400 whitespace-nowrap">
+                                        {{ \Carbon\Carbon::parse($st->start_date)->format('d M Y') }}
+                                    </span>
+                                </div>
+                                <div class="inline-flex items-center gap-2 bg-slate-100 dark:bg-white/5 px-2 py-1 rounded-lg w-fit">
+                                    <i data-lucide="calendar-check" class="w-3 h-3 text-slate-400"></i>
+                                    <span class="text-[10px] font-bold text-slate-600 dark:text-slate-400 whitespace-nowrap">
+                                        {{ \Carbon\Carbon::parse($st->end_date)->format('d M Y') }}
+                                    </span>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-5 text-center">
+                            @php
+                                $statusColor = match(strtolower($st->status_st)) {
+                                    'batal' => 'red',
+                                    'final', 'selesai' => 'emerald',
+                                    'tidak aktif' => 'slate',
+                                    default => 'amber'
+                                };
+                                $statusIcon = match(strtolower($st->status_st)) {
+                                    'batal' => 'x-circle',
+                                    'final', 'selesai' => 'check-circle',
+                                    'tidak aktif' => 'minus-circle',
+                                    default => 'clock'
+                                };
+                            @endphp
+                            <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-{{ $statusColor }}-100 dark:bg-{{ $statusColor }}-500/20 text-{{ $statusColor }}-700 dark:text-{{ $statusColor }}-400">
+                                <i data-lucide="{{ $statusIcon }}" class="w-3 h-3"></i>
+                                {{ $st->status_st }}
+                            </span>
+                        </td>
+                    </tr>
+                    @empty
+                    <tr>
+                        <td colspan="4" class="px-6 py-16 text-center">
+                            <div class="flex flex-col items-center justify-center">
+                                <div class="w-16 h-16 bg-slate-100 dark:bg-white/5 rounded-2xl flex items-center justify-center mb-4">
+                                    <i data-lucide="inbox" class="w-8 h-8 text-slate-300 dark:text-slate-600"></i>
+                                </div>
+                                <p class="text-slate-500 dark:text-slate-400 font-medium">Tidak ada data Surat Tugas ditemukan</p>
+                                <p class="text-slate-400 dark:text-slate-500 text-sm mt-1">Coba ubah filter atau kata kunci pencarian</p>
+                            </div>
+                        </td>
+                    </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+
+        @if($stList->hasPages())
+        <div class="px-6 py-4 border-t border-slate-100 dark:border-white/5 bg-slate-50/50 dark:bg-white/[0.02]">
+            <div class="flex items-center justify-between">
+                <div class="text-sm text-slate-500 dark:text-slate-400">
+                    Menampilkan <span class="font-bold text-slate-700 dark:text-slate-300">{{ $stList->firstItem() }}</span> - <span class="font-bold text-slate-700 dark:text-slate-300">{{ $stList->lastItem() }}</span> dari <span class="font-bold text-slate-700 dark:text-slate-300">{{ $stList->total() }}</span> data
+                </div>
+                <div class="flex gap-1">
+                    @if($stList->onFirstPage())
+                        <span class="px-4 py-2 rounded-lg bg-slate-100 dark:bg-white/5 text-slate-400 cursor-not-allowed text-sm font-medium">Prev</span>
+                    @else
+                        <a href="{{ $stList->appends(request()->query())->previousPageUrl() }}" class="px-4 py-2 rounded-lg bg-white dark:bg-white/10 border border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-300 hover:bg-blue-50 dark:hover:bg-blue-500/10 hover:border-blue-300 dark:hover:border-blue-500/30 hover:text-blue-600 transition-all text-sm font-medium">Prev</a>
+                    @endif
+
+                    @foreach ($stList->appends(request()->query())->getUrlRange(max(1, $stList->currentPage() - 2), min($stList->lastPage(), $stList->currentPage() + 2)) as $page => $url)
+                        @if ($page == $stList->currentPage())
+                            <span class="px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-bold shadow-sm">{{ $page }}</span>
+                        @else
+                            <a href="{{ $url }}" class="px-4 py-2 rounded-lg bg-white dark:bg-white/10 border border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-300 hover:bg-blue-50 dark:hover:bg-blue-500/10 hover:border-blue-300 dark:hover:border-blue-500/30 hover:text-blue-600 transition-all text-sm font-medium">{{ $page }}</a>
+                        @endif
+                    @endforeach
+
+                    @if($stList->hasMorePages())
+                        <a href="{{ $stList->appends(request()->query())->nextPageUrl() }}" class="px-4 py-2 rounded-lg bg-white dark:bg-white/10 border border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-300 hover:bg-blue-50 dark:hover:bg-blue-500/10 hover:border-blue-300 dark:hover:border-blue-500/30 hover:text-blue-600 transition-all text-sm font-medium">Next</a>
+                    @else
+                        <span class="px-4 py-2 rounded-lg bg-slate-100 dark:bg-white/5 text-slate-400 cursor-not-allowed text-sm font-medium">Next</span>
+                    @endif
+                </div>
+            </div>
+        </div>
+        @endif
+    </div>
 @endsection
 
 @include('components.custom-dropdown-css')
 
 @push('scripts')
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
 <style>
-    .pagination { @apply flex space-x-2; }
-    .page-item { @apply rounded-lg overflow-hidden; }
-    .page-link { @apply block px-4 py-2 text-sm glass border-none hover:bg-blue-500 transition-all; }
-    .page-item.active .page-link { @apply bg-blue-600 text-white; }
-    .page-item.disabled .page-link { @apply opacity-50 cursor-not-allowed; }
+
+    .flatpickr-calendar {
+        background: rgba(15, 23, 42, 0.98) !important;
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        box-shadow:
+            0 25px 50px -12px rgba(0, 0, 0, 0.5),
+            0 0 0 1px rgba(255, 255, 255, 0.05) inset !important;
+        border-radius: 20px !important;
+        padding: 20px !important;
+        font-family: inherit !important;
+        z-index: 99999 !important;
+        width: auto !important;
+        min-width: 300px !important;
+        animation: calendarSlideIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    }
+
+    @keyframes calendarSlideIn {
+        from { opacity: 0; transform: translateY(-8px) scale(0.96); }
+        to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    [data-theme="light"] .flatpickr-calendar {
+        background: rgba(255, 255, 255, 0.98) !important;
+        border: 1px solid rgba(0, 0, 0, 0.08) !important;
+        box-shadow:
+            0 25px 50px -12px rgba(0, 0, 0, 0.12),
+            0 0 0 1px rgba(0, 0, 0, 0.03) inset !important;
+    }
+
+    .flatpickr-months {
+        margin-bottom: 16px !important;
+        display: flex !important; align-items: center !important; justify-content: space-between !important;
+    }
+
+    .flatpickr-prev-month, .flatpickr-next-month {
+        position: static !important;
+        display: flex !important; align-items: center !important; justify-content: center !important;
+        width: 36px !important; height: 36px !important;
+        border-radius: 50% !important;
+        background: rgba(255, 255, 255, 0.05) !important;
+        border: 1px solid rgba(255, 255, 255, 0.08) !important;
+        color: #94a3b8 !important;
+        transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    }
+
+    .flatpickr-prev-month:hover, .flatpickr-next-month:hover {
+        background: linear-gradient(135deg, #3b82f6, #2563eb) !important;
+        color: #ffffff !important; transform: scale(1.08) !important;
+    }
+
+    .flatpickr-current-month {
+        display: flex !important; align-items: center !important; justify-content: center !important; gap: 6px !important;
+        position: static !important; width: auto !important; padding: 0 !important;
+        flex: 1 !important; text-align: center !important;
+    }
+
+    .flatpickr-monthDropdown-months {
+        appearance: none !important; -webkit-appearance: none !important;
+        background: transparent !important; border: none !important;
+        color: #f1f5f9 !important; font-weight: 600 !important; font-size: 15px !important;
+    }
+
+    [data-theme="light"] .flatpickr-monthDropdown-months { color: #1e293b !important; }
+
+    .numInputWrapper input.cur-year {
+        background: transparent !important; color: #f1f5f9 !important;
+        font-weight: 600 !important; font-size: 15px !important; width: 52px !important;
+    }
+
+    [data-theme="light"] .numInputWrapper input.cur-year { color: #1e293b !important; }
+    .numInputWrapper span { display: none !important; }
+
+    .flatpickr-day {
+        color: #e2e8f0 !important; border-radius: 10px !important; height: 38px !important; line-height: 38px !important;
+        font-weight: 500 !important; margin: 2px !important; transition: all 0.15s ease !important;
+    }
+
+    [data-theme="light"] .flatpickr-day { color: #334155 !important; }
+
+    .flatpickr-day:hover { background: rgba(59, 130, 246, 0.1) !important; transform: scale(1.05) !important; }
+
+    .flatpickr-day.selected, .flatpickr-day.startRange, .flatpickr-day.endRange {
+        background: linear-gradient(135deg, #3b82f6, #2563eb) !important;
+        color: #ffffff !important; font-weight: 700 !important; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4) !important;
+        border-color: transparent !important;
+    }
+
+    .flatpickr-day.inRange {
+        background: rgba(59, 130, 246, 0.2) !important;
+        color: #60a5fa !important;
+        border-color: transparent !important;
+        box-shadow: none !important;
+    }
+
+    [data-theme="light"] .flatpickr-day.inRange {
+        background: rgba(59, 130, 246, 0.15) !important;
+        color: #2563eb !important;
+        border-color: transparent !important;
+        box-shadow: none !important;
+    }
+
+.flatpickr-day.flatpickr-disabled,
+    .flatpickr-day.prevMonthDay,
+    .flatpickr-day.nextMonthDay {
+        color: #94a3b8 !important;
+        opacity: 0.1 !important;
+        pointer-events: none !important;
+    }
+
+    .flatpickr-weekday {
+        color: #94a3b8 !important;
+        font-weight: 700 !important;
+    }
+
+.dark .flatpickr-weekday {
+        color: rgba(255, 255, 255, 0.9) !important;
+    }
 </style>
 
 <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const dateRangePicker = flatpickr("#date_range_picker", {
+            mode: "range",
+            dateFormat: "Y-m-d",
+            prevArrow: '<svg class="shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"></path></svg>',
+            nextArrow: '<svg class="shrink-0 size-4" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"></path></svg>',
+            locale: { rangeSeparator: " → " },
+            defaultDate: [ "{{ $startDate }}" || null, "{{ $endDate }}" || null ],
+            onChange: function(selectedDates, dateStr) {
+                if (selectedDates.length === 2) {
+                    const startDate = selectedDates[0];
+                    const endDate = selectedDates[1];
+
+                    document.getElementById('start_date_hidden').value = startDate.toISOString().split('T')[0];
+                    document.getElementById('end_date_hidden').value = endDate.toISOString().split('T')[0];
+
+                    const formatDate = (date) => date.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
+
+                    document.getElementById('display_start_date').textContent = formatDate(startDate);
+                    document.getElementById('display_start_date').classList.remove('text-slate-400');
+                    document.getElementById('display_start_date').classList.add('text-slate-800', 'dark:text-white');
+
+                    document.getElementById('display_end_date').textContent = formatDate(endDate);
+                    document.getElementById('display_end_date').classList.remove('text-slate-400');
+                    document.getElementById('display_end_date').classList.add('text-slate-800', 'dark:text-white');
+
+                } else if (selectedDates.length === 0) {
+                    document.getElementById('start_date_hidden').value = '';
+                    document.getElementById('display_start_date').textContent = 'Mulai';
+                    document.getElementById('display_start_date').classList.add('text-slate-400');
+                    document.getElementById('display_start_date').classList.remove('text-slate-800', 'dark:text-white');
+
+                    document.getElementById('end_date_hidden').value = '';
+                    document.getElementById('display_end_date').textContent = 'Selesai';
+                    document.getElementById('display_end_date').classList.add('text-slate-400');
+                    document.getElementById('display_end_date').classList.remove('text-slate-800', 'dark:text-white');
+                }
+            }
+        });
+
+        lucide.createIcons();
+    });
+
     function applyStatus(status) {
         document.getElementById('status_input').value = status;
-        syncDateAndSubmit();
-    }
-
-    function syncDateAndSubmit() {
-        document.getElementById('start_date_hidden').value = document.getElementById('start_date').value;
-        document.getElementById('end_date_hidden').value = document.getElementById('end_date').value;
         document.getElementById('filterForm').submit();
     }
 

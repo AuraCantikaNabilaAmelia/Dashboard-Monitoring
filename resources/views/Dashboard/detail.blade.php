@@ -21,15 +21,23 @@
                 </div>
                 <div class="text-right">
                     @php
-                        $statusClass = match($st->status_st) {
-                            'Realisasi' => 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20',
-                            'Perpanjangan ST' => 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20',
-                            'Batal' => 'bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/20',
-                            'Konsep', 'Final', 'Selesai' => 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20',
-                            default => 'bg-slate-500/10 text-slate-600 dark:text-slate-400 border-slate-500/20'
+                        $statusClass = match(strtolower($st->status_st)) {
+                            'batal' => 'bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/20',
+                            'final', 'selesai' => 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20',
+                            'tidak aktif' => 'bg-slate-500/10 text-slate-600 dark:text-slate-400 border-slate-500/20',
+                            default => 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20'
+                        };
+                        $statusIcon = match(strtolower($st->status_st)) {
+                            'batal' => 'x-circle',
+                            'final', 'selesai' => 'check-circle',
+                            'tidak aktif' => 'minus-circle',
+                            default => 'clock'
                         };
                     @endphp
-                    <span class="px-4 py-2 {{ $statusClass }} text-sm font-black rounded-xl border shadow-sm">{{ $st->status_st }}</span>
+                    <span class="px-4 py-2 {{ $statusClass }} text-sm font-black rounded-xl border shadow-sm inline-flex items-center gap-2">
+                        <i data-lucide="{{ $statusIcon }}" class="w-4 h-4"></i>
+                        {{ $st->status_st }}
+                    </span>
                 </div>
             </div>
 

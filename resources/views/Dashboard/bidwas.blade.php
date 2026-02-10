@@ -18,7 +18,7 @@
                 @php
                     $highest = $bidwasData->sortByDesc('total_st')->first();
                     $lowest = $bidwasData->sortBy('total_st')->first();
-                    
+
                     $labelMapping = [
                         'Bagian Tata Usaha' => 'Tata Usaha',
                         'Koordinator Pengawasan Kelompok JFA Bidang Pengawasan Instansi Pemerintah Pusat' => 'Bidang IPP',
@@ -30,12 +30,12 @@
                         'Sub Bagian Keuangan' => 'Keuangan',
                         'Sub Bagian Umum' => 'Umum'
                     ];
-                    
+
                     function getShortLabel($full, $map) {
                         return $map[$full] ?? $full;
                     }
                 @endphp
-                
+
                 <div class="p-4 bg-white/5 rounded-2xl border border-white/5 group hover:border-blue-500/50 transition-all">
                     <p class="text-slate-500 dark:text-slate-400 text-xs font-bold uppercase tracking-widest mb-2">Bidang Teraktif</p>
                     <div class="flex justify-between items-end">
@@ -51,6 +51,14 @@
                     <div class="flex justify-between items-end">
                         <p class="text-xl font-bold text-emerald-400">Total {{ $bidwasData->sum('total_lhp') }} LHP</p>
                         <p class="text-sm font-medium">Monitoring Akhir</p>
+                    </div>
+                </div>
+
+                <div class="p-4 bg-white/5 rounded-2xl border border-white/5">
+                    <p class="text-slate-400 text-sm mb-1">Total Pegawai Terdistribusi</p>
+                    <div class="flex justify-between items-end">
+                        <p class="text-xl font-bold text-violet-400">{{ $bidwasData->sum('total_pegawai') }} Orang</p>
+                        <p class="text-sm font-medium">Di {{ $bidwasData->where('total_pegawai', '>', 0)->count() }} Bidang</p>
                     </div>
                 </div>
             </div>
@@ -80,12 +88,13 @@
             <i data-lucide="table" class="w-5 h-5 text-blue-500"></i>
         </div>
     </div>
-    
+
     <div class="overflow-x-auto overflow-y-hidden">
         <table class="w-full text-left border-separate border-spacing-y-2">
             <thead>
                 <tr class="text-slate-500 dark:text-slate-400">
                     <th class="px-6 py-4 text-[10px] uppercase tracking-[0.2em] font-black first:rounded-l-xl">BIDANG/UNIT</th>
+                    <th class="px-6 py-4 text-[10px] uppercase tracking-[0.2em] font-black text-center">PEGAWAI</th>
                     <th class="px-6 py-4 text-[10px] uppercase tracking-[0.2em] font-black text-center">TOTAL ST</th>
                     <th class="px-6 py-4 text-[10px] uppercase tracking-[0.2em] font-black text-center">TOTAL LHP</th>
                     <th class="px-6 py-4 text-[10px] uppercase tracking-[0.2em] font-black last:rounded-r-xl">PENYELESAIAN</th>
@@ -93,14 +102,20 @@
             </thead>
             <tbody class="space-y-4">
                 @foreach($bidwasData as $item)
-                <tr class="group transition-all duration-300">
+                <tr class="group transition-all duration-300 cursor-pointer" onclick="window.location='{{ route('bidwas.detail', $item->id_bidwas) }}'">
                     <td class="px-6 py-5 bg-slate-50 dark:bg-white/5 group-hover:bg-blue-500/5 first:rounded-l-2xl border-l border-t border-b border-slate-200/50 dark:border-white/5 transition-colors">
                         <div class="flex flex-col">
-                            <span class="font-black text-slate-800 dark:text-white group-hover:text-blue-500 transition-colors leading-tight">
-                                {{ getShortLabel($item->nama_bidwas, $labelMapping) }}
-                            </span>
+                            <div class="flex items-center gap-2">
+                                <span class="font-black text-slate-800 dark:text-white group-hover:text-blue-500 transition-colors leading-tight">
+                                    {{ getShortLabel($item->nama_bidwas, $labelMapping) }}
+                                </span>
+                                <i data-lucide="chevron-right" class="w-4 h-4 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity"></i>
+                            </div>
                             <span class="text-[9px] font-bold text-slate-400 dark:text-slate-500 font-mono tracking-widest mt-1">{{ $item->kode }}</span>
                         </div>
+                    </td>
+                    <td class="px-6 py-5 bg-slate-50 dark:bg-white/5 group-hover:bg-blue-500/5 border-t border-b border-slate-200/50 dark:border-white/5 transition-colors text-center">
+                        <span class="font-mono font-black text-xl text-violet-500">{{ $item->total_pegawai }}</span>
                     </td>
                     <td class="px-6 py-5 bg-slate-50 dark:bg-white/5 group-hover:bg-blue-500/5 border-t border-b border-slate-200/50 dark:border-white/5 transition-colors text-center">
                         <span class="font-mono font-black text-xl text-slate-700 dark:text-slate-300">{{ $item->total_st }}</span>
@@ -111,7 +126,7 @@
                     <td class="px-6 py-5 bg-slate-50 dark:bg-white/5 group-hover:bg-blue-500/5 last:rounded-r-2xl border-r border-t border-b border-slate-200/50 dark:border-white/5 transition-colors min-w-[200px]">
                         @php
                             $rate = $item->total_st > 0 ? round(($item->total_lhp / $item->total_st) * 100) : 0;
-                            // Color logic based on rate
+
                             $colorClass = 'bg-blue-500';
                             if($rate >= 80) $colorClass = 'bg-gradient-to-r from-emerald-500 to-teal-400 shadow-emerald-500/30';
                             elseif($rate >= 50) $colorClass = 'bg-gradient-to-r from-blue-500 to-indigo-500 shadow-blue-500/30';
@@ -176,9 +191,9 @@
                 plugins: {
                     legend: {
                         position: 'bottom',
-                        labels: { 
-                            color: getChartColors(), 
-                            padding: 20, 
+                        labels: {
+                            color: getChartColors(),
+                            padding: 20,
                             usePointStyle: true,
                             font: { size: 12, weight: '500' }
                         }

@@ -36,8 +36,7 @@ class AuthController extends Controller
 
         if (isset($pegawai->user_role)) {
             $dbRole = strtolower($pegawai->user_role);
-            
-            // Mapping Bidang ID berdasarkan role/unit di r_pegawai
+
             if (str_contains($dbRole, 'apd')) $bidang_id = 159;
             elseif (str_contains($dbRole, 'an')) $bidang_id = 160;
             elseif (str_contains($dbRole, 'ipp')) $bidang_id = 158;
@@ -48,17 +47,15 @@ class AuthController extends Controller
             elseif (str_contains($dbRole, 'umum')) $bidang_id = 553;
             elseif (str_contains($dbRole, 'bagian tata usaha')) $bidang_id = 157;
 
-            // Mapping Role Aplikasi
             if (
-                str_contains($dbRole, 'admin') || 
-                str_contains($dbRole, 'pimpinan') || 
+                str_contains($dbRole, 'admin') ||
+                str_contains($dbRole, 'pimpinan') ||
                 str_contains($dbRole, 'kepala_perwakilan')
             ) {
                 $role = \App\Models\User::ROLE_PIMPINAN;
-            } 
-            elseif (
-                str_contains($dbRole, 'korwas') || 
-                str_contains($dbRole, 'kabid') || 
+            } elseif (
+                str_contains($dbRole, 'korwas') ||
+                str_contains($dbRole, 'kabid') ||
                 str_contains($dbRole, 'kepala bagian') ||
                 str_contains($dbRole, 'subkoor')
             ) {

@@ -2,292 +2,123 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\SuratMasuk;
-use App\Models\TindakLanjutEntry;
+use App\Models\StTindakLanjut;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Carbon\Carbon;
 
 class TindakLanjutController extends Controller
 {
     public function index(Request $request)
     {
-        $search = $request->get('search');
-        $status = $request->get('status');
-        $bidang_id = $request->get('bidang_id');
-        $startDate = $request->get('start_date');
-        $endDate = $request->get('end_date');
+        $search = $request->search;
+        $bidang_id = $request->bidang_id;
+        $startDate = $request->start_date;
+        $endDate = $request->end_date;
 
-        $query = SuratMasuk::with(['tindakLanjutEntries', 'targetBidang'])->withCount('tindakLanjutEntries');
+        $query = DB::table('d_st')
+            ->leftJoin('r_bidwas', 'd_st.id_bidwas', '=', 'r_bidwas.id_bidwas')
+            ->select(
+                'd_st.*',
+                'r_bidwas.nm_bidwas',
+                'r_bidwas.kd_bidwas',
+                DB::raw('(SELECT count(*) FROM st_tindak_lanjut WHERE st_tindak_lanjut.id_st = d_st.id_st) as entry_count')
+            );
 
         if ($search) {
-            $query->where(function($q) use ($search) {
-                $q->where('nomor_surat', 'like', "%{$search}%")
-                  ->orWhere('perihal', 'like', "%{$search}%")
-                  ->orWhere('pengirim', 'like', "%{$search}%");
+            $query->where(function ($q) use ($search) {
+                $q->where('no_surat_tugas', 'like', "%{$search}%")
+                    ->orWhere('nama_penugasan', 'like', "%{$search}%");
             });
         }
 
-        if ($status) {
-            $query->where('status', $status);
-        }
-
         if ($bidang_id) {
-            $query->where('target_bidang_id', $bidang_id);
+            $query->where('d_st.id_bidwas', $bidang_id);
         }
 
-        if ($startDate && $endDate) {
-            $query->whereBetween('tanggal_surat', [$startDate, $endDate]);
+        if ($startDate) {
+            $query->where('start_date', '>=', $startDate);
         }
 
-        // Access Control Logic
-        /* SCOPING_BY_BIDANG: Temporarily disabled by user request
-        $user = auth()->user();
-        if ($user->role !== \App\Models\User::ROLE_PIMPINAN) {
-            // Jika bukan pimpinan/admin, hanya bisa melihat surat yang ditujukan ke bidangnya
-            // atau surat yang belum ditentukan bidangnya (untuk diklaim/disposisi)
-            if ($user->bidang_id) {
-                $query->where(function($q) use ($user) {
-                    $q->where('target_bidang_id', $user->bidang_id)
-                      ->orWhereNull('target_bidang_id');
-                });
-            }
+        if ($endDate) {
+            $query->where('end_date', '<=', $endDate);
         }
-        */
 
-        $suratList = $query->orderBy('tanggal_surat', 'desc')->paginate(15);
+        $stList = $query->orderBy('start_date', 'desc')->paginate(10);
+        $bidwasList = DB::table('r_bidwas')->get();
 
-        $statusSummary = SuratMasuk::selectRaw('status, count(*) as total')
-            ->groupBy('status')
-            ->pluck('total', 'status');
-
-        $statuses = array_keys(SuratMasuk::statusLabels());
-        $bidwasList = \App\Models\Bidwas::all();
-
-        return view('dashboard.tindaklanjut.index', compact('suratList', 'search', 'status', 'statuses', 'statusSummary', 'bidang_id', 'bidwasList', 'startDate', 'endDate'));
-    }
-
-    public function create()
-    {
-        $bidwasList = \App\Models\Bidwas::all();
-        return view('dashboard.tindaklanjut.create', compact('bidwasList'));
-    }
-
-    public function store(Request $request)
-    {
-        $validated = $request->validate([
-            'nomor_surat' => 'required|string|max:100',
-            'tanggal_surat' => 'required|date',
-            'perihal' => 'required|string',
-            'pengirim' => 'required|string|max:255',
-            'penerima' => 'nullable|string|max:255',
-            'target_bidang_id' => 'nullable|exists:r_bidwas,id_bidwas',
-            'catatan' => 'nullable|string',
-            'file' => 'nullable|file|max:10240|mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png',
-        ]);
-
-        $validated['status'] = $request->target_bidang_id ? 'disposisi' : 'surat_masuk';
-
-        if ($request->hasFile('file')) {
-            $file = $request->file('file');
-            $fileName = time() . '_' . $file->getClientOriginalName();
-            $filePath = $file->storeAs('surat_masuk', $fileName, 'public');
-            $validated['file_path'] = $filePath;
-            $validated['file_name'] = $file->getClientOriginalName();
-        }
-        unset($validated['file']);
-
-        SuratMasuk::create($validated);
-
-        return redirect('/dashboard/tindaklanjut')->with('success', 'Surat Masuk berhasil ditambahkan.');
+        return view('Dashboard.tindaklanjut.index', compact('stList', 'bidwasList', 'search', 'bidang_id', 'startDate', 'endDate'));
     }
 
     public function show($id)
     {
-        $surat = SuratMasuk::with('tindakLanjutEntries')->findOrFail($id);
+        // $id di sini adalah id_st
+        $st = DB::table('d_st')
+            ->leftJoin('r_bidwas', 'd_st.id_bidwas', '=', 'r_bidwas.id_bidwas')
+            ->where('id_st', $id)
+            ->first();
 
-        return view('dashboard.tindaklanjut.show', compact('surat'));
-    }
+        if (!$st) abort(404);
 
-    public function addEntryForm($id)
-    {
-        $surat = SuratMasuk::findOrFail($id);
-        
-        return view('dashboard.tindaklanjut.entry_form', [
-            'surat' => $surat,
-            'mode' => 'create',
-            'entry' => null
-        ]);
+        $entries = StTindakLanjut::where('id_st', $id)
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return view('Dashboard.tindaklanjut.show', compact('st', 'entries'));
     }
 
     public function addEntry(Request $request, $id)
     {
-        $surat = SuratMasuk::findOrFail($id);
-
-        $validated = $request->validate([
-            'tanggal' => 'required|date',
-            'keterangan' => 'nullable|string',
-            'file' => 'nullable|file|max:10240|mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png',
+        $request->validate([
+            'catatan' => 'required',
+            'file' => 'nullable|file|mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png|max:20480',
         ]);
 
-        $user = auth()->user();
+        $st = DB::table('d_st')->where('id_st', $id)->first();
+        if (!$st) abort(404);
 
-        $entryData = [
-            'surat_masuk_id' => $surat->id,
-            'tanggal' => $validated['tanggal'],
-            'keterangan' => $validated['keterangan'] ?? null,
-            'created_by_nip' => $user->nip ?? null,
-            'created_by_nama' => $user->name ?? 'System',
-        ];
+        // Security Check: Only members of the same bidang can add
+        if (auth()->user()->role !== 'pimpinan' && auth()->user()->bidang_id != $st->id_bidwas) {
+            return back()->with('error', 'Anda hanya dapat menambahkan tindak lanjut untuk bidang Anda sendiri.');
+        }
+
+        $filePath = null;
+        $fileName = null;
 
         if ($request->hasFile('file')) {
             $file = $request->file('file');
-            $fileName = time() . '_' . $file->getClientOriginalName();
-            $filePath = $file->storeAs('tindak_lanjut', $fileName, 'public');
-            $entryData['file_path'] = $filePath;
-            $entryData['file_name'] = $file->getClientOriginalName();
+            $fileName = $file->getClientOriginalName();
+            $filePath = $file->store('tindak_lanjut_st', 'public');
         }
 
-        TindakLanjutEntry::create($entryData);
-
-        // Status update logic can be manual by the user or automatic for the first step
-        if ($surat->status === 'surat_masuk') {
-            $surat->update(['status' => 'disposisi']);
-        }
-
-        if ($request->status) {
-            $surat->update(['status' => $request->status]);
-        }
-
-        return redirect()->route('tindaklanjut.show', $id)->with('success', 'Tindak lanjut berhasil ditambahkan.');
-    }
-
-    public function editEntryForm($entry_id)
-    {
-        $entry = TindakLanjutEntry::findOrFail($entry_id);
-        $surat = $entry->suratMasuk;
-
-        if ($entry->created_by_nip !== auth()->user()->nip) {
-            return redirect()->back()->with('error', 'Anda hanya dapat mengubah catatan yang Anda buat sendiri.');
-        }
-
-        return view('dashboard.tindaklanjut.entry_form', [
-            'surat' => $surat,
-            'mode' => 'edit',
-            'entry' => $entry
-        ]);
-    }
-
-    public function updateEntry(Request $request, $id)
-    {
-        $entry = TindakLanjutEntry::findOrFail($id);
-        
-        if ($entry->created_by_nip !== auth()->user()->nip) {
-            return redirect()->back()->with('error', 'Anda hanya dapat mengubah catatan yang Anda buat sendiri.');
-        }
-        
-        $validated = $request->validate([
-            'tanggal' => 'required|date',
-            'keterangan' => 'nullable|string',
-            'file' => 'nullable|file|max:10240|mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png',
+        StTindakLanjut::create([
+            'id_st' => $id,
+            'catatan' => $request->catatan,
+            'file_path' => $filePath,
+            'file_name' => $fileName,
+            'created_by_nip' => auth()->user()->nip,
+            'created_by_nama' => auth()->user()->name,
         ]);
 
-        $entryData = [
-            'tanggal' => $validated['tanggal'],
-            'keterangan' => $validated['keterangan'] ?? null,
-        ];
-
-        if ($request->hasFile('file')) {
-            if ($entry->file_path && \Storage::disk('public')->exists($entry->file_path)) {
-                \Storage::disk('public')->delete($entry->file_path);
-            }
-
-            $file = $request->file('file');
-            $fileName = time() . '_' . $file->getClientOriginalName();
-            $filePath = $file->storeAs('tindak_lanjut', $fileName, 'public');
-            $entryData['file_path'] = $filePath;
-            $entryData['file_name'] = $file->getClientOriginalName();
-        }
-
-        $entry->update($entryData);
-
-        if ($request->status) {
-            $entry->suratMasuk->update(['status' => $request->status]);
-        }
-
-        return redirect()->route('tindaklanjut.show', $entry->surat_masuk_id)->with('success', 'Tindak lanjut berhasil diperbarui.');
+        return back()->with('success', 'Catatan tindak lanjut berhasil ditambahkan.');
     }
 
     public function deleteEntry($id)
     {
-        $entry = TindakLanjutEntry::findOrFail($id);
-        
+        $entry = StTindakLanjut::findOrFail($id);
+
+        // Only creator can delete
         if ($entry->created_by_nip !== auth()->user()->nip) {
-            return redirect()->back()->with('error', 'Anda hanya dapat menghapus catatan yang Anda buat sendiri.');
+            return back()->with('error', 'Anda hanya dapat menghapus catatan yang Anda buat sendiri.');
         }
-        
-        if ($entry->file_path && \Storage::disk('public')->exists($entry->file_path)) {
-            \Storage::disk('public')->delete($entry->file_path);
+
+        if ($entry->file_path) {
+            Storage::disk('public')->delete($entry->file_path);
         }
 
         $entry->delete();
 
-        return redirect()->back()->with('success', 'Tindak lanjut berhasil dihapus.');
-    }
-
-    public function markSelesai($id)
-    {
-        $surat = SuratMasuk::findOrFail($id);
-        $surat->update(['status' => 'keputusan']);
-
-        return redirect()->back()->with('success', 'Surat telah ditandai selesai.');
-    }
-
-    public function reopen($id)
-    {
-        $surat = SuratMasuk::findOrFail($id);
-        
-        // Reopen defaults to first stage or based on context
-        $newStatus = $surat->target_bidang_id ? 'disposisi' : 'surat_masuk';
-        
-        $surat->update(['status' => $newStatus]);
-
-        return redirect()->back()->with('success', 'Surat telah dibuka kembali.');
-    }
-
-    public function claim(Request $request, $id)
-    {
-        $surat = SuratMasuk::findOrFail($id);
-        $user = auth()->user();
-
-        if (!$user->bidang_id) {
-            return redirect()->back()->with('error', 'User Anda belum terdaftar di bidang manapun.');
-        }
-
-        $surat->update([
-            'target_bidang_id' => $user->bidang_id,
-            'status' => 'disposisi'
-        ]);
-
-        return redirect()->route('tindaklanjut.show', $id)->with('success', 'Surat berhasil diklaim ke bidang Anda.');
-    }
-
-    public function updateStatus(Request $request, $id)
-    {
-        $surat = SuratMasuk::findOrFail($id);
-        $validated = $request->validate([
-            'status' => 'required|string|in:' . implode(',', array_keys(SuratMasuk::statusLabels())),
-        ]);
-
-        $surat->update(['status' => $validated['status']]);
-
-        return redirect()->back()->with('success', 'Tahapan alur berhasil diperbarui menjadi: ' . $surat->status_label);
-    }
-
-    public function destroy($id)
-    {
-        $surat = SuratMasuk::findOrFail($id);
-        $surat->delete();
-
-        return redirect('/dashboard/tindaklanjut')->with('success', 'Surat berhasil dihapus.');
+        return back()->with('success', 'Catatan tindak lanjut berhasil dihapus.');
     }
 }

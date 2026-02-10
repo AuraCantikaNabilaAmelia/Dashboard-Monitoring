@@ -4,21 +4,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - BPKP Jawa Barat</title>
-    
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    
+
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
-    
+
     <script>
-        // Forced dark default logic
+
         const savedTheme = localStorage.getItem('theme');
         const themeToApply = savedTheme || 'dark';
         document.documentElement.setAttribute('data-bs-theme', themeToApply);
     </script>
-    
+
     <style>
         :root {
             --bpkp-navy: #1e293b;
@@ -113,12 +113,12 @@
             background: #4338ca;
             filter: blur(100px);
         }
-        
+
         [data-bs-theme="dark"] .blob-2 {
             background: #2563eb;
             filter: blur(100px);
         }
-        
+
         [data-bs-theme="dark"] .blob-3 {
             background: #06b6d4;
             filter: blur(100px);
@@ -128,7 +128,7 @@
             position: relative;
             z-index: 10;
             display: flex;
-            width: 900px; 
+            width: 900px;
             max-width: 100%;
             background: var(--bpkp-dark-glass);
             backdrop-filter: blur(15px);
@@ -136,8 +136,8 @@
             border-radius: 24px;
             border: 1px solid var(--glass-border);
             overflow: hidden;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); 
-            min-height: 550px; 
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            min-height: 550px;
             margin: auto;
             transition: transform 0.25s ease, box-shadow 0.25s ease;
         }
@@ -206,14 +206,14 @@
 
         .wave-group {
             position: relative;
-            margin-bottom: 35px; 
+            margin-bottom: 35px;
         }
 
         .wave-group .input {
             font-size: 16px;
             padding: 10px 10px 10px 5px;
             display: block;
-            width: 100%; 
+            width: 100%;
             border: none;
             border-bottom: 1px solid #475569;
             background: transparent;
@@ -246,7 +246,7 @@
         .wave-group .input:valid ~ label .label-char {
             transform: translateY(-25px);
             font-size: 12px;
-            color: var(--bpkp-blue); 
+            color: var(--bpkp-blue);
             font-weight: 700;
         }
 
@@ -281,14 +281,14 @@
             justify-content: center;
             gap: 12px;
             width: 100%;
-            height: 56px; 
+            height: 56px;
             padding: 0 20px;
             color: #ffffff;
             border: 1px solid rgba(255,255,255,0.3);
             background: transparent;
-            border-radius: 16px; 
-            font-size: 1.1rem; 
-            font-weight: 600; 
+            border-radius: 16px;
+            font-size: 1.1rem;
+            font-weight: 600;
             cursor: pointer;
             overflow: hidden;
             transition: all 0.2s ease-in;
@@ -347,10 +347,10 @@
 
         .btn-animated .icon-container,
         .btn-animated .text {
-            position: relative; 
+            position: relative;
             z-index: 2;
         }
-        
+
         .btn-animated .icon-container {
             display: flex;
             align-items: center;
@@ -537,6 +537,31 @@
             background: linear-gradient(-45deg, #020617, #1e1b4b, #172554, #0f172a);
             background-size: 400% 400%;
         }
+
+        .password-toggle {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: var(--bpkp-text-muted);
+            cursor: pointer;
+            padding: 5px;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: color 0.2s;
+        }
+
+        .password-toggle:hover {
+            color: var(--bpkp-blue);
+        }
+
+        .wave-group .input {
+            padding-right: 40px !important;
+        }
     </style>
 </head>
 <body>
@@ -545,7 +570,7 @@
         <div class="blob blob-2"></div>
         <div class="blob blob-3"></div>
     </div>
-    
+
     <div class="theme-toggle-wrapper">
         <label class="toggle-switch">
           <input type="checkbox" id="theme-checkbox" />
@@ -567,8 +592,7 @@
             const themeCheckbox = document.getElementById('theme-checkbox');
             const htmlElement = document.documentElement;
 
-            // Sync toggle state with current theme
-            const currentTheme = htmlElement.getAttribute('data-bs-theme') || 'dark';
+const currentTheme = htmlElement.getAttribute('data-bs-theme') || 'dark';
             if(themeCheckbox) themeCheckbox.checked = currentTheme === 'dark';
 
             themeCheckbox.addEventListener('change', function() {
@@ -577,6 +601,21 @@
                 localStorage.setItem('theme', newTheme);
             });
         });
+
+        function togglePasswordVisibility() {
+            const passwordInput = document.getElementById('password');
+            const passwordIcon = document.getElementById('passwordIcon');
+
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                passwordIcon.classList.remove('bi-eye');
+                passwordIcon.classList.add('bi-eye-slash');
+            } else {
+                passwordInput.type = 'password';
+                passwordIcon.classList.remove('bi-eye-slash');
+                passwordIcon.classList.add('bi-eye');
+            }
+        }
     </script>
 
     <div class="login-wrapper" id="loginCard">
@@ -585,7 +624,7 @@
             <div class="login-content">
                 <h1 class="login-title">Welcome To<br>Dashboard Monitoring</h1>
                 <p class="login-subtitle">BPKP Perwakilan Provinsi Jawa Barat.<br>Terintegrasi, Real-time, Profesional.</p>
-                
+
                 <div class="feature-list">
                     <div class="feature-item"><i class="bi bi-check-circle-fill"></i> Secure</div>
                     <div class="feature-item"><i class="bi bi-lightning-charge-fill"></i> Fast</div>
@@ -593,7 +632,7 @@
                 </div>
             </div>
         </div>
-        
+
         <div class="login-form-container">
             <div class="brand-logo mx-auto">
                 <img src="{{ asset('logo-bpkp.webp') }}" alt="BPKP Logo" style="width: 100%; height: auto;">
@@ -615,7 +654,7 @@
 
             <form method="POST" action="{{ route('login') }}">
                 @csrf
-                
+
                 <div class="wave-group">
                     <input required type="text" name="nip" class="input" value="{{ old('nip') }}">
                     <span class="bar"></span>
@@ -627,7 +666,10 @@
                 </div>
 
                 <div class="wave-group">
-                    <input required type="password" name="password" class="input">
+                    <input required type="password" name="password" id="password" class="input">
+                    <button type="button" class="password-toggle" onclick="togglePasswordVisibility()">
+                        <i id="passwordIcon" class="bi bi-eye"></i>
+                    </button>
                     <span class="bar"></span>
                     <label class="label">
                         <span class="label-char" style="--index: 0">P</span>
@@ -663,7 +705,7 @@
                 </button>
 
             </form>
-            
+
             <div class="mt-4 text-center text-secondary small opacity-50" style="font-size: 11px;">
                 &copy; {{ date('Y') }} BPKP Jawa Barat.
             </div>

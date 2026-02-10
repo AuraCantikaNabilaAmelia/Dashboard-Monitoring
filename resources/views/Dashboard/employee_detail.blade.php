@@ -8,7 +8,7 @@
         <i data-lucide="arrow-left" class="w-4 h-4 group-hover:-translate-x-1 transition-transform"></i>
         <span>Kembali ke Monitoring Bulanan</span>
     </a>
-    
+
 <div class="glass dark:bg-white/10 bg-white p-8 rounded-3xl flex flex-col md:flex-row md:items-center justify-between gap-6 border border-blue-500/10 shadow-xl shadow-blue-500/5">
         <div class="flex items-center space-x-6">
             <div class="w-20 h-20 bg-blue-500/20 rounded-2xl flex items-center justify-center text-3xl font-black text-blue-500 border border-blue-500/30">
@@ -19,7 +19,7 @@
                 <p class="text-slate-500 font-mono font-bold tracking-tight bg-slate-100 dark:bg-white/5 px-2 py-1 rounded inline-block text-xs">NIP: {{ $employee->nip }}</p>
             </div>
         </div>
-        
+
         <div class="flex flex-col items-end">
             <span class="text-[10px] uppercase tracking-widest text-slate-400 font-black mb-1">Periode Terview</span>
             <div class="bg-blue-600/10 px-4 py-2 rounded-xl border border-blue-500/20">
