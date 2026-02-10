@@ -7,12 +7,10 @@
     <div class="glass dark:bg-slate-900/50 bg-white rounded-2xl p-6 mb-8 border border-slate-200/50 dark:border-white/5 shadow-xl shadow-slate-200/20 dark:shadow-black/20 relative z-[40] overflow-visible">
         <form action="/dashboard/monthly" method="GET" id="filterForm" class="space-y-6">
             <input type="hidden" name="bidwas" id="bidwas_input" value="{{ $idBidwas }}">
-            <input type="hidden" name="month" id="month_input" value="{{ $month }}">
-            <input type="hidden" name="year" id="year_input" value="{{ $year }}">
-            <input type="hidden" name="start_date" id="start_date_hidden" value="{{ $startDate }}">
-            <input type="hidden" name="end_date" id="end_date_hidden" value="{{ $endDate }}">
+            <input type="hidden" name="start_date" id="start_date_hidden" value="{{ $tanggalMulai }}">
+            <input type="hidden" name="end_date" id="end_date_hidden" value="{{ $tanggalSelesai }}">
 
-<div class="flex flex-col lg:flex-row gap-4 items-end">
+            <div class="flex flex-col lg:flex-row gap-4 items-end">
 
                 <div class="flex-1 min-w-0 w-full">
                     <label class="block text-[10px] uppercase tracking-widest text-slate-400 font-black mb-2 ml-1">Pencarian Pegawai</label>
@@ -20,14 +18,14 @@
                         <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                             <i data-lucide="search" class="w-4 h-4 text-slate-400 group-focus-within:text-blue-500 transition-colors"></i>
                         </div>
-                        <input type="text" name="search" value="{{ $search }}"
+                        <input type="text" name="search" value="{{ $kataKunci }}"
                                placeholder="Cari Nama Pegawai atau NIP..."
                                class="w-full h-12 pl-11 pr-4 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl text-sm text-slate-800 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-medium"
                                autocomplete="off">
                     </div>
                 </div>
 
-<div class="w-full lg:w-80">
+                <div class="w-full lg:w-80">
                     <label class="block text-[10px] uppercase tracking-widest text-slate-400 font-black mb-2 ml-1">Periode Penugasan</label>
                     <div class="relative group" id="date_range_container">
                         <div class="absolute inset-0 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl transition-all group-hover:border-blue-500/50 group-hover:bg-blue-50/5 dark:group-hover:bg-blue-500/10"></div>
@@ -36,23 +34,23 @@
 
                             <div class="flex-1 flex items-center gap-3 pl-3 pr-2 border-r border-slate-200 dark:border-white/10 h-8">
                                 <i data-lucide="calendar" class="w-3.5 h-3.5 text-slate-400 group-hover:text-blue-500 transition-colors"></i>
-                                <span id="display_start_date" class="text-sm font-medium {{ $startDate ? 'text-slate-800 dark:text-white' : 'text-slate-400' }}">
-                                    {{ $startDate ? \Carbon\Carbon::parse($startDate)->format('d M Y') : 'Mulai' }}
+                                <span id="display_start_date" class="text-sm font-medium {{ $tanggalMulai ? 'text-slate-800 dark:text-white' : 'text-slate-400' }}">
+                                    {{ $tanggalMulai ? \Carbon\Carbon::parse($tanggalMulai)->format('d M Y') : 'Mulai' }}
                                 </span>
                             </div>
 
-<div class="px-2 text-slate-400">
+                            <div class="px-2 text-slate-400">
                                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
                             </div>
 
-<div class="flex-1 flex items-center gap-3 pl-2 pr-3 h-8">
+                            <div class="flex-1 flex items-center gap-3 pl-2 pr-3 h-8">
                                 <i data-lucide="calendar" class="w-3.5 h-3.5 text-slate-400 group-hover:text-blue-500 transition-colors"></i>
-                                <span id="display_end_date" class="text-sm font-medium {{ $endDate ? 'text-slate-800 dark:text-white' : 'text-slate-400' }}">
-                                    {{ $endDate ? \Carbon\Carbon::parse($endDate)->format('d M Y') : 'Selesai' }}
+                                <span id="display_end_date" class="text-sm font-medium {{ $tanggalSelesai ? 'text-slate-800 dark:text-white' : 'text-slate-400' }}">
+                                    {{ $tanggalSelesai ? \Carbon\Carbon::parse($tanggalSelesai)->format('d M Y') : 'Selesai' }}
                                 </span>
                             </div>
 
-<input type="text" id="date_range_picker"
+                            <input type="text" id="date_range_picker"
                                    class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
                                    placeholder="Select Date Range"
                                    readonly>
@@ -60,19 +58,19 @@
                     </div>
                 </div>
 
-<div class="w-full lg:w-48 relative z-[45]">
+                <div class="w-full lg:w-48 relative z-[45]">
                     <label class="block text-[10px] uppercase tracking-widest text-slate-400 font-black mb-2 ml-1">Bidang</label>
                     <div class="custom-dropdown-container w-full">
                         <div class="status-filter-dropdown dark:bg-white/5 bg-white h-12 border border-slate-200 dark:border-white/10 rounded-xl">
                             <input hidden="" class="sr-only" name="bidwas-dropdown" id="bidwas-dropdown" type="checkbox" />
                             <label for="bidwas-dropdown" class="status-filter-trigger h-full rounded-xl">
-                                <span class="text-blue-600 dark:text-blue-400 font-bold text-sm truncate">{{ $selectedBidwas ? $selectedBidwas->short_name : 'Semua Bidang' }}</span>
+                                <span class="text-blue-600 dark:text-blue-400 font-bold text-sm truncate">{{ $bidwasTerpilih ? $bidwasTerpilih->short_name : 'Semua Bidang' }}</span>
                             </label>
                             <ul class="status-filter-list rounded-xl border border-white/10 shadow-2xl backdrop-blur-xl" role="list">
                                 <li class="status-filter-listitem">
                                     <div onclick="applyFilter('bidwas', '')" class="status-filter-article {{ !$idBidwas ? 'active' : '' }}">Semua Bidang</div>
                                 </li>
-                                @foreach($bidwas as $b)
+                                @foreach($daftarBidwas as $b)
                                 <li class="status-filter-listitem">
                                     <div onclick="applyFilter('bidwas', '{{ $b->id_bidwas }}')" class="status-filter-article {{ $idBidwas == $b->id_bidwas ? 'active' : '' }}">{{ $b->short_name }}</div>
                                 </li>
@@ -82,12 +80,20 @@
                     </div>
                 </div>
 
-<div class="flex items-center gap-2 w-full lg:w-auto">
+                <div class="flex items-center gap-2 w-full lg:w-auto">
                     <button type="submit" class="flex-1 lg:flex-none h-12 px-6 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 text-white rounded-xl transition-all font-bold shadow-lg shadow-blue-500/25 flex items-center justify-center gap-2 group">
                         <i data-lucide="filter" class="w-4 h-4 group-hover:scale-110 transition-transform"></i>
                         <span class="text-sm">Filter</span>
                     </button>
-                    @if($search || $idBidwas || $startDate || $month != date('n') || $year != date('Y'))
+                    <div class="flex gap-2">
+                        <a href="{{ route('export.monthly.excel', request()->query()) }}" class="h-12 px-4 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 rounded-xl transition-all font-bold flex items-center gap-2 border border-emerald-500/20 group" title="Export Excel">
+                            <i data-lucide="file-spreadsheet" class="w-4 h-4 group-hover:scale-110 transition-transform"></i>
+                        </a>
+                        <a href="{{ route('export.monthly.pdf', request()->query()) }}" class="h-12 px-4 bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 rounded-xl transition-all font-bold flex items-center gap-2 border border-rose-500/20 group" title="Export PDF">
+                            <i data-lucide="file-text" class="w-4 h-4 group-hover:scale-110 transition-transform"></i>
+                        </a>
+                    </div>
+                    @if($kataKunci || $idBidwas || $tanggalMulai)
                         <a href="/dashboard/monthly" class="h-12 w-12 bg-red-50 dark:bg-red-500/10 hover:bg-red-100 dark:hover:bg-red-500/20 text-red-500 rounded-xl transition-all flex items-center justify-center border border-red-200 dark:border-red-500/20 group" title="Reset Filter">
                             <i data-lucide="x" class="w-4 h-4 group-hover:rotate-90 transition-transform"></i>
                         </a>
@@ -97,24 +103,24 @@
         </form>
     </div>
 
-<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-        @forelse($stats as $stat)
-        <a href="{{ route('employee.detail', ['nip' => $stat->nip, 'month' => $month, 'year' => $year, 'start_date' => $startDate, 'end_date' => $endDate]) }}"
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+        @forelse($statistikPegawai as $dataStatistik)
+        <a href="{{ route('employee.detail', ['nip' => $dataStatistik->nip, 'start_date' => $tanggalMulai, 'end_date' => $tanggalSelesai, 'bidwas' => $idBidwas]) }}"
            class="glass dark:bg-slate-900/40 bg-white p-6 rounded-[2rem] border border-slate-200/50 dark:border-white/5 hover:border-blue-500/30 hover:shadow-2xl hover:shadow-blue-500/10 transition-all group relative overflow-hidden flex items-center justify-between">
 
-<div class="absolute -right-6 -bottom-6 w-24 h-24 bg-blue-500/5 blur-3xl group-hover:bg-blue-500/20 transition-all duration-700"></div>
+            <div class="absolute -right-6 -bottom-6 w-24 h-24 bg-blue-500/5 blur-3xl group-hover:bg-blue-500/20 transition-all duration-700"></div>
 
             <div class="flex items-center gap-5 relative z-10">
                 <div class="w-16 h-16 bg-gradient-to-br from-blue-500/20 to-indigo-500/10 dark:from-blue-500/10 dark:to-indigo-500/5 rounded-[1.25rem] border border-blue-500/20 shadow-inner flex items-center justify-center text-2xl font-black text-blue-600 dark:text-blue-400 group-hover:rotate-6 transition-transform">
-                    {{ substr($stat->nama, 0, 1) }}
+                    {{ substr($dataStatistik->nama, 0, 1) }}
                 </div>
                 <div>
-                    <h4 class="text-base font-black text-slate-800 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors line-clamp-1 pr-4" title="{{ $stat->nama }}">
-                        {{ $stat->nama }}
+                    <h4 class="text-base font-black text-slate-800 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors line-clamp-1 pr-4" title="{{ $dataStatistik->nama }}">
+                        {{ $dataStatistik->nama }}
                     </h4>
                     <div class="flex items-center space-x-2 mt-1.5">
                         <span class="text-[9px] uppercase tracking-widest font-black bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 px-2.5 py-1 rounded-lg border border-blue-100 dark:border-blue-500/10">
-                            {{ $stat->total }} Penugasan
+                            {{ $dataStatistik->total }} Penugasan
                         </span>
                     </div>
                 </div>
@@ -124,12 +130,12 @@
                 <svg class="w-full h-full -rotate-90 transform" viewBox="0 0 36 36">
                     <circle cx="18" cy="18" r="16" fill="none" class="stroke-slate-100 dark:stroke-white/5" stroke-width="4"></circle>
                     <circle cx="18" cy="18" r="16" fill="none" class="stroke-blue-500" stroke-width="4"
-                            stroke-dasharray="{{ min(($stat->total / 10) * 100, 100) }} 100"
+                            stroke-dasharray="{{ min(($dataStatistik->total / 10) * 100, 100) }} 100"
                             stroke-linecap="round"
                             style="transition: stroke-dasharray 2s cubic-bezier(0.4, 0, 0.2, 1);"></circle>
                 </svg>
                 <div class="absolute inset-0 flex flex-col items-center justify-center">
-                    <span class="text-sm font-black text-slate-800 dark:text-slate-200">{{ $stat->total }}</span>
+                    <span class="text-sm font-black text-slate-800 dark:text-slate-200">{{ $dataStatistik->total }}</span>
                 </div>
             </div>
         </a>
@@ -255,7 +261,7 @@
         box-shadow: none !important;
     }
 
-.flatpickr-day.flatpickr-disabled,
+    .flatpickr-day.flatpickr-disabled,
     .flatpickr-day.prevMonthDay,
     .flatpickr-day.nextMonthDay {
         color: #94a3b8 !important;
@@ -268,7 +274,7 @@
         font-weight: 700 !important;
     }
 
-.dark .flatpickr-weekday {
+    .dark .flatpickr-weekday {
         color: rgba(255, 255, 255, 0.9) !important;
     }
 </style>
@@ -281,7 +287,7 @@
             prevArrow: '<svg class="shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"></path></svg>',
             nextArrow: '<svg class="shrink-0 size-4" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"></path></svg>',
             locale: { rangeSeparator: " → " },
-            defaultDate: [ "{{ $startDate }}" || null, "{{ $endDate }}" || null ],
+            defaultDate: [ "{{ $tanggalMulai }}" || null, "{{ $tanggalSelesai }}" || null ],
             onChange: function(selectedDates, dateStr) {
                 if (selectedDates.length === 2) {
                     const startDate = selectedDates[0];

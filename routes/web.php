@@ -24,4 +24,18 @@ Route::prefix('dashboard')
         Route::get('/tindaklanjut/{id}', 'App\Http\Controllers\TindakLanjutController@show')->name('tindaklanjut.show');
         Route::post('/tindaklanjut/{id}/entry', 'App\Http\Controllers\TindakLanjutController@addEntry')->name('tindaklanjut.addEntry');
         Route::delete('/tindaklanjut/entry/{id}', 'App\Http\Controllers\TindakLanjutController@deleteEntry')->name('tindaklanjut.deleteEntry');
+
+        // Export Routes
+        Route::get('/export/st/excel', 'App\Http\Controllers\DashboardController@exportStExcel')->name('export.st.excel');
+        Route::get('/export/st/pdf', 'App\Http\Controllers\DashboardController@exportStPdf')->name('export.st.pdf');
+        Route::get('/export/lhp/excel', 'App\Http\Controllers\DashboardController@exportLhpExcel')->name('export.lhp.excel');
+        Route::get('/export/lhp/pdf', 'App\Http\Controllers\DashboardController@exportLhpPdf')->name('export.lhp.pdf');
+        Route::get('/export/bidwas/excel', 'App\Http\Controllers\DashboardController@exportBidwasExcel')->name('export.bidwas.excel');
+        Route::get('/export/bidwas/pdf', 'App\Http\Controllers\DashboardController@exportBidwasPdf')->name('export.bidwas.pdf');
+        Route::get('/export/daily/excel', 'App\Http\Controllers\DashboardController@exportDailyExcel')->name('export.daily.excel');
+        Route::get('/export/daily/pdf', 'App\Http\Controllers\DashboardController@exportDailyPdf')->name('export.daily.pdf');
+        Route::get('/export/monthly/excel', 'App\Http\Controllers\DashboardController@exportMonthlyExcel')->name('export.monthly.excel');
+        Route::get('/export/monthly/pdf', 'App\Http\Controllers\DashboardController@exportMonthlyPdf')->name('export.monthly.pdf');
+        Route::get('/export/bidwas-detail/{id}/excel', 'App\Http\Controllers\DashboardController@exportBidwasDetailExcel')->name('export.bidwas_detail.excel');
+        Route::get('/export/bidwas-detail/{id}/pdf', 'App\Http\Controllers\DashboardController@exportBidwasDetailPdf')->name('export.bidwas_detail.pdf');
     });

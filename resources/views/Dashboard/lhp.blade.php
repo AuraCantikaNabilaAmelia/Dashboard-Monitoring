@@ -6,9 +6,9 @@
 
     <div class="glass dark:bg-slate-900/50 bg-white rounded-2xl p-6 mb-8 border border-slate-200/50 dark:border-white/5 shadow-xl shadow-slate-200/20 dark:shadow-black/20 relative z-[40] overflow-visible">
         <form action="/dashboard/lhp" method="GET" id="filterForm">
-            <input type="hidden" name="status" id="status_input" value="{{ $status }}">
-            <input type="hidden" name="start_date" id="start_date_hidden" value="{{ $startDate }}">
-            <input type="hidden" name="end_date" id="end_date_hidden" value="{{ $endDate }}">
+            <input type="hidden" name="status" id="status_input" value="{{ $statusTerpilih }}">
+            <input type="hidden" name="start_date" id="start_date_hidden" value="{{ $tanggalMulai }}">
+            <input type="hidden" name="end_date" id="end_date_hidden" value="{{ $tanggalSelesai }}">
 
             <div class="flex flex-col lg:flex-row gap-4 items-end">
 
@@ -18,14 +18,14 @@
                         <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                             <i data-lucide="search" class="w-4 h-4 text-slate-400 group-focus-within:text-blue-500 transition-colors"></i>
                         </div>
-                        <input type="text" name="search" value="{{ $search }}"
+                        <input type="text" name="search" value="{{ $kataKunci }}"
                                placeholder="Cari nomor LHP atau nama penugasan..."
                                class="w-full h-12 pl-11 pr-4 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl text-sm text-slate-800 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-medium"
                                autocomplete="off">
                     </div>
                 </div>
 
-<div class="w-full lg:w-80">
+                <div class="w-full lg:w-80">
                     <label class="block text-[10px] uppercase tracking-widest text-slate-400 font-black mb-2 ml-1">Periode LHP</label>
                     <div class="relative group" id="date_range_container">
                         <div class="absolute inset-0 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl transition-all group-hover:border-blue-500/50 group-hover:bg-blue-50/5 dark:group-hover:bg-blue-500/10"></div>
@@ -34,8 +34,8 @@
 
                             <div class="flex-1 flex items-center gap-3 pl-3 pr-2 border-r border-slate-200 dark:border-white/10 h-8">
                                 <i data-lucide="calendar" class="w-3.5 h-3.5 text-slate-400 group-hover:text-blue-500 transition-colors"></i>
-                                <span id="display_start_date" class="text-sm font-medium {{ $startDate ? 'text-slate-800 dark:text-white' : 'text-slate-400' }}">
-                                    {{ $startDate ? \Carbon\Carbon::parse($startDate)->format('d M Y') : 'Mulai' }}
+                                <span id="display_start_date" class="text-sm font-medium {{ $tanggalMulai ? 'text-slate-800 dark:text-white' : 'text-slate-400' }}">
+                                    {{ $tanggalMulai ? \Carbon\Carbon::parse($tanggalMulai)->format('d M Y') : 'Mulai' }}
                                 </span>
                             </div>
 
@@ -45,8 +45,8 @@
 
                             <div class="flex-1 flex items-center gap-3 pl-2 pr-3 h-8">
                                 <i data-lucide="calendar" class="w-3.5 h-3.5 text-slate-400 group-hover:text-blue-500 transition-colors"></i>
-                                <span id="display_end_date" class="text-sm font-medium {{ $endDate ? 'text-slate-800 dark:text-white' : 'text-slate-400' }}">
-                                    {{ $endDate ? \Carbon\Carbon::parse($endDate)->format('d M Y') : 'Selesai' }}
+                                <span id="display_end_date" class="text-sm font-medium {{ $tanggalSelesai ? 'text-slate-800 dark:text-white' : 'text-slate-400' }}">
+                                    {{ $tanggalSelesai ? \Carbon\Carbon::parse($tanggalSelesai)->format('d M Y') : 'Selesai' }}
                                 </span>
                             </div>
 
@@ -64,16 +64,16 @@
                         <div class="status-filter-dropdown dark:bg-white/5 bg-white h-12 border border-slate-200 dark:border-white/10 rounded-xl">
                             <input hidden="" class="sr-only" name="state-dropdown" id="state-dropdown" type="checkbox" />
                             <label aria-label="dropdown scrollbar" for="state-dropdown" class="status-filter-trigger h-full rounded-xl">
-                                <span class="text-blue-600 dark:text-blue-400 font-bold text-sm truncate">{{ $status ?: 'Semua Status' }}</span>
+                                <span class="text-blue-600 dark:text-blue-400 font-bold text-sm truncate">{{ $statusTerpilih ?: 'Semua Status' }}</span>
                             </label>
 
                             <ul class="status-filter-list rounded-xl border border-white/10 shadow-2xl backdrop-blur-xl" role="list">
                                 <li class="status-filter-listitem">
-                                    <div onclick="applyStatus('')" class="status-filter-article {{ !$status ? 'active' : '' }}">Semua Status</div>
+                                    <div onclick="applyStatus('')" class="status-filter-article {{ !$statusTerpilih ? 'active' : '' }}">Semua Status</div>
                                 </li>
-                                @foreach($statuses as $s)
+                                @foreach($daftarStatus as $s)
                                 <li class="status-filter-listitem">
-                                    <div onclick="applyStatus('{{ $s }}')" class="status-filter-article {{ $status == $s ? 'active' : '' }}">{{ $s }}</div>
+                                    <div onclick="applyStatus('{{ $s }}')" class="status-filter-article {{ $statusTerpilih == $s ? 'active' : '' }}">{{ $s }}</div>
                                 </li>
                                 @endforeach
                             </ul>
@@ -81,12 +81,24 @@
                     </div>
                 </div>
 
-<div class="flex items-end gap-2">
+                <div class="flex items-end gap-2 flex-wrap">
                     <button type="submit" class="h-12 px-6 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 text-white rounded-xl transition-all font-bold shadow-lg shadow-blue-500/25 flex items-center justify-center gap-2 group">
                         <i data-lucide="filter" class="w-4 h-4 group-hover:scale-110 transition-transform"></i>
                         <span class="text-sm">Filter</span>
                     </button>
-                    @if($search || $status || $startDate || $endDate)
+
+                    <div class="flex items-center gap-2">
+                        <a href="{{ route('export.lhp.excel', request()->query()) }}" class="h-12 px-5 bg-emerald-50 dark:bg-emerald-500/10 hover:bg-emerald-100 dark:hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 rounded-xl transition-all flex items-center justify-center border border-emerald-200 dark:border-emerald-500/20 group gap-2" title="Export Excel">
+                            <i data-lucide="file-spreadsheet" class="w-4 h-4 group-hover:scale-110 transition-transform"></i>
+                            <span class="text-xs font-bold">Excel</span>
+                        </a>
+                        <a href="{{ route('export.lhp.pdf', request()->query()) }}" class="h-12 px-5 bg-rose-50 dark:bg-rose-500/10 hover:bg-rose-100 dark:hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 rounded-xl transition-all flex items-center justify-center border border-rose-200 dark:border-rose-500/20 group gap-2" title="Export PDF">
+                            <i data-lucide="file-text" class="w-4 h-4 group-hover:scale-110 transition-transform"></i>
+                            <span class="text-xs font-bold">PDF</span>
+                        </a>
+                    </div>
+
+                    @if($kataKunci || $statusTerpilih || $tanggalMulai || $tanggalSelesai)
                         <a href="/dashboard/lhp" class="h-12 w-12 bg-red-50 dark:bg-red-500/10 hover:bg-red-100 dark:hover:bg-red-500/20 text-red-500 rounded-xl transition-all flex items-center justify-center border border-red-200 dark:border-red-500/20 group" title="Reset Filter">
                             <i data-lucide="x" class="w-4 h-4 group-hover:scale-110 transition-transform"></i>
                         </a>
@@ -96,17 +108,17 @@
         </form>
     </div>
 
-<div class="flex flex-wrap gap-3 mb-6">
+    <div class="flex flex-wrap gap-3 mb-6">
         <div class="glass dark:bg-blue-500/10 bg-blue-50 border border-blue-200/50 dark:border-blue-500/20 rounded-xl px-4 py-2.5 flex items-center gap-3">
             <div class="w-8 h-8 bg-blue-500/20 rounded-lg flex items-center justify-center">
                 <i data-lucide="clipboard-check" class="w-4 h-4 text-blue-500"></i>
             </div>
             <div>
                 <div class="text-[10px] uppercase tracking-widest text-blue-500 font-black">Total LHP</div>
-                <div class="text-lg font-black text-blue-600 dark:text-blue-400">{{ $lhpList->total() }}</div>
+                <div class="text-lg font-black text-blue-600 dark:text-blue-400">{{ $daftarLhp->total() }}</div>
             </div>
         </div>
-        @if($search || $status || $startDate || $endDate)
+        @if($kataKunci || $statusTerpilih || $tanggalMulai || $tanggalSelesai)
         <div class="glass dark:bg-amber-500/10 bg-amber-50 border border-amber-200/50 dark:border-amber-500/20 rounded-xl px-4 py-2.5 flex items-center gap-3">
             <div class="w-8 h-8 bg-amber-500/20 rounded-lg flex items-center justify-center">
                 <i data-lucide="filter" class="w-4 h-4 text-amber-500"></i>
@@ -114,14 +126,14 @@
             <div>
                 <div class="text-[10px] uppercase tracking-widest text-amber-500 font-black">Filter Aktif</div>
                 <div class="text-sm font-bold text-amber-600 dark:text-amber-400">
-                    {{ collect([$search ? 'Pencarian' : null, $status ?: null, ($startDate && $endDate) ? 'Periode' : null])->filter()->implode(', ') }}
+                    {{ collect([$kataKunci ? 'Pencarian' : null, $statusTerpilih ?: null, ($tanggalMulai && $tanggalSelesai) ? 'Periode' : null])->filter()->implode(', ') }}
                 </div>
             </div>
         </div>
         @endif
     </div>
 
-<div class="glass dark:bg-slate-900/30 bg-white rounded-2xl overflow-hidden shadow-xl shadow-slate-200/20 dark:shadow-black/20 border border-slate-200/50 dark:border-white/5">
+    <div class="glass dark:bg-slate-900/30 bg-white rounded-2xl overflow-hidden shadow-xl shadow-slate-200/20 dark:shadow-black/20 border border-slate-200/50 dark:border-white/5">
         <div class="overflow-x-auto">
             <table class="w-full text-left">
                 <thead>
@@ -148,23 +160,23 @@
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100 dark:divide-white/5">
-                    @forelse($lhpList as $index => $lhp)
+                    @forelse($daftarLhp as $indeks => $dataLhp)
                     <tr class="hover:bg-blue-50/50 dark:hover:bg-white/[0.02] transition-all group">
                         <td class="px-6 py-5">
                             <div class="flex items-center gap-3">
                                 <div class="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center text-white text-xs font-bold shadow-sm">
-                                    {{ $lhpList->firstItem() + $index }}
+                                    {{ $daftarLhp->firstItem() + $indeks }}
                                 </div>
-                                <span class="text-sm font-bold text-blue-600 dark:text-blue-400 font-mono tracking-tight">{{ $lhp->nomor_lhp ?? '-' }}</span>
+                                <span class="text-sm font-bold text-blue-600 dark:text-blue-400 font-mono tracking-tight">{{ $dataLhp->nomor_lhp ?? '-' }}</span>
                             </div>
                         </td>
                         <td class="px-6 py-5">
                             <div class="max-w-md">
-                                <a href="{{ route('st.detail', $lhp->st_id) }}" class="group/link">
-                                    <p class="text-sm font-bold text-slate-800 dark:text-slate-200 line-clamp-1 group-hover/link:text-blue-600 transition-colors" title="{{ $lhp->nama_penugasan }}">
-                                        {{ $lhp->nama_penugasan }}
+                                <a href="{{ route('st.detail', $dataLhp->st_id) }}" class="group/link">
+                                    <p class="text-sm font-bold text-slate-800 dark:text-slate-200 line-clamp-1 group-hover/link:text-blue-600 transition-colors" title="{{ $dataLhp->nama_penugasan }}">
+                                        {{ $dataLhp->nama_penugasan }}
                                     </p>
-                                    <span class="text-[10px] font-mono font-bold text-slate-400 group-hover/link:text-blue-400/70 transition-colors">{{ $lhp->no_surat_tugas ?? '-' }}</span>
+                                    <span class="text-[10px] font-mono font-bold text-slate-400 group-hover/link:text-blue-400/70 transition-colors">{{ $dataLhp->no_surat_tugas ?? '-' }}</span>
                                 </a>
                             </div>
                         </td>
@@ -172,14 +184,14 @@
                             <div class="inline-flex items-center gap-2 bg-slate-100 dark:bg-white/5 px-3 py-1.5 rounded-lg">
                                 <i data-lucide="calendar-check" class="w-3 h-3 text-slate-400"></i>
                                 <span class="text-xs font-bold text-slate-600 dark:text-slate-400 whitespace-nowrap">
-                                    {{ \Carbon\Carbon::parse($lhp->tanggal_lhp)->format('d M Y') }}
+                                    {{ \Carbon\Carbon::parse($dataLhp->tanggal_lhp)->format('d M Y') }}
                                 </span>
                             </div>
                         </td>
                         <td class="px-6 py-5 text-center">
                             <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400">
                                 <i data-lucide="check-circle" class="w-3 h-3"></i>
-                                {{ $lhp->status_lhp ?: 'Terbit' }}
+                                {{ $dataLhp->status_lhp ?: 'Terbit' }}
                             </span>
                         </td>
                     </tr>
@@ -200,29 +212,29 @@
             </table>
         </div>
 
-        @if($lhpList->hasPages())
+        @if($daftarLhp->hasPages())
         <div class="px-6 py-4 border-t border-slate-100 dark:border-white/5 bg-slate-50/50 dark:bg-white/[0.02]">
             <div class="flex items-center justify-between">
                 <div class="text-sm text-slate-500 dark:text-slate-400">
-                    Menampilkan <span class="font-bold text-slate-700 dark:text-slate-300">{{ $lhpList->firstItem() }}</span> - <span class="font-bold text-slate-700 dark:text-slate-300">{{ $lhpList->lastItem() }}</span> dari <span class="font-bold text-slate-700 dark:text-slate-300">{{ $lhpList->total() }}</span> data
+                    Menampilkan <span class="font-bold text-slate-700 dark:text-slate-300">{{ $daftarLhp->firstItem() }}</span> - <span class="font-bold text-slate-700 dark:text-slate-300">{{ $daftarLhp->lastItem() }}</span> dari <span class="font-bold text-slate-700 dark:text-slate-300">{{ $daftarLhp->total() }}</span> data
                 </div>
                 <div class="flex gap-1">
-                    @if($lhpList->onFirstPage())
+                    @if($daftarLhp->onFirstPage())
                         <span class="px-4 py-2 rounded-lg bg-slate-100 dark:bg-white/5 text-slate-400 cursor-not-allowed text-sm font-medium">Prev</span>
                     @else
-                        <a href="{{ $lhpList->appends(request()->query())->previousPageUrl() }}" class="px-4 py-2 rounded-lg bg-white dark:bg-white/10 border border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-300 hover:bg-blue-50 dark:hover:bg-blue-500/10 hover:border-blue-300 dark:hover:border-blue-500/30 hover:text-blue-600 transition-all text-sm font-medium">Prev</a>
+                        <a href="{{ $daftarLhp->appends(request()->query())->previousPageUrl() }}" class="px-4 py-2 rounded-lg bg-white dark:bg-white/10 border border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-300 hover:bg-blue-50 dark:hover:bg-blue-500/10 hover:border-blue-300 dark:hover:border-blue-500/30 hover:text-blue-600 transition-all text-sm font-medium">Prev</a>
                     @endif
 
-                    @foreach ($lhpList->appends(request()->query())->getUrlRange(max(1, $lhpList->currentPage() - 2), min($lhpList->lastPage(), $lhpList->currentPage() + 2)) as $page => $url)
-                        @if ($page == $lhpList->currentPage())
+                    @foreach ($daftarLhp->appends(request()->query())->getUrlRange(max(1, $daftarLhp->currentPage() - 2), min($daftarLhp->lastPage(), $daftarLhp->currentPage() + 2)) as $page => $url)
+                        @if ($page == $daftarLhp->currentPage())
                             <span class="px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-bold shadow-sm">{{ $page }}</span>
                         @else
                             <a href="{{ $url }}" class="px-4 py-2 rounded-lg bg-white dark:bg-white/10 border border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-300 hover:bg-blue-50 dark:hover:bg-blue-500/10 hover:border-blue-300 dark:hover:border-blue-500/30 hover:text-blue-600 transition-all text-sm font-medium">{{ $page }}</a>
                         @endif
                     @endforeach
 
-                    @if($lhpList->hasMorePages())
-                        <a href="{{ $lhpList->appends(request()->query())->nextPageUrl() }}" class="px-4 py-2 rounded-lg bg-white dark:bg-white/10 border border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-300 hover:bg-blue-50 dark:hover:bg-blue-500/10 hover:border-blue-300 dark:hover:border-blue-500/30 hover:text-blue-600 transition-all text-sm font-medium">Next</a>
+                    @if($daftarLhp->hasMorePages())
+                        <a href="{{ $daftarLhp->appends(request()->query())->nextPageUrl() }}" class="px-4 py-2 rounded-lg bg-white dark:bg-white/10 border border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-300 hover:bg-blue-50 dark:hover:bg-blue-500/10 hover:border-blue-300 dark:hover:border-blue-500/30 hover:text-blue-600 transition-all text-sm font-medium">Next</a>
                     @else
                         <span class="px-4 py-2 rounded-lg bg-slate-100 dark:bg-white/5 text-slate-400 cursor-not-allowed text-sm font-medium">Next</span>
                     @endif
@@ -241,7 +253,6 @@
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 
 <style>
-
     .flatpickr-calendar {
         background: rgba(15, 23, 42, 0.98) !important;
         backdrop-filter: blur(20px);
@@ -343,7 +354,7 @@
         box-shadow: none !important;
     }
 
-.flatpickr-day.flatpickr-disabled,
+    .flatpickr-day.flatpickr-disabled,
     .flatpickr-day.prevMonthDay,
     .flatpickr-day.nextMonthDay {
         color: #94a3b8 !important;
@@ -356,7 +367,7 @@
         font-weight: 700 !important;
     }
 
-.dark .flatpickr-weekday {
+    .dark .flatpickr-weekday {
         color: rgba(255, 255, 255, 0.9) !important;
     }
 </style>
@@ -369,7 +380,7 @@
             prevArrow: '<svg class="shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"></path></svg>',
             nextArrow: '<svg class="shrink-0 size-4" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"></path></svg>',
             locale: { rangeSeparator: " → " },
-            defaultDate: [ "{{ $startDate }}" || null, "{{ $endDate }}" || null ],
+            defaultDate: [ "{{ $tanggalMulai }}" || null, "{{ $tanggalSelesai }}" || null ],
             onChange: function(selectedDates, dateStr) {
                 if (selectedDates.length === 2) {
                     const startDate = selectedDates[0];
@@ -429,3 +440,4 @@
     });
 </script>
 @endpush
+

@@ -4,7 +4,7 @@
 
 @section('content')
 <div class="mb-8">
-    <a href="{{ route('dashboard.monthly', ['month' => $month, 'year' => $year, 'start_date' => $startDate, 'end_date' => $endDate]) }}" class="inline-flex items-center space-x-2 text-slate-500 hover:text-blue-600 transition-colors font-bold text-sm mb-4 group">
+    <a href="{{ route('dashboard.monthly', ['month' => $bulanTerpilih, 'year' => $tahunTerpilih, 'start_date' => $tanggalMulai, 'end_date' => $tanggalSelesai, 'bidwas' => $idBidwas]) }}" class="inline-flex items-center space-x-2 text-slate-500 hover:text-blue-600 transition-colors font-bold text-sm mb-4 group">
         <i data-lucide="arrow-left" class="w-4 h-4 group-hover:-translate-x-1 transition-transform"></i>
         <span>Kembali ke Monitoring Bulanan</span>
     </a>
@@ -12,25 +12,38 @@
 <div class="glass dark:bg-white/10 bg-white p-8 rounded-3xl flex flex-col md:flex-row md:items-center justify-between gap-6 border border-blue-500/10 shadow-xl shadow-blue-500/5">
         <div class="flex items-center space-x-6">
             <div class="w-20 h-20 bg-blue-500/20 rounded-2xl flex items-center justify-center text-3xl font-black text-blue-500 border border-blue-500/30">
-                {{ substr($employee->nama, 0, 1) }}
+                {{ substr($dataPegawai->nama, 0, 1) }}
             </div>
             <div>
-                <h1 class="text-3xl font-black text-slate-900 dark:text-white mb-1 tracking-tight">{{ $employee->nama }}</h1>
-                <p class="text-slate-500 font-mono font-bold tracking-tight bg-slate-100 dark:bg-white/5 px-2 py-1 rounded inline-block text-xs">NIP: {{ $employee->nip }}</p>
+                <h1 class="text-3xl font-black text-slate-900 dark:text-white mb-1 tracking-tight">{{ $dataPegawai->nama }}</h1>
+                <p class="text-slate-500 font-mono font-bold tracking-tight bg-slate-100 dark:bg-white/5 px-2 py-1 rounded inline-block text-xs">NIP: {{ $dataPegawai->nip }}</p>
             </div>
         </div>
 
-        <div class="flex flex-col items-end">
-            <span class="text-[10px] uppercase tracking-widest text-slate-400 font-black mb-1">Periode Terview</span>
-            <div class="bg-blue-600/10 px-4 py-2 rounded-xl border border-blue-500/20">
-                <span class="text-blue-500 font-black">
-                    @if($startDate && $endDate)
-                        {{ \Carbon\Carbon::parse($startDate)->format('d M Y') }} - {{ \Carbon\Carbon::parse($endDate)->format('d M Y') }}
-                    @else
-                        {{ \Carbon\Carbon::create(null, $month)->format('F') }} {{ $year }}
-                    @endif
-                </span>
+        <div class="flex flex-col items-end gap-2">
+            <div>
+                <span class="text-[10px] uppercase tracking-widest text-slate-400 font-black mb-1 block text-right">Periode Terview</span>
+                <div class="bg-blue-600/10 px-4 py-2 rounded-xl border border-blue-500/20">
+                    <span class="text-blue-500 font-black">
+                        @if($tanggalMulai && $tanggalSelesai)
+                            {{ \Carbon\Carbon::parse($tanggalMulai)->format('d M Y') }} - {{ \Carbon\Carbon::parse($tanggalSelesai)->format('d M Y') }}
+                        @else
+                            {{ \Carbon\Carbon::create($tahunTerpilih, $bulanTerpilih, 1)->format('F') }} {{ $tahunTerpilih }}
+                        @endif
+                    </span>
+                </div>
             </div>
+            
+            @if($idBidwas)
+            <div>
+                <span class="text-[10px] uppercase tracking-widest text-slate-400 font-black mb-1 block text-right">Filter Unit</span>
+                <div class="bg-emerald-600/10 px-4 py-2 rounded-xl border border-emerald-500/20">
+                    <span class="text-emerald-600 dark:text-emerald-400 font-black text-xs">
+                        Terfilter per Bidang
+                    </span>
+                </div>
+            </div>
+            @endif
         </div>
     </div>
 </div>
@@ -41,7 +54,7 @@
             <div class="p-2 bg-blue-500/20 rounded-lg text-blue-500">
                 <i data-lucide="clipboard-list" class="w-5 h-5"></i>
             </div>
-            <span>Daftar Penugasan ({{ count($assignments) }})</span>
+            <span>Daftar Penugasan ({{ count($daftarPenugasan) }})</span>
         </h3>
     </div>
     <div class="overflow-x-auto">
@@ -56,7 +69,7 @@
                 </tr>
             </thead>
             <tbody class="divide-y divide-slate-100 dark:divide-white/5">
-                @forelse($assignments as $st)
+                @forelse($daftarPenugasan as $st)
                 <tr class="group hover:bg-slate-50 dark:hover:bg-white/5 transition-all">
                     <td class="px-8 py-5">
                         <p class="font-bold text-slate-800 dark:text-slate-200 group-hover:text-blue-600 transition-colors truncate" title="{{ $st->nama_penugasan }}">{{ $st->nama_penugasan }}</p>

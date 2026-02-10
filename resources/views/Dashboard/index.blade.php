@@ -25,19 +25,19 @@
                 Top 5 Pegawai Tersibuk
             </h3>
             <div class="space-y-3">
-                @forelse($topBusyEmployees as $index => $emp)
+                @forelse($pegawaiPalingSibuk as $indeks => $dataPegawai)
                 <div class="flex items-center justify-between p-3 bg-slate-50 dark:bg-white/5 rounded-xl border border-slate-100 dark:border-white/5 hover:bg-slate-100 dark:hover:bg-white/10 transition-colors">
                     <div class="flex items-center gap-3">
                         <div class="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-500/20 flex items-center justify-center text-blue-600 dark:text-blue-400 font-bold text-sm">
-                            {{ $index + 1 }}
+                            {{ $indeks + 1 }}
                         </div>
                         <div>
-                            <p class="font-bold text-slate-800 dark:text-slate-200 text-sm">{{ $emp->nama }}</p>
-                            <p class="text-xs text-slate-500">{{ $emp->nip }}</p>
+                            <p class="font-bold text-slate-800 dark:text-slate-200 text-sm">{{ $dataPegawai->nama }}</p>
+                            <p class="text-xs text-slate-500">{{ $dataPegawai->nip }}</p>
                         </div>
                     </div>
                     <div class="px-3 py-1 bg-blue-500 text-white text-xs font-bold rounded-full">
-                        {{ $emp->active_tasks }} ST
+                        {{ $dataPegawai->active_tasks }} ST
                     </div>
                 </div>
                 @empty
@@ -49,18 +49,18 @@
         <div class="glass p-6 rounded-3xl border-l-4 border-emerald-500">
             <h3 class="text-lg font-bold mb-4 flex items-center gap-2">
                 <i data-lucide="user-check" class="w-5 h-5 text-emerald-500"></i>
-                Pegawai Tersedia ({{ count($leastBusyEmployees) }})
+                Pegawai Tersedia ({{ count($pegawaiTersedia) }})
             </h3>
             <div class="space-y-3 max-h-[280px] overflow-y-auto pr-2">
-                @forelse($leastBusyEmployees as $emp)
+                @forelse($pegawaiTersedia as $dataPegawai)
                 <div class="flex items-center justify-between p-3 bg-emerald-50 dark:bg-emerald-500/10 rounded-xl border border-emerald-100 dark:border-emerald-500/20 hover:bg-emerald-100 dark:hover:bg-emerald-500/20 transition-colors">
                     <div class="flex items-center gap-3">
                         <div class="w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-500/20 flex items-center justify-center text-emerald-600 dark:text-emerald-400 font-bold text-sm">
                             <i data-lucide="check" class="w-4 h-4"></i>
                         </div>
                         <div>
-                            <p class="font-bold text-slate-800 dark:text-slate-200 text-sm">{{ $emp->nama }}</p>
-                            <p class="text-xs text-slate-500">{{ $emp->nip }}</p>
+                            <p class="font-bold text-slate-800 dark:text-slate-200 text-sm">{{ $dataPegawai->nama }}</p>
+                            <p class="text-xs text-slate-500">{{ $dataPegawai->nip }}</p>
                         </div>
                     </div>
                     <span class="px-2 py-1 bg-emerald-500 text-white text-xs font-bold rounded-full">
@@ -84,22 +84,22 @@
                 Perhatian Khusus
             </h3>
              <div class="space-y-3 max-h-[280px] overflow-y-auto pr-2">
-                @forelse($unfinishedSTs as $st)
+                @forelse($daftarSuratTugasBelumSelesai as $suratTugas)
                 <div class="p-3 bg-red-50 dark:bg-red-500/10 rounded-xl border border-red-100 dark:border-red-500/20 hover:border-red-500/40 transition-all">
                     <div class="flex justify-between items-start mb-1">
-                        <p class="font-bold text-slate-800 dark:text-slate-200 text-sm line-clamp-1" title="{{ $st->nama_penugasan }}">
-                            {{ $st->nama_penugasan }}
+                        <p class="font-bold text-slate-800 dark:text-slate-200 text-sm line-clamp-1" title="{{ $suratTugas->nama_penugasan }}">
+                            {{ $suratTugas->nama_penugasan }}
                         </p>
                         <span class="text-xs font-bold text-red-500 bg-red-100 dark:bg-red-500/20 px-2 py-0.5 rounded flex-shrink-0 ml-2">
-                            Telat {{ \Carbon\Carbon::parse($st->end_date)->diffInDays(now()) }} Hari
+                            Telat {{ \Carbon\Carbon::parse($suratTugas->end_date)->diffInDays(now()) }} Hari
                         </span>
                     </div>
                     <div class="flex justify-between items-center mt-2">
                         <span class="text-xs text-slate-500 flex items-center gap-1">
                             <i data-lucide="calendar" class="w-3 h-3"></i>
-                            {{ \Carbon\Carbon::parse($st->end_date)->format('d M Y') }}
+                            {{ \Carbon\Carbon::parse($suratTugas->end_date)->format('d M Y') }}
                         </span>
-                        <a href="{{ route('st.detail', $st->id_st) }}" class="text-xs text-blue-500 hover:underline">Detail &rarr;</a>
+                        <a href="{{ route('st.detail', $suratTugas->id_st) }}" class="text-xs text-blue-500 hover:underline">Detail &rarr;</a>
                     </div>
                 </div>
                 @empty
@@ -111,9 +111,9 @@
                 </div>
                 @endforelse
 
-                @if($totalUnfinished > 5)
+                @if($totalBelumSelesai > 5)
                 <div class="text-center pt-2">
-                    <p class="text-sm text-slate-500">dan {{ $totalUnfinished - 5 }} lainnya yang perlu perhatian.</p>
+                    <p class="text-sm text-slate-500">dan {{ $totalBelumSelesai - 5 }} lainnya yang perlu perhatian.</p>
                 </div>
                 @endif
             </div>
@@ -131,7 +131,7 @@
             </div>
             <div>
                 <h3 class="text-slate-600 dark:text-slate-400 text-sm font-bold mb-1">ST Aktif Hari Ini</h3>
-                <p class="text-3xl font-black text-slate-900 dark:text-white">{{ $activeST }}</p>
+                <p class="text-3xl font-black text-slate-900 dark:text-white">{{ $totalSuratTugasAktif }}</p>
             </div>
         </div>
     </div>
@@ -293,16 +293,16 @@
         return mapping[name] || name;
     }
 
-    const bidwasLabelsFull = {!! json_encode($bidwasStats->pluck('nama')) !!}.map(shortenBidwasLabel);
-    const bidwasLabelsShort = {!! json_encode($bidwasStats->pluck('kode')) !!};
-    const bidwasData = {!! json_encode($bidwasStats->pluck('total')) !!};
+    const bidwasLabelsFull = {!! json_encode($statistikBidwas->pluck('nama')) !!}.map(shortenBidwasLabel);
+    const bidwasLabelsShort = {!! json_encode($statistikBidwas->pluck('kode')) !!};
+    const bidwasData = {!! json_encode($statistikBidwas->pluck('total')) !!};
 
-    const trendData = {!! json_encode(collect(range(1, 12))->map(function($m) use ($monthlyTrend) {
-        return $monthlyTrend->where('month', $m)->first()->total ?? 0;
+    const trendData = {!! json_encode(collect(range(1, 12))->map(function($m) use ($trendBulanan) {
+        return $trendBulanan->where('month', $m)->first()->total ?? 0;
     })) !!};
 
-    const statusLabels = {!! json_encode($statusDist->pluck('status_st')) !!};
-    const statusData = {!! json_encode($statusDist->pluck('total')) !!};
+    const statusLabels = {!! json_encode($distribusiStatus->pluck('status_st')) !!};
+    const statusData = {!! json_encode($distribusiStatus->pluck('total')) !!};
 
     document.addEventListener('DOMContentLoaded', function() {
         Chart.register(ChartDataLabels);

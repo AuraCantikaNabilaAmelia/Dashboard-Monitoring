@@ -14,18 +14,18 @@
     <div class="flex flex-col md:flex-row justify-between items-start mb-6 gap-4">
         <div>
             <span class="px-3 py-1 bg-blue-500/10 text-blue-600 dark:text-blue-400 text-[10px] font-black rounded-lg uppercase tracking-widest mb-2 inline-block border border-blue-500/10">Surat Tugas</span>
-            <h2 class="text-2xl md:text-3xl font-black text-slate-900 dark:text-white tracking-tight">{{ $st->nama_penugasan }}</h2>
-            <p class="text-slate-500 dark:text-slate-400 mt-1 font-mono text-xs font-bold">ID: #{{ $st->id_st }}</p>
+            <h2 class="text-2xl md:text-3xl font-black text-slate-900 dark:text-white tracking-tight">{{ $dataSuratTugas->nama_penugasan }}</h2>
+            <p class="text-slate-500 dark:text-slate-400 mt-1 font-mono text-xs font-bold">ID: #{{ $dataSuratTugas->id_st }}</p>
         </div>
         <div class="text-right">
             @php
-                $statusClass = match(strtolower($st->status_st)) {
+                $statusClass = match(strtolower($dataSuratTugas->status_st)) {
                     'batal' => 'bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/20',
                     'final', 'selesai' => 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20',
                     'tidak aktif' => 'bg-slate-500/10 text-slate-600 dark:text-slate-400 border-slate-500/20',
                     default => 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20'
                 };
-                $statusIcon = match(strtolower($st->status_st)) {
+                $statusIcon = match(strtolower($dataSuratTugas->status_st)) {
                     'batal' => 'x-circle',
                     'final', 'selesai' => 'check-circle',
                     'tidak aktif' => 'minus-circle',
@@ -34,7 +34,7 @@
             @endphp
             <span class="px-4 py-2 {{ $statusClass }} text-sm font-black rounded-xl border shadow-sm inline-flex items-center gap-2">
                 <i data-lucide="{{ $statusIcon }}" class="w-4 h-4"></i>
-                {{ $st->status_st }}
+                {{ $dataSuratTugas->status_st }}
             </span>
         </div>
     </div>
@@ -43,21 +43,21 @@
         <div class="space-y-6">
             <div>
                 <p class="text-slate-500 dark:text-slate-400 text-[10px] uppercase tracking-[0.2em] font-black mb-1">Tanggal Mulai</p>
-                <p class="text-lg font-bold text-slate-900 dark:text-slate-100">{{ $st->start_date ? date('d F Y', strtotime($st->start_date)) : '-' }}</p>
+                <p class="text-lg font-bold text-slate-900 dark:text-slate-100">{{ $dataSuratTugas->start_date ? date('d F Y', strtotime($dataSuratTugas->start_date)) : '-' }}</p>
             </div>
             <div>
                 <p class="text-slate-500 dark:text-slate-400 text-[10px] uppercase tracking-[0.2em] font-black mb-1">Nomor Surat Tugas</p>
-                <p class="text-slate-700 dark:text-slate-300 font-bold font-mono">{{ $st->no_surat_tugas ?? '-' }}</p>
+                <p class="text-slate-700 dark:text-slate-300 font-bold font-mono">{{ $dataSuratTugas->no_surat_tugas ?? '-' }}</p>
             </div>
         </div>
         <div class="space-y-6">
             <div>
                 <p class="text-slate-500 dark:text-slate-400 text-[10px] uppercase tracking-[0.2em] font-black mb-1">Tanggal Selesai</p>
-                <p class="text-lg font-bold text-slate-900 dark:text-slate-100">{{ $st->end_date ? date('d F Y', strtotime($st->end_date)) : '-' }}</p>
+                <p class="text-lg font-bold text-slate-900 dark:text-slate-100">{{ $dataSuratTugas->end_date ? date('d F Y', strtotime($dataSuratTugas->end_date)) : '-' }}</p>
             </div>
             <div>
                 <p class="text-slate-500 dark:text-slate-400 text-[10px] uppercase tracking-[0.2em] font-black mb-1">Bidang / Koordinator</p>
-                <p class="text-slate-700 dark:text-slate-300 font-bold">{{ $st->nm_bidwas }}</p>
+                <p class="text-slate-700 dark:text-slate-300 font-bold">{{ $dataSuratTugas->nm_bidwas }}</p>
             </div>
         </div>
     </div>
@@ -74,7 +74,7 @@
         </div>
     </div>
 
-    @if(auth()->user()->role === 'pimpinan' || auth()->user()->bidang_id == $st->id_bidwas)
+    @if(auth()->user()->role === 'pimpinan' || auth()->user()->bidang_id == $dataSuratTugas->id_bidwas)
     <div class="mb-12">
         <div class="glass bg-blue-500/5 border-blue-500/20 p-6 rounded-2xl">
             <div class="flex items-center gap-3 mb-4">
@@ -83,7 +83,7 @@
                 </div>
                 <h4 class="font-black text-slate-800 dark:text-white uppercase tracking-wider text-xs">Tambah Catatan Tindak Lanjut</h4>
             </div>
-            <form action="{{ route('tindaklanjut.addEntry', $st->id_st) }}" method="POST" enctype="multipart/form-data" class="space-y-4">
+            <form action="{{ route('tindaklanjut.addEntry', $dataSuratTugas->id_st) }}" method="POST" enctype="multipart/form-data" class="space-y-4">
                 @csrf
                 <div class="space-y-1">
                     <textarea name="catatan" rows="3" class="w-full glass bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl px-5 py-4 text-sm font-medium focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500/50 transition-all outline-none" placeholder="Tuliskan perkembangan tindak lanjut atau penugasan di sini..."></textarea>
@@ -117,25 +117,25 @@
     <div class="relative space-y-10">
         <div class="absolute left-6 top-0 bottom-0 w-[2px] bg-slate-100 dark:bg-white/5"></div>
         
-        @forelse($entries as $entry)
+        @forelse($riwayatTindakLanjut as $dataEntri)
         <div class="relative pl-16 group">
             <div class="absolute left-4 top-1 w-4 h-4 rounded-full border-4 border-white dark:border-slate-900 bg-blue-500 z-10 group-hover:scale-125 transition-transform"></div>
             
             <div class="glass p-6 rounded-2xl group-hover:border-blue-500/30 transition-all border border-transparent shadow-sm hover:shadow-xl hover:shadow-blue-500/5">
                 <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-4">
                     <div class="flex items-center gap-3">
-                        <span class="text-sm font-black text-slate-900 dark:text-white">{{ $entry->created_by_nama }}</span>
-                        <span class="text-[10px] font-bold px-2 py-0.5 bg-slate-100 dark:bg-white/10 text-slate-500 rounded-lg uppercase tracking-wider italic">{{ $entry->created_by_nip }}</span>
+                        <span class="text-sm font-black text-slate-900 dark:text-white">{{ $dataEntri->created_by_nama }}</span>
+                        <span class="text-[10px] font-bold px-2 py-0.5 bg-slate-100 dark:bg-white/10 text-slate-500 rounded-lg uppercase tracking-wider italic">{{ $dataEntri->created_by_nip }}</span>
                     </div>
                     <div class="flex items-center gap-4">
-                        <span class="text-[11px] font-bold text-slate-400 uppercase tracking-widest font-mono">{{ $entry->created_at->format('d M Y - H:i') }}</span>
+                        <span class="text-[11px] font-bold text-slate-400 uppercase tracking-widest font-mono">{{ $dataEntri->created_at->format('d M Y - H:i') }}</span>
                         
-                        @if($entry->created_by_nip === auth()->user()->nip)
-                        <form id="delete-entry-{{ $entry->id }}" action="{{ route('tindaklanjut.deleteEntry', $entry->id) }}" method="POST">
+                        @if($dataEntri->created_by_nip === auth()->user()->nip)
+                        <form id="delete-entry-{{ $dataEntri->id }}" action="{{ route('tindaklanjut.deleteEntry', $dataEntri->id) }}" method="POST">
                             @csrf
                             @method('DELETE')
                             <button type="button" 
-                                    @click="$store.confirm.ask('Hapus catatan ini?', () => document.getElementById('delete-entry-{{ $entry->id }}').submit(), 'Hapus Catatan', 'Ya, Hapus')"
+                                    @click="$store.confirm.ask('Hapus catatan ini?', () => document.getElementById('delete-entry-{{ $dataEntri->id }}').submit(), 'Hapus Catatan', 'Ya, Hapus')"
                                     class="text-red-400 hover:text-red-500 p-1 rounded-lg hover:bg-red-50 dark:hover:bg-red-500/10 transition-all">
                                 <i data-lucide="trash-2" class="w-4 h-4"></i>
                             </button>
@@ -145,17 +145,17 @@
                 </div>
                 
                 <div class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed font-bold whitespace-pre-line mb-6 italic opacity-90">
-                    "{{ $entry->catatan }}"
+                    "{{ $dataEntri->catatan }}"
                 </div>
                 
-                @if($entry->file_path)
+                @if($dataEntri->file_path)
                 <div class="pt-4 border-t border-slate-100 dark:border-white/5">
-                    <a href="{{ asset('storage/' . $entry->file_path) }}" target="_blank" class="inline-flex items-center gap-3 px-4 py-2 bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 rounded-xl text-xs font-bold hover:bg-blue-100 dark:hover:bg-blue-500/20 transition-all group/file">
+                    <a href="{{ asset('storage/' . $dataEntri->file_path) }}" target="_blank" class="inline-flex items-center gap-3 px-4 py-2 bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 rounded-xl text-xs font-bold hover:bg-blue-100 dark:hover:bg-blue-500/20 transition-all group/file">
                         <div class="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white group-hover/file:scale-110 transition-transform">
                             <i data-lucide="file-text" class="w-4 h-4"></i>
                         </div>
                         <div class="flex flex-col">
-                            <span class="line-clamp-1 truncate max-w-[200px]">{{ $entry->file_name }}</span>
+                            <span class="line-clamp-1 truncate max-w-[200px]">{{ $dataEntri->file_name }}</span>
                             <span class="text-[9px] opacity-60 uppercase font-black uppercase tracking-widest mt-0.5">Lihat Lampiran</span>
                         </div>
                     </a>

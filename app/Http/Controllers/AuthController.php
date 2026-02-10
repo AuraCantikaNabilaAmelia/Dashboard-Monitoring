@@ -21,61 +21,61 @@ class AuthController extends Controller
             'password' => 'required',
         ]);
 
-        $pegawai = DB::table('r_pegawai')->where('nip', $request->nip)->first();
+        $dataPegawai = DB::table('r_pegawai')->where('nip', $request->nip)->first();
 
-        if (!$pegawai) {
+        if (!$dataPegawai) {
             return back()->withErrors(['nip' => 'NIP tidak ditemukan dalam database kepegawaian']);
         }
 
-        if ($request->password !== $pegawai->nip) {
+        if ($request->password !== $dataPegawai->nip) {
             return back()->withErrors(['password' => 'Password salah']);
         }
 
-        $role = \App\Models\User::ROLE_PEGAWAI;
-        $bidang_id = null;
+        $peranUser = \App\Models\User::ROLE_PEGAWAI;
+        $idBidang = null;
 
-        if (isset($pegawai->user_role)) {
-            $dbRole = strtolower($pegawai->user_role);
+        if (isset($dataPegawai->user_role)) {
+            $peranDariDatabase = strtolower($dataPegawai->user_role);
 
-            if (str_contains($dbRole, 'apd')) $bidang_id = 159;
-            elseif (str_contains($dbRole, 'an')) $bidang_id = 160;
-            elseif (str_contains($dbRole, 'ipp')) $bidang_id = 158;
-            elseif (str_contains($dbRole, 'investigasi')) $bidang_id = 161;
-            elseif (str_contains($dbRole, 'p3a') || str_contains($dbRole, 'program')) $bidang_id = 320;
-            elseif (str_contains($dbRole, 'keuangan')) $bidang_id = 552;
-            elseif (str_contains($dbRole, 'kepegawaian')) $bidang_id = 551;
-            elseif (str_contains($dbRole, 'umum')) $bidang_id = 553;
-            elseif (str_contains($dbRole, 'bagian tata usaha')) $bidang_id = 157;
+            if (str_contains($peranDariDatabase, 'apd')) $idBidang = 159;
+            elseif (str_contains($peranDariDatabase, 'an')) $idBidang = 160;
+            elseif (str_contains($peranDariDatabase, 'ipp')) $idBidang = 158;
+            elseif (str_contains($peranDariDatabase, 'investigasi')) $idBidang = 161;
+            elseif (str_contains($peranDariDatabase, 'p3a') || str_contains($peranDariDatabase, 'program')) $idBidang = 320;
+            elseif (str_contains($peranDariDatabase, 'keuangan')) $idBidang = 552;
+            elseif (str_contains($peranDariDatabase, 'kepegawaian')) $idBidang = 551;
+            elseif (str_contains($peranDariDatabase, 'umum')) $idBidang = 553;
+            elseif (str_contains($peranDariDatabase, 'bagian tata usaha')) $idBidang = 157;
 
             if (
-                str_contains($dbRole, 'admin') ||
-                str_contains($dbRole, 'pimpinan') ||
-                str_contains($dbRole, 'kepala_perwakilan')
+                str_contains($peranDariDatabase, 'admin') ||
+                str_contains($peranDariDatabase, 'pimpinan') ||
+                str_contains($peranDariDatabase, 'kepala_perwakilan')
             ) {
-                $role = \App\Models\User::ROLE_PIMPINAN;
+                $peranUser = \App\Models\User::ROLE_PIMPINAN;
             } elseif (
-                str_contains($dbRole, 'korwas') ||
-                str_contains($dbRole, 'kabid') ||
-                str_contains($dbRole, 'kepala bagian') ||
-                str_contains($dbRole, 'subkoor')
+                str_contains($peranDariDatabase, 'korwas') ||
+                str_contains($peranDariDatabase, 'kabid') ||
+                str_contains($peranDariDatabase, 'kepala bagian') ||
+                str_contains($peranDariDatabase, 'subkoor')
             ) {
-                $role = \App\Models\User::ROLE_KABID;
+                $peranUser = \App\Models\User::ROLE_KABID;
             }
         }
 
-        $user = \App\Models\User::updateOrCreate(
-            ['nip' => $pegawai->nip],
+        $dataUser = \App\Models\User::updateOrCreate(
+            ['nip' => $dataPegawai->nip],
             [
-                'name' => $pegawai->nama,
-                'email' => $pegawai->nip . '@bpkp.go.id',
-                'password' => bcrypt($pegawai->nip),
-                'role' => $role,
-                'jabatan' => $pegawai->user_role ?? '-',
-                'bidang_id' => $bidang_id,
+                'name' => $dataPegawai->nama,
+                'email' => $dataPegawai->nip . '@bpkp.go.id',
+                'password' => bcrypt($dataPegawai->nip),
+                'role' => $peranUser,
+                'jabatan' => $dataPegawai->user_role ?? '-',
+                'bidang_id' => $idBidang,
             ]
         );
 
-        Auth::login($user);
+        Auth::login($dataUser);
         $request->session()->regenerate();
 
         return redirect()->intended('/dashboard');

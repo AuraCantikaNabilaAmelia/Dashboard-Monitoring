@@ -6,9 +6,9 @@
 
     <div class="glass dark:bg-slate-900/50 bg-white rounded-2xl p-6 mb-8 border border-slate-200/50 dark:border-white/5 shadow-xl shadow-slate-200/20 dark:shadow-black/20 relative z-[40] overflow-visible">
         <form action="{{ route('tindaklanjut.index') }}" method="GET" id="filterForm">
-            <input type="hidden" name="bidang_id" id="bidang_id_input" value="{{ $bidang_id }}">
-            <input type="hidden" name="start_date" id="start_date_hidden" value="{{ $startDate }}">
-            <input type="hidden" name="end_date" id="end_date_hidden" value="{{ $endDate }}">
+            <input type="hidden" name="bidang_id" id="bidang_id_input" value="{{ $idBidang }}">
+            <input type="hidden" name="start_date" id="start_date_hidden" value="{{ $tanggalMulai }}">
+            <input type="hidden" name="end_date" id="end_date_hidden" value="{{ $tanggalSelesai }}">
 
             <div class="flex flex-col lg:flex-row gap-4 items-end">
 
@@ -18,7 +18,7 @@
                         <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                             <i data-lucide="search" class="w-4 h-4 text-slate-400 group-focus-within:text-blue-500 transition-colors"></i>
                         </div>
-                        <input type="text" name="search" value="{{ $search }}"
+                        <input type="text" name="search" value="{{ $kataKunci }}"
                                placeholder="Cari nomor ST atau nama penugasan..."
                                class="w-full h-12 pl-11 pr-4 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl text-sm text-slate-800 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-medium"
                                autocomplete="off">
@@ -34,8 +34,8 @@
 
                             <div class="flex-1 flex items-center gap-3 pl-3 pr-2 border-r border-slate-200 dark:border-white/10 h-8">
                                 <i data-lucide="calendar" class="w-3.5 h-3.5 text-slate-400 group-hover:text-blue-500 transition-colors"></i>
-                                <span id="display_start_date" class="text-sm font-medium {{ $startDate ? 'text-slate-800 dark:text-white' : 'text-slate-400' }}">
-                                    {{ $startDate ? \Carbon\Carbon::parse($startDate)->format('d M Y') : 'Mulai' }}
+                                <span id="display_start_date" class="text-sm font-medium {{ $tanggalMulai ? 'text-slate-800 dark:text-white' : 'text-slate-400' }}">
+                                    {{ $tanggalMulai ? \Carbon\Carbon::parse($tanggalMulai)->format('d M Y') : 'Mulai' }}
                                 </span>
                             </div>
 
@@ -45,8 +45,8 @@
 
                             <div class="flex-1 flex items-center gap-3 pl-2 pr-3 h-8">
                                 <i data-lucide="calendar" class="w-3.5 h-3.5 text-slate-400 group-hover:text-blue-500 transition-colors"></i>
-                                <span id="display_end_date" class="text-sm font-medium {{ $endDate ? 'text-slate-800 dark:text-white' : 'text-slate-400' }}">
-                                    {{ $endDate ? \Carbon\Carbon::parse($endDate)->format('d M Y') : 'Selesai' }}
+                                <span id="display_end_date" class="text-sm font-medium {{ $tanggalSelesai ? 'text-slate-800 dark:text-white' : 'text-slate-400' }}">
+                                    {{ $tanggalSelesai ? \Carbon\Carbon::parse($tanggalSelesai)->format('d M Y') : 'Selesai' }}
                                 </span>
                             </div>
 
@@ -67,8 +67,8 @@
                                 <span class="text-blue-600 dark:text-blue-400 font-bold text-sm truncate pl-4">
                                     @php
                                         $selectedName = 'Semua Bidang';
-                                        if ($bidang_id) {
-                                            $b = $bidwasList->where('id_bidwas', $bidang_id)->first();
+                                        if ($idBidang) {
+                                            $b = $daftarBidwas->where('id_bidwas', $idBidang)->first();
                                             if ($b) {
                                                 $selectedName = $b->nm_bidwas;
                                                 if (str_contains($selectedName, 'Instansi Pemerintah Pusat')) $selectedName = 'IPP';
@@ -86,13 +86,13 @@
 
                             <ul class="status-filter-list rounded-xl border border-white/10 shadow-2xl backdrop-blur-xl" role="list">
                                 <li class="status-filter-listitem">
-                                    <div onclick="applyBidang('')" class="status-filter-article {{ !$bidang_id ? 'active' : '' }}">Semua Bidang</div>
+                                    <div onclick="applyBidang('')" class="status-filter-article {{ !$idBidang ? 'active' : '' }}">Semua Bidang</div>
                                 </li>
-                                @foreach($bidwasList as $b)
+                                @foreach($daftarBidwas as $dataBidang)
                                 <li class="status-filter-listitem">
-                                    <div onclick="applyBidang('{{ $b->id_bidwas }}')" class="status-filter-article {{ $bidang_id == $b->id_bidwas ? 'active' : '' }}">
+                                    <div onclick="applyBidang('{{ $dataBidang->id_bidwas }}')" class="status-filter-article {{ $idBidang == $dataBidang->id_bidwas ? 'active' : '' }}">
                                         @php
-                                            $sName = $b->nm_bidwas;
+                                            $sName = $dataBidang->nm_bidwas;
                                             if (str_contains($sName, 'Instansi Pemerintah Pusat')) $sName = 'IPP';
                                             elseif (str_contains($sName, 'Pemerintah Daerah')) $sName = 'APD';
                                             elseif (str_contains($sName, 'Akuntan Negara')) $sName = 'AN';
@@ -114,7 +114,7 @@
                         <i data-lucide="filter" class="w-4 h-4 group-hover:scale-110 transition-transform"></i>
                         <span class="text-sm">Filter</span>
                     </button>
-                    @if($search || $bidang_id || $startDate || $endDate)
+                    @if($kataKunci || $idBidang || $tanggalMulai || $tanggalSelesai)
                         <a href="{{ route('tindaklanjut.index') }}" class="h-12 w-12 bg-red-50 dark:bg-red-500/10 hover:bg-red-100 dark:hover:bg-red-500/20 text-red-500 rounded-xl transition-all flex items-center justify-center border border-red-200 dark:border-red-500/20 group" title="Reset Filter">
                             <i data-lucide="x" class="w-4 h-4 group-hover:scale-110 transition-transform"></i>
                         </a>
@@ -131,10 +131,10 @@
             </div>
             <div>
                 <div class="text-[10px] uppercase tracking-widest text-blue-500 font-black">Total ST</div>
-                <div class="text-lg font-black text-blue-600 dark:text-blue-400">{{ $stList->total() }}</div>
+                <div class="text-lg font-black text-blue-600 dark:text-blue-400">{{ $daftarSuratTugas->total() }}</div>
             </div>
         </div>
-        @if($search || $bidang_id || $startDate || $endDate)
+        @if($kataKunci || $idBidang || $tanggalMulai || $tanggalSelesai)
         <div class="glass dark:bg-amber-500/10 bg-amber-50 border border-amber-200/50 dark:border-amber-500/20 rounded-xl px-4 py-2.5 flex items-center gap-3">
             <div class="w-8 h-8 bg-amber-500/20 rounded-lg flex items-center justify-center">
                 <i data-lucide="filter" class="w-4 h-4 text-amber-500"></i>
@@ -142,7 +142,7 @@
             <div>
                 <div class="text-[10px] uppercase tracking-widest text-amber-500 font-black">Filter Aktif</div>
                 <div class="text-sm font-bold text-amber-600 dark:text-amber-400">
-                    {{ collect([$search ? 'Pencarian' : null, $bidang_id ? 'Bidang' : null, ($startDate && $endDate) ? 'Periode' : null])->filter()->implode(', ') }}
+                    {{ collect([$kataKunci ? 'Pencarian' : null, $idBidang ? 'Bidang' : null, ($tanggalMulai && $tanggalSelesai) ? 'Periode' : null])->filter()->implode(', ') }}
                 </div>
             </div>
         </div>
@@ -176,23 +176,23 @@
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100 dark:divide-white/5">
-                    @forelse($stList as $index => $st)
-                    <tr class="hover:bg-blue-50/50 dark:hover:bg-white/[0.02] transition-all group cursor-pointer" onclick="window.location='{{ route('tindaklanjut.show', $st->id_st) }}'">
+                    @forelse($daftarSuratTugas as $indeks => $suratTugas)
+                    <tr class="hover:bg-blue-50/50 dark:hover:bg-white/[0.02] transition-all group cursor-pointer" onclick="window.location='{{ route('tindaklanjut.show', $suratTugas->id_st) }}'">
                         <td class="px-6 py-5">
                             <div class="flex items-center gap-3">
                                 <div class="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center text-white text-xs font-bold shadow-sm">
-                                    {{ $stList->firstItem() + $index }}
+                                    {{ $daftarSuratTugas->firstItem() + $indeks }}
                                 </div>
                                 <div class="flex flex-col">
-                                    <span class="text-sm font-bold text-blue-600 dark:text-blue-400 font-mono tracking-tight">{{ $st->no_surat_tugas ?? '-' }}</span>
+                                    <span class="text-sm font-bold text-blue-600 dark:text-blue-400 font-mono tracking-tight">{{ $suratTugas->no_surat_tugas ?? '-' }}</span>
                                     @php
-                                        $statusColor = match(strtolower($st->status_st)) {
+                                        $statusColor = match(strtolower($suratTugas->status_st)) {
                                             'batal' => 'red',
                                             'final', 'selesai' => 'emerald',
                                             'tidak aktif' => 'slate',
                                             default => 'amber'
                                         };
-                                        $statusIcon = match(strtolower($st->status_st)) {
+                                        $statusIcon = match(strtolower($suratTugas->status_st)) {
                                             'batal' => 'x-circle',
                                             'final', 'selesai' => 'check-circle',
                                             'tidak aktif' => 'minus-circle',
@@ -201,18 +201,18 @@
                                     @endphp
                                     <div class="mt-1 flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-widest bg-{{ $statusColor }}-100 dark:bg-{{ $statusColor }}-500/20 text-{{ $statusColor }}-700 dark:text-{{ $statusColor }}-400 border border-{{ $statusColor }}-500/10 w-fit">
                                         <i data-lucide="{{ $statusIcon }}" class="w-2.5 h-2.5"></i>
-                                        {{ $st->status_st }}
+                                        {{ $suratTugas->status_st }}
                                     </div>
                                 </div>
                             </div>
                         </td>
                         <td class="px-6 py-5">
                             <div class="max-w-md">
-                                <p class="text-sm font-bold text-slate-800 dark:text-slate-200 line-clamp-1 group-hover:text-blue-600 transition-colors" title="{{ $st->nama_penugasan }}">
-                                    {{ $st->nama_penugasan }}
+                                <p class="text-sm font-bold text-slate-800 dark:text-slate-200 line-clamp-1 group-hover:text-blue-600 transition-colors" title="{{ $suratTugas->nama_penugasan }}">
+                                    {{ $suratTugas->nama_penugasan }}
                                 </p>
                                 @php
-                                    $sName = $st->nm_bidwas;
+                                    $sName = $suratTugas->nm_bidwas;
                                     if (str_contains($sName, 'Instansi Pemerintah Pusat')) $sName = 'IPP';
                                     elseif (str_contains($sName, 'Pemerintah Daerah')) $sName = 'APD';
                                     elseif (str_contains($sName, 'Akuntan Negara')) $sName = 'AN';
@@ -228,13 +228,13 @@
                                 <div class="inline-flex items-center gap-2 bg-blue-50 dark:bg-blue-500/10 px-2 py-1 rounded-lg w-fit">
                                     <i data-lucide="calendar-plus" class="w-3 h-3 text-blue-500"></i>
                                     <span class="text-[10px] font-bold text-blue-600 dark:text-blue-400 whitespace-nowrap">
-                                        {{ \Carbon\Carbon::parse($st->start_date)->format('d M Y') }}
+                                        {{ \Carbon\Carbon::parse($suratTugas->start_date)->format('d M Y') }}
                                     </span>
                                 </div>
                                 <div class="inline-flex items-center gap-2 bg-slate-100 dark:bg-white/5 px-2 py-1 rounded-lg w-fit">
                                     <i data-lucide="calendar-check" class="w-3 h-3 text-slate-400"></i>
                                     <span class="text-[10px] font-bold text-slate-600 dark:text-slate-400 whitespace-nowrap">
-                                        {{ \Carbon\Carbon::parse($st->end_date)->format('d M Y') }}
+                                        {{ \Carbon\Carbon::parse($suratTugas->end_date)->format('d M Y') }}
                                     </span>
                                 </div>
                             </div>
@@ -242,7 +242,7 @@
                         <td class="px-6 py-5 text-center">
                             <div class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-violet-100 dark:bg-violet-500/20 text-violet-700 dark:text-violet-400">
                                 <i data-lucide="message-square" class="w-3.5 h-3.5"></i>
-                                {{ $st->entry_count }} Catatan
+                                {{ $suratTugas->entry_count }} Catatan
                             </div>
                         </td>
                     </tr>
@@ -263,29 +263,29 @@
             </table>
         </div>
 
-        @if($stList->hasPages())
+        @if($daftarSuratTugas->hasPages())
         <div class="px-6 py-4 border-t border-slate-100 dark:border-white/5 bg-slate-50/50 dark:bg-white/[0.02]">
             <div class="flex items-center justify-between">
                 <div class="text-sm text-slate-500 dark:text-slate-400">
-                    Menampilkan <span class="font-bold text-slate-700 dark:text-slate-300">{{ $stList->firstItem() }}</span> - <span class="font-bold text-slate-700 dark:text-slate-300">{{ $stList->lastItem() }}</span> dari <span class="font-bold text-slate-700 dark:text-slate-300">{{ $stList->total() }}</span> data
+                    Menampilkan <span class="font-bold text-slate-700 dark:text-slate-300">{{ $daftarSuratTugas->firstItem() }}</span> - <span class="font-bold text-slate-700 dark:text-slate-300">{{ $daftarSuratTugas->lastItem() }}</span> dari <span class="font-bold text-slate-700 dark:text-slate-300">{{ $daftarSuratTugas->total() }}</span> data
                 </div>
                 <div class="flex gap-1">
-                    @if($stList->onFirstPage())
+                    @if($daftarSuratTugas->onFirstPage())
                         <span class="px-4 py-2 rounded-lg bg-slate-100 dark:bg-white/5 text-slate-400 cursor-not-allowed text-sm font-medium">Prev</span>
                     @else
-                        <a href="{{ $stList->appends(request()->query())->previousPageUrl() }}" class="px-4 py-2 rounded-lg bg-white dark:bg-white/10 border border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-300 hover:bg-blue-50 dark:hover:bg-blue-500/10 hover:border-blue-300 dark:hover:border-blue-500/30 hover:text-blue-600 transition-all text-sm font-medium">Prev</a>
+                        <a href="{{ $daftarSuratTugas->appends(request()->query())->previousPageUrl() }}" class="px-4 py-2 rounded-lg bg-white dark:bg-white/10 border border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-300 hover:bg-blue-50 dark:hover:bg-blue-500/10 hover:border-blue-300 dark:hover:border-blue-500/30 hover:text-blue-600 transition-all text-sm font-medium">Prev</a>
                     @endif
 
-                    @foreach ($stList->appends(request()->query())->getUrlRange(max(1, $stList->currentPage() - 2), min($stList->lastPage(), $stList->currentPage() + 2)) as $page => $url)
-                        @if ($page == $stList->currentPage())
+                    @foreach ($daftarSuratTugas->appends(request()->query())->getUrlRange(max(1, $daftarSuratTugas->currentPage() - 2), min($daftarSuratTugas->lastPage(), $daftarSuratTugas->currentPage() + 2)) as $page => $url)
+                        @if ($page == $daftarSuratTugas->currentPage())
                             <span class="px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-bold shadow-sm">{{ $page }}</span>
                         @else
                             <a href="{{ $url }}" class="px-4 py-2 rounded-lg bg-white dark:bg-white/10 border border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-300 hover:bg-blue-50 dark:hover:bg-blue-500/10 hover:border-blue-300 dark:hover:border-blue-500/30 hover:text-blue-600 transition-all text-sm font-medium">{{ $page }}</a>
                         @endif
                     @endforeach
 
-                    @if($stList->hasMorePages())
-                        <a href="{{ $stList->appends(request()->query())->nextPageUrl() }}" class="px-4 py-2 rounded-lg bg-white dark:bg-white/10 border border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-300 hover:bg-blue-50 dark:hover:bg-blue-500/10 hover:border-blue-300 dark:hover:border-blue-500/30 hover:text-blue-600 transition-all text-sm font-medium">Next</a>
+                    @if($daftarSuratTugas->hasMorePages())
+                        <a href="{{ $daftarSuratTugas->appends(request()->query())->nextPageUrl() }}" class="px-4 py-2 rounded-lg bg-white dark:bg-white/10 border border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-300 hover:bg-blue-50 dark:hover:bg-blue-500/10 hover:border-blue-300 dark:hover:border-blue-500/30 hover:text-blue-600 transition-all text-sm font-medium">Next</a>
                     @else
                         <span class="px-4 py-2 rounded-lg bg-slate-100 dark:bg-white/5 text-slate-400 cursor-not-allowed text-sm font-medium">Next</span>
                     @endif
@@ -432,7 +432,7 @@
             prevArrow: '<svg class="shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"></path></svg>',
             nextArrow: '<svg class="shrink-0 size-4" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"></path></svg>',
             locale: { rangeSeparator: " → " },
-            defaultDate: [ "{{ $startDate }}" || null, "{{ $endDate }}" || null ],
+            defaultDate: [ "{{ $tanggalMulai }}" || null, "{{ $tanggalSelesai }}" || null ],
             onChange: function(selectedDates, dateStr) {
                 if (selectedDates.length === 2) {
                     const startDate = selectedDates[0];

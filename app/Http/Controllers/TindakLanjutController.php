@@ -12,12 +12,12 @@ class TindakLanjutController extends Controller
 {
     public function index(Request $request)
     {
-        $search = $request->search;
-        $bidang_id = $request->bidang_id;
-        $startDate = $request->start_date;
-        $endDate = $request->end_date;
+        $kataKunci = $request->search;
+        $idBidang = $request->bidang_id;
+        $tanggalMulai = $request->start_date;
+        $tanggalSelesai = $request->end_date;
 
-        $query = DB::table('d_st')
+        $querySuratTugas = DB::table('d_st')
             ->leftJoin('r_bidwas', 'd_st.id_bidwas', '=', 'r_bidwas.id_bidwas')
             ->select(
                 'd_st.*',
@@ -26,75 +26,75 @@ class TindakLanjutController extends Controller
                 DB::raw('(SELECT count(*) FROM st_tindak_lanjut WHERE st_tindak_lanjut.id_st = d_st.id_st) as entry_count')
             );
 
-        if ($search) {
-            $query->where(function ($q) use ($search) {
-                $q->where('no_surat_tugas', 'like', "%{$search}%")
-                    ->orWhere('nama_penugasan', 'like', "%{$search}%");
+        if ($kataKunci) {
+            $querySuratTugas->where(function ($query) use ($kataKunci) {
+                $query->where('no_surat_tugas', 'like', "%{$kataKunci}%")
+                    ->orWhere('nama_penugasan', 'like', "%{$kataKunci}%");
             });
         }
 
-        if ($bidang_id) {
-            $query->where('d_st.id_bidwas', $bidang_id);
+        if ($idBidang) {
+            $querySuratTugas->where('d_st.id_bidwas', $idBidang);
         }
 
-        if ($startDate) {
-            $query->where('start_date', '>=', $startDate);
+        if ($tanggalMulai) {
+            $querySuratTugas->where('start_date', '>=', $tanggalMulai);
         }
 
-        if ($endDate) {
-            $query->where('end_date', '<=', $endDate);
+        if ($tanggalSelesai) {
+            $querySuratTugas->where('end_date', '<=', $tanggalSelesai);
         }
 
-        $stList = $query->orderBy('start_date', 'desc')->paginate(10);
-        $bidwasList = DB::table('r_bidwas')->get();
+        $daftarSuratTugas = $querySuratTugas->orderBy('start_date', 'desc')->paginate(10);
+        $daftarBidwas = DB::table('r_bidwas')->get();
 
-        return view('Dashboard.tindaklanjut.index', compact('stList', 'bidwasList', 'search', 'bidang_id', 'startDate', 'endDate'));
+        return view('Dashboard.tindaklanjut.index', compact('daftarSuratTugas', 'daftarBidwas', 'kataKunci', 'idBidang', 'tanggalMulai', 'tanggalSelesai'));
     }
 
-    public function show($id)
+    public function show($idSuratTugas)
     {
-        $st = DB::table('d_st')
+        $dataSuratTugas = DB::table('d_st')
             ->leftJoin('r_bidwas', 'd_st.id_bidwas', '=', 'r_bidwas.id_bidwas')
-            ->where('id_st', $id)
+            ->where('id_st', $idSuratTugas)
             ->first();
 
-        if (!$st) abort(404);
+        if (!$dataSuratTugas) abort(404);
 
-        $entries = StTindakLanjut::where('id_st', $id)
+        $riwayatTindakLanjut = StTindakLanjut::where('id_st', $idSuratTugas)
             ->orderBy('created_at', 'desc')
             ->get();
 
-        return view('Dashboard.tindaklanjut.show', compact('st', 'entries'));
+        return view('Dashboard.tindaklanjut.show', compact('dataSuratTugas', 'riwayatTindakLanjut'));
     }
 
-    public function addEntry(Request $request, $id)
+    public function addEntry(Request $request, $idSuratTugas)
     {
         $request->validate([
             'catatan' => 'required',
             'file' => 'nullable|file|mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png|max:20480',
         ]);
 
-        $st = DB::table('d_st')->where('id_st', $id)->first();
-        if (!$st) abort(404);
+        $dataSuratTugas = DB::table('d_st')->where('id_st', $idSuratTugas)->first();
+        if (!$dataSuratTugas) abort(404);
 
-        if (auth()->user()->role !== 'pimpinan' && auth()->user()->bidang_id != $st->id_bidwas) {
+        if (auth()->user()->role !== 'pimpinan' && auth()->user()->bidang_id != $dataSuratTugas->id_bidwas) {
             return back()->with('error', 'Anda hanya dapat menambahkan tindak lanjut untuk bidang Anda sendiri.');
         }
 
-        $filePath = null;
-        $fileName = null;
+        $jalurFile = null;
+        $namaFileOriginal = null;
 
         if ($request->hasFile('file')) {
-            $file = $request->file('file');
-            $fileName = $file->getClientOriginalName();
-            $filePath = $file->store('tindak_lanjut_st', 'public');
+            $berkas = $request->file('file');
+            $namaFileOriginal = $berkas->getClientOriginalName();
+            $jalurFile = $berkas->store('tindak_lanjut_st', 'public');
         }
 
         StTindakLanjut::create([
-            'id_st' => $id,
+            'id_st' => $idSuratTugas,
             'catatan' => $request->catatan,
-            'file_path' => $filePath,
-            'file_name' => $fileName,
+            'file_path' => $jalurFile,
+            'file_name' => $namaFileOriginal,
             'created_by_nip' => auth()->user()->nip,
             'created_by_nama' => auth()->user()->name,
         ]);
@@ -102,19 +102,19 @@ class TindakLanjutController extends Controller
         return back()->with('success', 'Catatan tindak lanjut berhasil ditambahkan.');
     }
 
-    public function deleteEntry($id)
+    public function deleteEntry($idEntri)
     {
-        $entry = StTindakLanjut::findOrFail($id);
+        $dataTindakLanjut = StTindakLanjut::findOrFail($idEntri);
 
-        if ($entry->created_by_nip !== auth()->user()->nip) {
+        if ($dataTindakLanjut->created_by_nip !== auth()->user()->nip) {
             return back()->with('error', 'Anda hanya dapat menghapus catatan yang Anda buat sendiri.');
         }
 
-        if ($entry->file_path) {
-            Storage::disk('public')->delete($entry->file_path);
+        if ($dataTindakLanjut->file_path) {
+            Storage::disk('public')->delete($dataTindakLanjut->file_path);
         }
 
-        $entry->delete();
+        $dataTindakLanjut->delete();
 
         return back()->with('success', 'Catatan tindak lanjut berhasil dihapus.');
     }

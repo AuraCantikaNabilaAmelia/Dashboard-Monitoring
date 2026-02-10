@@ -10,7 +10,7 @@
                 <h2 class="text-xl md:text-2xl font-black tracking-tight mb-1">Monitoring Penugasan</h2>
                 <div class="flex items-center gap-2 text-slate-400">
                     <i data-lucide="calendar" class="w-4 h-4 text-blue-500"></i>
-                    <p class="text-sm font-medium">Berdasarkan tanggal <span class="text-blue-600 dark:text-blue-400 font-bold underline underline-offset-4 decoration-blue-500/30">{{ date('d F Y', strtotime($date)) }}</span></p>
+                    <p class="text-sm font-medium">Berdasarkan tanggal <span class="text-blue-600 dark:text-blue-400 font-bold underline underline-offset-4 decoration-blue-500/30">{{ date('d F Y', strtotime($tanggalTerpilih)) }}</span></p>
                 </div>
             </div>
 
@@ -22,11 +22,11 @@
                             <i data-lucide="calendar-search" class="w-4 h-4 text-slate-400 group-focus-within:text-blue-500 transition-colors"></i>
                         </div>
 
-                        <input type="hidden" name="date" id="date_hidden" value="{{ $date }}">
+                        <input type="hidden" name="date" id="date_hidden" value="{{ $tanggalTerpilih }}">
 
-<div class="relative h-12 flex items-center bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl px-11 cursor-pointer hover:border-blue-500/50 focus-within:ring-2 focus-within:ring-blue-500/20 transition-all">
+                        <div class="relative h-12 flex items-center bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl px-11 cursor-pointer hover:border-blue-500/50 focus-within:ring-2 focus-within:ring-blue-500/20 transition-all">
                             <span id="display_date" class="text-sm font-bold text-slate-800 dark:text-white">
-                                {{ date('d M Y', strtotime($date)) }}
+                                {{ date('d M Y', strtotime($tanggalTerpilih)) }}
                             </span>
                             <input type="text" id="daily_datepicker" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-30" readonly>
                         </div>
@@ -37,23 +37,32 @@
                     <i data-lucide="rotate-ccw" class="w-4 h-4 group-hover:rotate-180 transition-transform duration-500"></i>
                     <span class="text-sm">Update Data</span>
                 </button>
+
+                <div class="flex gap-2">
+                    <a href="{{ route('export.daily.excel', request()->query()) }}" class="h-12 px-5 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 rounded-xl transition-all font-bold flex items-center gap-2 border border-emerald-500/20 group" title="Export Excel">
+                        <i data-lucide="file-spreadsheet" class="w-5 h-5 group-hover:scale-110 transition-transform"></i>
+                    </a>
+                    <a href="{{ route('export.daily.pdf', request()->query()) }}" class="h-12 px-5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 rounded-xl transition-all font-bold flex items-center gap-2 border border-rose-500/20 group" title="Export PDF">
+                        <i data-lucide="file-text" class="w-5 h-5 group-hover:scale-110 transition-transform"></i>
+                    </a>
+                </div>
             </form>
         </div>
     </div>
 
-<div class="flex flex-wrap gap-3 mb-6">
+    <div class="flex flex-wrap gap-3 mb-6">
         <div class="glass dark:bg-emerald-500/10 bg-emerald-50 border border-emerald-200/50 dark:border-emerald-500/20 rounded-xl px-4 py-2.5 flex items-center gap-3">
             <div class="w-8 h-8 bg-emerald-500/20 rounded-lg flex items-center justify-center">
                 <i data-lucide="zap" class="w-4 h-4 text-emerald-500"></i>
             </div>
             <div>
                 <div class="text-[10px] uppercase tracking-widest text-emerald-500 font-black">Penugasan Aktif</div>
-                <div class="text-lg font-black text-emerald-600 dark:text-emerald-400">{{ $penugasan->total() }}</div>
+                <div class="text-lg font-black text-emerald-600 dark:text-emerald-400">{{ $daftarPenugasan->total() }}</div>
             </div>
         </div>
     </div>
 
-    @if($penugasan->isEmpty())
+    @if($daftarPenugasan->isEmpty())
         <div class="glass dark:bg-slate-900/30 bg-white rounded-3xl p-16 text-center shadow-xl border border-slate-200/50 dark:border-white/5">
             <div class="w-20 h-20 bg-slate-100 dark:bg-white/5 rounded-full flex items-center justify-center mx-auto mb-6">
                 <i data-lucide="clipboard-x" class="w-10 h-10 text-slate-300 dark:text-slate-600"></i>
@@ -76,37 +85,37 @@
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-100 dark:divide-white/5">
-                        @foreach($penugasan as $item)
+                        @foreach($daftarPenugasan as $itemPenugasan)
                         <tr class="hover:bg-blue-50/50 dark:hover:bg-white/[0.02] transition-colors group">
                             <td class="px-6 py-5">
                                 <div class="flex items-center space-x-3">
                                     <div class="w-10 h-10 bg-gradient-to-br from-blue-500/20 to-blue-600/20 rounded-xl flex items-center justify-center text-blue-600 dark:text-blue-400 font-black text-sm uppercase border border-blue-500/10 transition-transform group-hover:scale-110">
-                                        {{ substr($item->nama, 0, 2) }}
+                                        {{ substr($itemPenugasan->nama, 0, 2) }}
                                     </div>
                                     <div>
-                                        <p class="font-extrabold text-slate-800 dark:text-white leading-tight group-hover:text-blue-600 transition-colors">{{ $item->nama }}</p>
-                                        <p class="text-[10px] text-slate-500 font-bold font-mono tracking-tight">{{ $item->nip }}</p>
+                                        <p class="font-extrabold text-slate-800 dark:text-white leading-tight group-hover:text-blue-600 transition-colors">{{ $itemPenugasan->nama }}</p>
+                                        <p class="text-[10px] text-slate-500 font-bold font-mono tracking-tight">{{ $itemPenugasan->nip }}</p>
                                     </div>
                                 </div>
                             </td>
                             <td class="px-6 py-5 min-w-[300px] max-w-sm">
-                                <a href="{{ route('st.detail', $item->id_st) }}" class="group/link block">
-                                    <p class="text-sm font-bold text-slate-700 dark:text-slate-200 line-clamp-1 group-hover/link:text-blue-500 transition-colors" title="{{ $item->st_nama }}">
-                                        {{ $item->st_nama }}
+                                <a href="{{ route('st.detail', $itemPenugasan->id_st) }}" class="group/link block">
+                                    <p class="text-sm font-bold text-slate-700 dark:text-slate-200 line-clamp-1 group-hover/link:text-blue-500 transition-colors" title="{{ $itemPenugasan->st_nama }}">
+                                        {{ $itemPenugasan->st_nama }}
                                     </p>
-                                    <span class="text-[9px] font-mono font-bold text-slate-400 group-hover/link:text-blue-400/70">Lihat Detail ST →</span>
+                                    <span class="text-[9px] font-mono font-bold text-slate-400 group-hover/link:text-blue-400/70">Lihat Detail ST &rarr;</span>
                                 </a>
                             </td>
                             <td class="px-6 py-5 whitespace-nowrap">
                                 <div class="inline-flex items-center gap-2 bg-slate-100 dark:bg-white/5 px-3 py-1.5 rounded-lg text-[10px] font-black text-slate-500">
-                                    <span>{{ date('d M Y', strtotime($item->start_date)) }}</span>
+                                    <span>{{ date('d M Y', strtotime($itemPenugasan->start_date)) }}</span>
                                     <i data-lucide="arrow-right" class="w-3 h-3 text-slate-400"></i>
-                                    <span>{{ date('d M Y', strtotime($item->end_date)) }}</span>
+                                    <span>{{ date('d M Y', strtotime($itemPenugasan->end_date)) }}</span>
                                 </div>
                             </td>
                             <td class="px-6 py-5">
                                 <span class="inline-block px-3 py-1.5 rounded-lg bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-400 text-[10px] font-black uppercase tracking-wider border border-blue-500/10 leading-relaxed max-w-[200px]">
-                                    {{ $item->peran }}
+                                    {{ $itemPenugasan->peran }}
                                 </span>
                             </td>
                             <td class="px-6 py-5 text-center">
@@ -125,17 +134,17 @@
             </div>
         </div>
 
-<div class="lg:hidden space-y-4">
-            @foreach($penugasan as $item)
+        <div class="lg:hidden space-y-4">
+            @foreach($daftarPenugasan as $itemPenugasan)
             <div class="p-6 rounded-2xl glass dark:bg-slate-900/40 bg-white border border-slate-200/50 dark:border-white/10 shadow-lg flex flex-col gap-4">
                 <div class="flex items-center justify-between">
                     <div class="flex items-center space-x-3">
                         <div class="w-10 h-10 bg-gradient-to-br from-blue-500/20 to-blue-600/20 rounded-xl flex items-center justify-center text-blue-600 dark:text-blue-400 font-black text-sm uppercase">
-                            {{ substr($item->nama, 0, 2) }}
+                            {{ substr($itemPenugasan->nama, 0, 2) }}
                         </div>
                         <div>
-                            <p class="font-extrabold text-slate-800 dark:text-white">{{ $item->nama }}</p>
-                            <p class="text-[10px] text-slate-500 font-bold font-mono tracking-tight">{{ $item->nip }}</p>
+                            <p class="font-extrabold text-slate-800 dark:text-white">{{ $itemPenugasan->nama }}</p>
+                            <p class="text-[10px] text-slate-500 font-bold font-mono tracking-tight">{{ $itemPenugasan->nip }}</p>
                         </div>
                     </div>
                     <span class="px-3 py-1.5 bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 text-[9px] font-black rounded-lg uppercase border border-emerald-500/20">
@@ -145,8 +154,8 @@
 
                 <div class="py-4 border-y border-slate-100 dark:border-white/5">
                     <p class="text-[9px] uppercase tracking-widest text-slate-400 font-black mb-1">Penugasan:</p>
-                    <a href="{{ route('st.detail', $item->id_st) }}" class="text-sm font-bold text-slate-800 dark:text-white hover:text-blue-500 transition-colors leading-tight block">
-                        {{ $item->st_nama }}
+                    <a href="{{ route('st.detail', $itemPenugasan->id_st) }}" class="text-sm font-bold text-slate-800 dark:text-white hover:text-blue-500 transition-colors leading-tight block">
+                        {{ $itemPenugasan->st_nama }}
                     </a>
                 </div>
 
@@ -154,15 +163,15 @@
                     <div>
                         <p class="text-[9px] uppercase tracking-widest text-slate-400 font-black mb-1">Peran:</p>
                         <p class="text-[10px] font-black text-blue-600 dark:text-blue-400 px-3 py-1.5 bg-blue-500/10 rounded-lg inline-block uppercase tracking-wider">
-                            {{ $item->peran }}
+                            {{ $itemPenugasan->peran }}
                         </p>
                     </div>
                     <div>
                         <p class="text-[9px] uppercase tracking-widest text-slate-400 font-black mb-1">Periode:</p>
                         <div class="flex items-center flex-wrap gap-1 text-[10px] font-extrabold text-slate-500">
-                             <span>{{ date('d M Y', strtotime($item->start_date)) }}</span>
+                             <span>{{ date('d M Y', strtotime($itemPenugasan->start_date)) }}</span>
                              <i data-lucide="minus" class="w-3 h-3"></i>
-                             <span>{{ date('d M Y', strtotime($item->end_date)) }}</span>
+                             <span>{{ date('d M Y', strtotime($itemPenugasan->end_date)) }}</span>
                         </div>
                     </div>
                 </div>
@@ -170,21 +179,21 @@
             @endforeach
         </div>
 
-        @if($penugasan->hasPages())
+        @if($daftarPenugasan->hasPages())
         <div class="mt-6 glass dark:bg-slate-900/30 bg-white rounded-2xl px-6 py-4 border border-slate-200/50 dark:border-white/5 shadow-lg">
             <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
                 <div class="text-sm text-slate-500 dark:text-slate-400">
-                    Menampilkan <span class="font-bold text-slate-700 dark:text-slate-300">{{ $penugasan->firstItem() }}</span> - <span class="font-bold text-slate-700 dark:text-slate-300">{{ $penugasan->lastItem() }}</span> dari <span class="font-bold text-slate-700 dark:text-slate-300">{{ $penugasan->total() }}</span> data
+                    Menampilkan <span class="font-bold text-slate-700 dark:text-slate-300">{{ $daftarPenugasan->firstItem() }}</span> - <span class="font-bold text-slate-700 dark:text-slate-300">{{ $daftarPenugasan->lastItem() }}</span> dari <span class="font-bold text-slate-700 dark:text-slate-300">{{ $daftarPenugasan->total() }}</span> data
                 </div>
                 <div class="flex gap-1">
-                    @if($penugasan->onFirstPage())
+                    @if($daftarPenugasan->onFirstPage())
                         <span class="px-4 py-2 rounded-lg bg-slate-100 dark:bg-white/5 text-slate-400 cursor-not-allowed text-sm font-medium">Prev</span>
                     @else
-                        <a href="{{ $penugasan->appends(request()->query())->previousPageUrl() }}" class="px-4 py-2 rounded-lg bg-white dark:bg-white/10 border border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-300 hover:bg-blue-50 dark:hover:bg-blue-500/10 hover:border-blue-300 dark:hover:border-blue-500/30 hover:text-blue-600 transition-all text-sm font-medium">Prev</a>
+                        <a href="{{ $daftarPenugasan->appends(request()->query())->previousPageUrl() }}" class="px-4 py-2 rounded-lg bg-white dark:bg-white/10 border border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-300 hover:bg-blue-50 dark:hover:bg-blue-500/10 hover:border-blue-300 dark:hover:border-blue-500/30 hover:text-blue-600 transition-all text-sm font-medium">Prev</a>
                     @endif
 
-                    @foreach ($penugasan->appends(request()->query())->getUrlRange(max(1, $penugasan->currentPage() - 2), min($penugasan->lastPage(), $penugasan->currentPage() + 2)) as $page => $url)
-                        @if ($page == $penugasan->currentPage())
+                    @foreach ($daftarPenugasan->appends(request()->query())->getUrlRange(max(1, $daftarPenugasan->currentPage() - 2), min($daftarPenugasan->lastPage(), $daftarPenugasan->currentPage() + 2)) as $page => $url)
+                        @if ($page == $daftarPenugasan->currentPage())
                             <span class="px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-bold shadow-sm">{{ $page }}</span>
                         @else
                             <a href="{{ $url }}" class="px-4 py-2 rounded-lg bg-white dark:bg-white/10 border border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-300 hover:bg-blue-50 dark:hover:bg-blue-500/10 hover:border-blue-300 dark:hover:border-blue-500/30 hover:text-blue-600 transition-all text-sm font-medium">{{ $page }}</a>
@@ -206,7 +215,6 @@
 @push('scripts')
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/dark.css">
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 
 <style>
@@ -510,7 +518,7 @@
             dateFormat: "Y-m-d",
             prevArrow: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"></path></svg>',
             nextArrow: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"></path></svg>',
-            defaultDate: "{{ $date }}",
+            defaultDate: "{{ $tanggalTerpilih }}",
             onChange: function(selectedDates, dateStr) {
                 if (selectedDates.length > 0) {
                     const selected = selectedDates[0];
@@ -525,7 +533,7 @@
                     };
                     document.getElementById('display_date').textContent = formatDate(selected);
 
-setTimeout(() => document.getElementById('filterForm').submit(), 100);
+                    setTimeout(() => document.getElementById('filterForm').submit(), 100);
                 }
             }
         });

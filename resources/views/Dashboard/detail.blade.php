@@ -16,18 +16,18 @@
             <div class="flex justify-between items-start mb-6">
                 <div>
                     <span class="px-3 py-1 bg-blue-500/10 text-blue-600 dark:text-blue-400 text-[10px] font-black rounded-lg uppercase tracking-widest mb-2 inline-block border border-blue-500/10">Surat Tugas</span>
-                    <h2 class="text-2xl md:text-3xl font-black text-slate-900 dark:text-white tracking-tight">{{ $st->nama_penugasan }}</h2>
-                    <p class="text-slate-500 dark:text-slate-400 mt-1 font-mono text-xs font-bold">ID: #{{ $st->id_st }}</p>
+                    <h2 class="text-2xl md:text-3xl font-black text-slate-900 dark:text-white tracking-tight">{{ $suratTugas->nama_penugasan }}</h2>
+                    <p class="text-slate-500 dark:text-slate-400 mt-1 font-mono text-xs font-bold">ID: #{{ $suratTugas->id_st }}</p>
                 </div>
                 <div class="text-right">
                     @php
-                        $statusClass = match(strtolower($st->status_st)) {
+                        $statusClass = match(strtolower($suratTugas->status_st)) {
                             'batal' => 'bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/20',
                             'final', 'selesai' => 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20',
                             'tidak aktif' => 'bg-slate-500/10 text-slate-600 dark:text-slate-400 border-slate-500/20',
                             default => 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20'
                         };
-                        $statusIcon = match(strtolower($st->status_st)) {
+                        $statusIcon = match(strtolower($suratTugas->status_st)) {
                             'batal' => 'x-circle',
                             'final', 'selesai' => 'check-circle',
                             'tidak aktif' => 'minus-circle',
@@ -36,7 +36,7 @@
                     @endphp
                     <span class="px-4 py-2 {{ $statusClass }} text-sm font-black rounded-xl border shadow-sm inline-flex items-center gap-2">
                         <i data-lucide="{{ $statusIcon }}" class="w-4 h-4"></i>
-                        {{ $st->status_st }}
+                        {{ $suratTugas->status_st }}
                     </span>
                 </div>
             </div>
@@ -45,27 +45,27 @@
                 <div class="space-y-6">
                     <div>
                         <p class="text-slate-500 dark:text-slate-400 text-[10px] uppercase tracking-[0.2em] font-black mb-1">Tanggal Mulai</p>
-                        <p class="text-lg font-bold text-slate-900 dark:text-slate-100">{{ $st->start_date ? date('d F Y', strtotime($st->start_date)) : '-' }}</p>
+                        <p class="text-lg font-bold text-slate-900 dark:text-slate-100">{{ $suratTugas->start_date ? date('d F Y', strtotime($suratTugas->start_date)) : '-' }}</p>
                     </div>
                     <div>
                         <p class="text-slate-500 dark:text-slate-400 text-[10px] uppercase tracking-[0.2em] font-black mb-1">Nomor Surat Tugas</p>
-                        <p class="text-slate-700 dark:text-slate-300 font-bold font-mono">{{ $st->no_surat_tugas ?? '-' }}</p>
+                        <p class="text-slate-700 dark:text-slate-300 font-bold font-mono">{{ $suratTugas->no_surat_tugas ?? '-' }}</p>
                     </div>
                 </div>
                 <div class="space-y-6">
                     <div>
                         <p class="text-slate-500 dark:text-slate-400 text-[10px] uppercase tracking-[0.2em] font-black mb-1">Tanggal Selesai</p>
-                        <p class="text-lg font-bold text-slate-900 dark:text-slate-100">{{ $st->end_date ? date('d F Y', strtotime($st->end_date)) : '-' }}</p>
+                        <p class="text-lg font-bold text-slate-900 dark:text-slate-100">{{ $suratTugas->end_date ? date('d F Y', strtotime($suratTugas->end_date)) : '-' }}</p>
                     </div>
                     <div>
                         <p class="text-slate-500 dark:text-slate-400 text-[10px] uppercase tracking-[0.2em] font-black mb-1">ID Penugasan</p>
-                        <p class="text-slate-700 dark:text-slate-300 font-bold font-mono">ST-{{ $st->id_st }}</p>
+                        <p class="text-slate-700 dark:text-slate-300 font-bold font-mono">ST-{{ $suratTugas->id_st }}</p>
                     </div>
                 </div>
             </div>
         </div>
 
-        @if($st->nomor_lhp)
+        @if($suratTugas->nomor_lhp)
         <div class="glass p-8 rounded-3xl border-emerald-500/30 shadow-lg shadow-emerald-500/5">
             <h3 class="text-xl font-black mb-6 text-emerald-600 dark:text-emerald-400 flex items-center gap-3">
                 <div class="p-2 bg-emerald-500/20 rounded-lg"><i data-lucide="file-check" class="w-6 h-6"></i></div>
@@ -74,11 +74,11 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div class="p-5 bg-slate-100/50 dark:bg-white/5 rounded-2xl border border-slate-200/50 dark:border-white/5 shadow-inner">
                     <p class="text-slate-600 dark:text-slate-400 text-[10px] uppercase font-black mb-1 tracking-wider">Nomor LHP</p>
-                    <p class="text-lg font-black text-slate-800 dark:text-white font-mono">{{ $st->nomor_lhp }}</p>
+                    <p class="text-lg font-black text-slate-800 dark:text-white font-mono">{{ $suratTugas->nomor_lhp }}</p>
                 </div>
                 <div class="p-5 bg-slate-100/50 dark:bg-white/5 rounded-2xl border border-slate-200/50 dark:border-white/5 shadow-inner">
                     <p class="text-slate-600 dark:text-slate-400 text-[10px] uppercase font-black mb-1 tracking-wider">Tanggal LHP</p>
-                    <p class="text-lg font-black text-slate-800 dark:text-white">{{ date('d F Y', strtotime($st->tanggal_lhp)) }}</p>
+                    <p class="text-lg font-black text-slate-800 dark:text-white">{{ date('d F Y', strtotime($suratTugas->tanggal_lhp)) }}</p>
                 </div>
             </div>
         </div>
@@ -90,7 +90,7 @@
                 Tim Penugasan
             </h3>
             <div class="grid grid-cols-1 gap-4">
-                @foreach($tim as $anggota)
+                @foreach($timPenugasan as $anggota)
                 <div class="flex flex-col md:flex-row md:items-center justify-between p-6 rounded-2xl bg-slate-50/50 dark:bg-white/5 border border-slate-100 dark:border-white/5 group hover:bg-slate-100 dark:hover:bg-white/10 transition-all gap-4">
                     <div class="flex items-center space-x-5 min-w-0">
                         <div class="w-12 h-12 bg-blue-600/10 dark:bg-slate-800 rounded-2xl flex items-center justify-center font-black text-blue-700 dark:text-slate-400 border border-blue-500/10 flex-shrink-0">

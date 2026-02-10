@@ -16,10 +16,10 @@
             <h3 class="text-xl font-bold mb-6">Ringkasan Managerial</h3>
             <div class="space-y-4">
                 @php
-                    $highest = $bidwasData->sortByDesc('total_st')->first();
-                    $lowest = $bidwasData->sortBy('total_st')->first();
+                    $bidwasTeraktif = $bidwasData->sortByDesc('total_st')->first();
+                    $bidwasTerpasif = $bidwasData->sortBy('total_st')->first();
 
-                    $labelMapping = [
+                    $bidwasLabelMap = [
                         'Bagian Tata Usaha' => 'Tata Usaha',
                         'Koordinator Pengawasan Kelompok JFA Bidang Pengawasan Instansi Pemerintah Pusat' => 'Bidang IPP',
                         'Koordinator Pengawasan Kelompok JFA Bidang Akuntabilitas Pemerintah Daerah' => 'Bidang APD',
@@ -31,8 +31,10 @@
                         'Sub Bagian Umum' => 'Umum'
                     ];
 
-                    function getShortLabel($full, $map) {
-                        return $map[$full] ?? $full;
+                    if (!function_exists('getSimplifiedBidwasLabel')) {
+                        function getSimplifiedBidwasLabel($fullName, $mapping) {
+                            return $mapping[$fullName] ?? $fullName;
+                        }
                     }
                 @endphp
 
@@ -40,9 +42,9 @@
                     <p class="text-slate-500 dark:text-slate-400 text-xs font-bold uppercase tracking-widest mb-2">Bidang Teraktif</p>
                     <div class="flex justify-between items-end">
                         <p class="text-xl font-black text-blue-500 dark:text-blue-400">
-                            {{ getShortLabel($highest->nama_bidwas ?? '-', $labelMapping) }}
+                            {{ getSimplifiedBidwasLabel($bidwasTeraktif->nama_bidwas ?? '-', $bidwasLabelMap) }}
                         </p>
-                        <p class="text-sm font-black text-slate-700 dark:text-slate-300">{{ $highest->total_st ?? 0 }} ST</p>
+                        <p class="text-sm font-black text-slate-700 dark:text-slate-300">{{ $bidwasTeraktif->total_st ?? 0 }} ST</p>
                     </div>
                 </div>
 
@@ -84,8 +86,10 @@
             <h3 class="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-slate-800 to-slate-600 dark:from-white dark:to-slate-300">Tabel Capaian per Bidang</h3>
             <p class="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-1 italic opacity-70">Data real-time penyelesaian penugasan</p>
         </div>
-        <div class="p-2 bg-blue-500/10 rounded-xl">
-            <i data-lucide="table" class="w-5 h-5 text-blue-500"></i>
+        <div class="flex items-center gap-2">
+            <div class="p-2 bg-blue-500/10 rounded-xl">
+                <i data-lucide="table" class="w-5 h-5 text-blue-500"></i>
+            </div>
         </div>
     </div>
 
@@ -101,42 +105,42 @@
                 </tr>
             </thead>
             <tbody class="space-y-4">
-                @foreach($bidwasData as $item)
-                <tr class="group transition-all duration-300 cursor-pointer" onclick="window.location='{{ route('bidwas.detail', $item->id_bidwas) }}'">
+                @foreach($bidwasData as $dataBidang)
+                <tr class="group transition-all duration-300 cursor-pointer" onclick="window.location='{{ route('bidwas.detail', $dataBidang->id_bidwas) }}'">
                     <td class="px-6 py-5 bg-slate-50 dark:bg-white/5 group-hover:bg-blue-500/5 first:rounded-l-2xl border-l border-t border-b border-slate-200/50 dark:border-white/5 transition-colors">
                         <div class="flex flex-col">
                             <div class="flex items-center gap-2">
                                 <span class="font-black text-slate-800 dark:text-white group-hover:text-blue-500 transition-colors leading-tight">
-                                    {{ getShortLabel($item->nama_bidwas, $labelMapping) }}
+                                    {{ getSimplifiedBidwasLabel($dataBidang->nama_bidwas, $bidwasLabelMap) }}
                                 </span>
                                 <i data-lucide="chevron-right" class="w-4 h-4 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity"></i>
                             </div>
-                            <span class="text-[9px] font-bold text-slate-400 dark:text-slate-500 font-mono tracking-widest mt-1">{{ $item->kode }}</span>
+                            <span class="text-[9px] font-bold text-slate-400 dark:text-slate-500 font-mono tracking-widest mt-1">{{ $dataBidang->kode }}</span>
                         </div>
                     </td>
                     <td class="px-6 py-5 bg-slate-50 dark:bg-white/5 group-hover:bg-blue-500/5 border-t border-b border-slate-200/50 dark:border-white/5 transition-colors text-center">
-                        <span class="font-mono font-black text-xl text-violet-500">{{ $item->total_pegawai }}</span>
+                        <span class="font-mono font-black text-xl text-violet-500">{{ $dataBidang->total_pegawai }}</span>
                     </td>
                     <td class="px-6 py-5 bg-slate-50 dark:bg-white/5 group-hover:bg-blue-500/5 border-t border-b border-slate-200/50 dark:border-white/5 transition-colors text-center">
-                        <span class="font-mono font-black text-xl text-slate-700 dark:text-slate-300">{{ $item->total_st }}</span>
+                        <span class="font-mono font-black text-xl text-slate-700 dark:text-slate-300">{{ $dataBidang->total_st }}</span>
                     </td>
                     <td class="px-6 py-5 bg-slate-50 dark:bg-white/5 group-hover:bg-blue-500/5 border-t border-b border-slate-200/50 dark:border-white/5 transition-colors text-center">
-                        <span class="font-mono font-black text-xl text-emerald-500">{{ $item->total_lhp }}</span>
+                        <span class="font-mono font-black text-xl text-emerald-500">{{ $dataBidang->total_lhp }}</span>
                     </td>
                     <td class="px-6 py-5 bg-slate-50 dark:bg-white/5 group-hover:bg-blue-500/5 last:rounded-r-2xl border-r border-t border-b border-slate-200/50 dark:border-white/5 transition-colors min-w-[200px]">
                         @php
-                            $rate = $item->total_st > 0 ? round(($item->total_lhp / $item->total_st) * 100) : 0;
+                            $persentasePenyelesaian = $dataBidang->total_st > 0 ? round(($dataBidang->total_lhp / $dataBidang->total_st) * 100) : 0;
 
-                            $colorClass = 'bg-blue-500';
-                            if($rate >= 80) $colorClass = 'bg-gradient-to-r from-emerald-500 to-teal-400 shadow-emerald-500/30';
-                            elseif($rate >= 50) $colorClass = 'bg-gradient-to-r from-blue-500 to-indigo-500 shadow-blue-500/30';
-                            else $colorClass = 'bg-gradient-to-r from-amber-500 to-orange-400 shadow-amber-500/30';
+                            $warnaProgressBar = 'bg-blue-500';
+                            if($persentasePenyelesaian >= 80) $warnaProgressBar = 'bg-gradient-to-r from-emerald-500 to-teal-400 shadow-emerald-500/30';
+                            elseif($persentasePenyelesaian >= 50) $warnaProgressBar = 'bg-gradient-to-r from-blue-500 to-indigo-500 shadow-blue-500/30';
+                            else $warnaProgressBar = 'bg-gradient-to-r from-amber-500 to-orange-400 shadow-amber-500/30';
                         @endphp
                         <div class="flex items-center space-x-4">
                             <div class="flex-1 h-3 bg-slate-200 dark:bg-white/5 rounded-full overflow-hidden p-[2px] shadow-inner">
-                                <div class="h-full {{ $colorClass }} rounded-full transition-all duration-1000 ease-out shadow-lg" style="width: {{ $rate }}%"></div>
+                                <div class="h-full {{ $warnaProgressBar }} rounded-full transition-all duration-1000 ease-out shadow-lg" style="width: {{ $persentasePenyelesaian }}%"></div>
                             </div>
-                            <span class="text-sm font-black text-slate-800 dark:text-slate-200 w-10 text-right">{{ $rate }}%</span>
+                            <span class="text-sm font-black text-slate-800 dark:text-slate-200 w-10 text-right">{{ $persentasePenyelesaian }}%</span>
                         </div>
                     </td>
                 </tr>
@@ -148,13 +152,13 @@
 
 @push('scripts')
 <script>
-    const getChartColors = () => {
-        const isLight = document.documentElement.getAttribute('data-theme') === 'light';
-        return isLight ? '#1e293b' : '#cbd5e1';
+    const getChartThemeColor = () => {
+        const isLightTheme = document.documentElement.getAttribute('data-theme') === 'light';
+        return isLightTheme ? '#1e293b' : '#cbd5e1';
     };
 
-    function shortenBidwasLabel(name) {
-        const mapping = {
+    function getShortenedBidwasLabel(fullName) {
+        const labelAliases = {
             'Bagian Tata Usaha': 'Tata Usaha',
             'Koordinator Pengawasan Kelompok JFA Bidang Pengawasan Instansi Pemerintah Pusat': 'Bidang IPP',
             'Koordinator Pengawasan Kelompok JFA Bidang Akuntabilitas Pemerintah Daerah': 'Bidang APD',
@@ -165,17 +169,17 @@
             'Sub Bagian Keuangan': 'Keuangan',
             'Sub Bagian Umum': 'Umum'
         };
-        return mapping[name] || name;
+        return labelAliases[fullName] || fullName;
     }
 
     document.addEventListener('DOMContentLoaded', function() {
         Chart.register(ChartDataLabels);
 
-        const bCtx = document.getElementById('bidwasDonut').getContext('2d');
-        const bidwasChartInstance = new Chart(bCtx, {
+        const donutChartContext = document.getElementById('bidwasDonut').getContext('2d');
+        const donutChartInstance = new Chart(donutChartContext, {
             type: 'pie',
             data: {
-                labels: {!! json_encode($bidwasData->pluck('nama_bidwas')) !!}.map(shortenBidwasLabel),
+                labels: {!! json_encode($bidwasData->pluck('nama_bidwas')) !!}.map(getShortenedBidwasLabel),
                 datasets: [{
                     data: {!! json_encode($bidwasData->pluck('total_st')) !!},
                     backgroundColor: [
@@ -192,7 +196,7 @@
                     legend: {
                         position: 'bottom',
                         labels: {
-                            color: getChartColors(),
+                            color: getChartThemeColor(),
                             padding: 20,
                             usePointStyle: true,
                             font: { size: 12, weight: '500' }
@@ -205,10 +209,10 @@
             }
         });
 
-        window.addEventListener('themeChanged', function(e) {
-            if (bidwasChartInstance.options.plugins && bidwasChartInstance.options.plugins.legend) {
-                bidwasChartInstance.options.plugins.legend.labels.color = e.detail.theme === 'light' ? '#1e293b' : '#cbd5e1';
-                bidwasChartInstance.update();
+        window.addEventListener('themeChanged', function(event) {
+            if (donutChartInstance.options.plugins && donutChartInstance.options.plugins.legend) {
+                donutChartInstance.options.plugins.legend.labels.color = event.detail.theme === 'light' ? '#1e293b' : '#cbd5e1';
+                donutChartInstance.update();
             }
         });
     });
