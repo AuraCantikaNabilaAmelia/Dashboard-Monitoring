@@ -10,7 +10,6 @@
     </a>
 </div>
 
-{{-- Standard Header from detail.blade.php --}}
 <div class="glass p-8 rounded-3xl shadow-xl border border-slate-200/50 dark:border-white/5 mb-8">
     <div class="flex flex-col md:flex-row justify-between items-start mb-6 gap-4">
         <div>
@@ -64,7 +63,6 @@
     </div>
 </div>
 
-{{-- Timeline Tindak Lanjut Section --}}
 <div class="glass p-8 rounded-3xl min-h-[400px]">
     <div class="flex items-center justify-between mb-10">
         <div>

@@ -42,7 +42,6 @@
     </a>
 </div>
 
-{{-- Header --}}
 <div class="glass p-8 rounded-3xl mb-8">
     <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
         <div>
@@ -53,7 +52,6 @@
     </div>
 </div>
 
-{{-- Stats Cards --}}
 <div class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 mb-8">
     <div class="glass p-6 rounded-3xl text-center group hover:border-violet-500/30 transition-all">
         <div class="w-12 h-12 bg-violet-500/20 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
@@ -85,7 +83,6 @@
     </div>
 </div>
 
-{{-- Pegawai Table --}}
 <div class="glass p-8 rounded-3xl overflow-hidden shadow-2xl border border-white/5">
     <div class="flex items-center justify-between mb-8">
         <div>

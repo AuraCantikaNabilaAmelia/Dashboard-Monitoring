@@ -19,10 +19,4 @@ class StTindakLanjut extends Model
         'created_by_nip',
         'created_by_nama',
     ];
-
-    /**
-     * Get the ST that owns the tindak lanjut.
-     * Note: Since d_st doesn't have a simple ID in Eloquent (compound key),
-     * we will use raw query or DB facade in controller for d_st related info.
-     */
 }

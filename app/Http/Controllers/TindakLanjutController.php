@@ -53,7 +53,6 @@ class TindakLanjutController extends Controller
 
     public function show($id)
     {
-        // $id di sini adalah id_st
         $st = DB::table('d_st')
             ->leftJoin('r_bidwas', 'd_st.id_bidwas', '=', 'r_bidwas.id_bidwas')
             ->where('id_st', $id)
@@ -78,7 +77,6 @@ class TindakLanjutController extends Controller
         $st = DB::table('d_st')->where('id_st', $id)->first();
         if (!$st) abort(404);
 
-        // Security Check: Only members of the same bidang can add
         if (auth()->user()->role !== 'pimpinan' && auth()->user()->bidang_id != $st->id_bidwas) {
             return back()->with('error', 'Anda hanya dapat menambahkan tindak lanjut untuk bidang Anda sendiri.');
         }
@@ -108,7 +106,6 @@ class TindakLanjutController extends Controller
     {
         $entry = StTindakLanjut::findOrFail($id);
 
-        // Only creator can delete
         if ($entry->created_by_nip !== auth()->user()->nip) {
             return back()->with('error', 'Anda hanya dapat menghapus catatan yang Anda buat sendiri.');
         }

@@ -281,7 +281,6 @@ class DashboardController extends Controller
             ->groupBy('r_bidwas.id_bidwas', 'r_bidwas.nm_bidwas', 'r_bidwas.kd_bidwas')
             ->get();
 
-        // Count pegawai per bidwas
         $pegawaiCounts = DB::table('r_pegawai')
             ->select('id_bidwas', DB::raw('count(*) as total_pegawai'))
             ->whereNotNull('id_bidwas')
@@ -302,7 +301,6 @@ class DashboardController extends Controller
 
         $today = Carbon::today()->toDateString();
 
-        // Get all pegawai in this bidang with their active assignment count
         $pegawaiList = DB::table('r_pegawai')
             ->where('r_pegawai.id_bidwas', $id)
             ->leftJoin('d_st_tim', 'r_pegawai.nip', '=', 'd_st_tim.nip')
@@ -323,7 +321,6 @@ class DashboardController extends Controller
             ->orderByDesc('active_tasks')
             ->get();
 
-        // Stats for this bidang
         $totalST = DB::table('d_st')->where('id_bidwas', $id)->count();
         $totalLHP = DB::table('d_lhp')
             ->join('d_st', 'd_lhp.id_st', '=', 'd_st.id_st')

@@ -9,21 +9,20 @@ class PegawaiBidwasSeeder extends Seeder
 {
     public function run(): void
     {
-        // === 1. Assign pegawai yang sudah punya role spesifik ===
         $roleMapping = [
-            'korwas_apd_1'            => 159, // APD
+            'korwas_apd_1'            => 159,
             'korwas_apd_2'            => 159,
-            'korwas_an_1'             => 160, // AN
+            'korwas_an_1'             => 160,
             'korwas_an_2'             => 160,
-            'korwas_ipp_1'            => 158, // IPP
+            'korwas_ipp_1'            => 158,
             'korwas_ipp_2'            => 158,
-            'korwas_investigasi_1'    => 161, // Investigasi
+            'korwas_investigasi_1'    => 161,
             'korwas_investigasi_2'    => 161,
-            'korwas_p3a'              => 320, // P3A
-            'kepala_perwakilan'       => 157, // TU (Pimpinan)
-            'kepala_bagian_umum'      => 553, // Umum
-            'subkoor_keuangan'        => 552, // Keuangan
-            'subkoor_bmn_rt_kearsipan'=> 553, // Umum
+            'korwas_p3a'              => 320,
+            'kepala_perwakilan'       => 157,
+            'kepala_bagian_umum'      => 553,
+            'subkoor_keuangan'        => 552,
+            'subkoor_bmn_rt_kearsipan'=> 553,
         ];
 
         foreach ($roleMapping as $role => $bidwasId) {
@@ -34,14 +33,13 @@ class PegawaiBidwasSeeder extends Seeder
 
         $this->command->info('✓ 13 pegawai dengan role spesifik berhasil di-assign ke bidang.');
 
-        // === 2. Distribusikan 273 pegawai "staff" ke 6 bidang utama ===
         $mainBidwas = [
-            158, // IPP
-            159, // APD
-            160, // AN
-            161, // Investigasi
-            320, // P3A
-            157, // TU
+            158,
+            159,
+            160,
+            161,
+            320,
+            157,
         ];
 
         $staffIds = DB::table('r_pegawai')
@@ -50,7 +48,6 @@ class PegawaiBidwasSeeder extends Seeder
             ->pluck('id')
             ->toArray();
 
-        // Shuffle untuk distribusi random yang lebih natural
         shuffle($staffIds);
 
         foreach ($staffIds as $index => $pegawaiId) {
@@ -62,7 +59,6 @@ class PegawaiBidwasSeeder extends Seeder
 
         $this->command->info('✓ ' . count($staffIds) . ' pegawai staff berhasil didistribusikan ke 6 bidang utama.');
 
-        // === 3. Ringkasan ===
         $summary = DB::table('r_pegawai')
             ->join('r_bidwas', 'r_pegawai.id_bidwas', '=', 'r_bidwas.id_bidwas')
             ->select('r_bidwas.nm_bidwas', DB::raw('count(*) as total'))

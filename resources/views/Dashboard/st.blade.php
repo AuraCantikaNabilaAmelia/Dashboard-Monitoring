@@ -39,18 +39,18 @@
                                 </span>
                             </div>
 
-<div class="px-2 text-slate-400">
+                            <div class="px-2 text-slate-400">
                                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
                             </div>
 
-<div class="flex-1 flex items-center gap-3 pl-2 pr-3 h-8">
+                            <div class="flex-1 flex items-center gap-3 pl-2 pr-3 h-8">
                                 <i data-lucide="calendar" class="w-3.5 h-3.5 text-slate-400 group-hover:text-blue-500 transition-colors"></i>
                                 <span id="display_end_date" class="text-sm font-medium {{ $endDate ? 'text-slate-800 dark:text-white' : 'text-slate-400' }}">
                                     {{ $endDate ? \Carbon\Carbon::parse($endDate)->format('d M Y') : 'Selesai' }}
                                 </span>
                             </div>
 
-<input type="text" id="date_range_picker"
+                            <input type="text" id="date_range_picker"
                                    class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
                                    placeholder="Select Date Range"
                                    readonly>
@@ -58,7 +58,7 @@
                     </div>
                 </div>
 
-<div class="w-full lg:w-52 relative z-[45]">
+                <div class="w-full lg:w-52 relative z-[45]">
                     <label class="block text-[10px] uppercase tracking-widest text-slate-400 font-black mb-2 ml-1">Status</label>
                     <div class="custom-dropdown-container w-full">
                         <div class="status-filter-dropdown dark:bg-white/5 bg-white h-12 border border-slate-200 dark:border-white/10 rounded-xl">

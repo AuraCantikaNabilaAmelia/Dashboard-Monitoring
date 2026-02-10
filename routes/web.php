@@ -20,7 +20,6 @@ Route::prefix('dashboard')
         Route::get('/detail/{id}', 'App\Http\Controllers\DashboardController@detail')->name('st.detail');
         Route::get('/employee/{nip}', 'App\Http\Controllers\DashboardController@employeeDetail')->name('employee.detail');
 
-        // Tindak Lanjut Routes (Redesigned to be ST-based free text)
         Route::get('/tindaklanjut', 'App\Http\Controllers\TindakLanjutController@index')->name('tindaklanjut.index');
         Route::get('/tindaklanjut/{id}', 'App\Http\Controllers\TindakLanjutController@show')->name('tindaklanjut.show');
         Route::post('/tindaklanjut/{id}/entry', 'App\Http\Controllers\TindakLanjutController@addEntry')->name('tindaklanjut.addEntry');
