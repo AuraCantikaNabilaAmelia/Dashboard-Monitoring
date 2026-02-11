@@ -47,10 +47,16 @@
         </div>
 
         <div class="glass p-6 rounded-3xl border-l-4 border-emerald-500">
-            <h3 class="text-lg font-bold mb-4 flex items-center gap-2">
-                <i data-lucide="user-check" class="w-5 h-5 text-emerald-500"></i>
-                Pegawai Tersedia ({{ count($pegawaiTersedia) }})
-            </h3>
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-bold flex items-center gap-2">
+                    <i data-lucide="user-check" class="w-5 h-5 text-emerald-500"></i>
+                    Pegawai Tersedia ({{ $totalPegawai - $pegawaiPalingSibuk->sum('active_tasks') > 0 ? $totalPegawai - $pegawaiPalingSibuk->sum('active_tasks') : count($pegawaiTersedia) }})
+                </h3>
+                <button onclick="openPaginationModal('available')" class="group flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-500/10 hover:bg-blue-500 text-blue-500 hover:text-white transition-all duration-300 border border-blue-500/20 hover:border-blue-500 shadow-lg shadow-blue-500/10">
+                    <span class="text-[10px] font-black uppercase tracking-widest">Selengkapnya</span>
+                    <i data-lucide="arrow-right" class="w-3 h-3 group-hover:translate-x-0.5 transition-transform"></i>
+                </button>
+            </div>
             <div class="space-y-3 max-h-[280px] overflow-y-auto pr-2">
                 @forelse($pegawaiTersedia as $dataPegawai)
                 <div class="flex items-center justify-between p-3 bg-emerald-50 dark:bg-emerald-500/10 rounded-xl border border-emerald-100 dark:border-emerald-500/20 hover:bg-emerald-100 dark:hover:bg-emerald-500/20 transition-colors">
@@ -63,9 +69,6 @@
                             <p class="text-xs text-slate-500">{{ $dataPegawai->nip }}</p>
                         </div>
                     </div>
-                    <span class="px-2 py-1 bg-emerald-500 text-white text-xs font-bold rounded-full">
-                        Tersedia
-                    </span>
                 </div>
                 @empty
                 <div class="flex flex-col items-center justify-center py-8 text-center">
@@ -79,10 +82,16 @@
         </div>
 
         <div class="glass p-6 rounded-3xl border-l-4 border-red-500">
-            <h3 class="text-lg font-bold mb-4 flex items-center gap-2">
-                <i data-lucide="alert-triangle" class="w-5 h-5 text-red-500"></i>
-                Perhatian Khusus
-            </h3>
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-bold flex items-center gap-2">
+                    <i data-lucide="alert-triangle" class="w-5 h-5 text-red-500"></i>
+                    Perhatian Khusus ({{ $totalBelumSelesai }})
+                </h3>
+                <button onclick="openPaginationModal('overdue')" class="group flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-500/10 hover:bg-blue-500 text-blue-500 hover:text-white transition-all duration-300 border border-blue-500/20 hover:border-blue-500 shadow-lg shadow-blue-500/10">
+                    <span class="text-[10px] font-black uppercase tracking-widest">Selengkapnya</span>
+                    <i data-lucide="arrow-right" class="w-3 h-3 group-hover:translate-x-0.5 transition-transform"></i>
+                </button>
+            </div>
              <div class="space-y-3 max-h-[280px] overflow-y-auto pr-2">
                 @forelse($daftarSuratTugasBelumSelesai as $suratTugas)
                 <div class="p-3 bg-red-50 dark:bg-red-500/10 rounded-xl border border-red-100 dark:border-red-500/20 hover:border-red-500/40 transition-all">
@@ -91,7 +100,7 @@
                             {{ $suratTugas->nama_penugasan }}
                         </p>
                         <span class="text-xs font-bold text-red-500 bg-red-100 dark:bg-red-500/20 px-2 py-0.5 rounded flex-shrink-0 ml-2">
-                            Telat {{ \Carbon\Carbon::parse($suratTugas->end_date)->diffInDays(now()) }} Hari
+                            Telat {{ \Carbon\Carbon::parse($suratTugas->end_date)->diffInDays(now()) }} H
                         </span>
                     </div>
                     <div class="flex justify-between items-center mt-2">
@@ -110,12 +119,6 @@
                     <p class="text-slate-500 font-medium">Tidak ada penugasan terlambat!</p>
                 </div>
                 @endforelse
-
-                @if($totalBelumSelesai > 5)
-                <div class="text-center pt-2">
-                    <p class="text-sm text-slate-500">dan {{ $totalBelumSelesai - 5 }} lainnya yang perlu perhatian.</p>
-                </div>
-                @endif
             </div>
         </div>
     </div>
@@ -271,6 +274,37 @@
         </div>
     </div>
 </div>
+
+<div id="detailsModal" class="fixed inset-0 dark:bg-slate-950/95 bg-white/90 backdrop-blur-2xl z-[100] hidden flex items-center justify-center p-4 modal-root">
+    <div class="glass w-full max-w-2xl rounded-[40px] overflow-hidden shadow-2xl border border-slate-200 dark:border-white/10 flex flex-col h-[80vh]">
+        <div class="p-8 border-b border-slate-200 dark:border-white/10 flex justify-between items-center flex-shrink-0">
+            <div>
+                <h3 id="modalDetailsTitle" class="text-2xl font-bold text-slate-800 dark:text-white">Detail Data</h3>
+                <p id="modalDetailsSubtitle" class="text-sm text-slate-500 dark:text-slate-400 mt-1">Menampilkan daftar lengkap</p>
+            </div>
+            <div class="flex items-center gap-4">
+                <div class="flex items-center gap-2 bg-slate-100 dark:bg-white/5 rounded-2xl p-1.5 px-4 border border-slate-200 dark:border-white/10 shadow-inner">
+                    <button onclick="changePage(currentModalType, -1)" id="modal-prev" class="p-1 hover:bg-slate-200 dark:hover:bg-white/10 rounded-lg transition-colors disabled:opacity-30 disabled:cursor-not-allowed group" disabled>
+                        <i data-lucide="chevron-left" class="w-5 h-5 text-slate-600 dark:text-slate-300 group-hover:text-blue-500 transition-colors"></i>
+                    </button>
+                    <span class="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest mx-2"><span id="modal-current" class="text-blue-500">1</span> / <span id="modal-last">1</span></span>
+                    <button onclick="changePage(currentModalType, 1)" id="modal-next" class="p-1 hover:bg-slate-200 dark:hover:bg-white/10 rounded-lg transition-colors disabled:opacity-30 disabled:cursor-not-allowed group" disabled>
+                        <i data-lucide="chevron-right" class="w-5 h-5 text-slate-600 dark:text-slate-300 group-hover:text-blue-500 transition-colors"></i>
+                    </button>
+                </div>
+                <button onclick="closeDetailsModal()" class="p-3 bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 rounded-2xl transition-all border border-slate-200 dark:border-white/10 shadow-lg text-slate-600 dark:text-white">
+                    <i data-lucide="x" class="w-6 h-6"></i>
+                </button>
+            </div>
+        </div>
+        <div id="modal-container" class="p-8 overflow-y-auto space-y-4 custom-scrollbar flex-1 relative">
+            <!-- Content loaded via AJAX -->
+        </div>
+        <div class="p-6 bg-slate-50/50 dark:bg-white/5 border-t border-slate-200 dark:border-white/10 text-center flex-shrink-0">
+            <p class="text-xs text-slate-500 dark:text-slate-400 font-bold uppercase tracking-widest">Total: <span id="modal-total" class="text-blue-500 text-lg mx-1">0</span> Item Terdata</p>
+        </div>
+    </div>
+</div>
 @endpush
 
 @push('scripts')
@@ -298,7 +332,7 @@
     const bidwasData = {!! json_encode($statistikBidwas->pluck('total')) !!};
 
     const trendData = {!! json_encode(collect(range(1, 12))->map(function($m) use ($trendBulanan) {
-        return $trendBulanan->where('month', $m)->first()->total ?? 0;
+        return $trendBulanan->where('bulan', $m)->first()->total ?? 0;
     })) !!};
 
     const statusLabels = {!! json_encode($distribusiStatus->pluck('status_st')) !!};
@@ -601,8 +635,89 @@
         document.body.style.overflow = 'auto';
     }
 
+    let currentModalType = null;
+    let dashboardState = {
+        available: { current: 1, last: 1 },
+        overdue: { current: 1, last: 1 }
+    };
+
+    function openPaginationModal(type) {
+        currentModalType = type;
+        const modal = document.getElementById('detailsModal');
+        const title = document.getElementById('modalDetailsTitle');
+        const subtitle = document.getElementById('modalDetailsSubtitle');
+        
+        if (type === 'available') {
+            title.innerText = 'Pegawai Tersedia';
+            subtitle.innerText = 'Daftar lengkap pegawai yang tidak memiliki penugasan aktif hari ini';
+        } else {
+            title.innerText = 'Perhatian Khusus';
+            subtitle.innerText = 'Daftar penugasan yang telah melewati tenggat waktu namun belum selesai';
+        }
+
+        modal.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+        
+        dashboardState[type].current = 1;
+        loadModalData(type, 1);
+    }
+
+    function closeDetailsModal() {
+        document.getElementById('detailsModal').classList.add('hidden');
+        document.body.style.overflow = 'auto';
+    }
+
+    async function loadModalData(type, page) {
+        const container = document.getElementById('modal-container');
+        const prevBtn = document.getElementById('modal-prev');
+        const nextBtn = document.getElementById('modal-next');
+        
+        container.classList.add('opacity-40');
+        prevBtn.disabled = true;
+        nextBtn.disabled = true;
+
+        const url = type === 'available' 
+            ? `/dashboard/ajax/available-employees?available_page=${page}`
+            : `/dashboard/ajax/overdue-tasks?overdue_page=${page}`;
+
+        try {
+            const response = await fetch(url);
+            const html = await response.text();
+            
+            container.innerHTML = html;
+            
+            const paginationData = JSON.parse(container.querySelector(`.${type}-pagination-data`).textContent);
+            
+            dashboardState[type].current = paginationData.current_page;
+            dashboardState[type].last = paginationData.last_page;
+            
+            document.getElementById('modal-current').textContent = dashboardState[type].current;
+            document.getElementById('modal-last').textContent = dashboardState[type].last;
+            document.getElementById('modal-total').textContent = paginationData.total;
+
+            prevBtn.disabled = dashboardState[type].current === 1;
+            nextBtn.disabled = dashboardState[type].current === dashboardState[type].last;
+            
+            lucide.createIcons();
+            container.scrollTop = 0;
+        } catch (error) {
+            console.error('Error fetching data:', error);
+        } finally {
+            container.classList.remove('opacity-40');
+        }
+    }
+
+    function changePage(type, delta) {
+        const nextPage = dashboardState[type].current + delta;
+        if (nextPage < 1 || nextPage > dashboardState[type].last) return;
+        loadModalData(type, nextPage);
+    }
+
     document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape') closeChartModal();
+        if (e.key === 'Escape') {
+            closeChartModal();
+            closeDetailsModal();
+        }
     });
 </script>
 @endpush

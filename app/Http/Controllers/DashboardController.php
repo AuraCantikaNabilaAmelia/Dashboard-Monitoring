@@ -67,7 +67,7 @@ class DashboardController extends Controller
 
         $pegawaiTersedia = $queryPegawaiTersedia
             ->select('nama', 'nip')
-            ->limit(10)
+            ->take(10)
             ->get();
 
         $querySuratTugasBelumSelesai = DB::table('d_st')
@@ -83,7 +83,11 @@ class DashboardController extends Controller
             });
         }
 
-        $daftarSuratTugasBelumSelesai = (clone $querySuratTugasBelumSelesai)->take(5)->get();
+        $daftarSuratTugasBelumSelesai = (clone $querySuratTugasBelumSelesai)
+            ->orderBy('end_date', 'asc')
+            ->take(5)
+            ->get();
+        
         $totalBelumSelesai = (clone $querySuratTugasBelumSelesai)->count();
 
         $statistikBidwas = DB::table('r_bidwas')
@@ -136,6 +140,53 @@ class DashboardController extends Controller
             'trendBulanan',
             'distribusiStatus'
         ));
+    }
+
+    public function ajaxAvailableEmployees(Request $request)
+    {
+        $hariIni = Carbon::today()->toDateString();
+        $penggunaAktif = auth()->user();
+
+        $nipPegawaiSibuk = DB::table('d_st_tim')
+            ->join('d_st', 'd_st_tim.id_st', '=', 'd_st.id_st')
+            ->where('d_st.start_date', '<=', $hariIni)
+            ->where('d_st.end_date', '>=', $hariIni)
+            ->whereIn('d_st.status_st', ['Realisasi', 'Perpanjangan ST'])
+            ->pluck('d_st_tim.nip');
+
+        $query = DB::table('r_pegawai')->whereNotIn('nip', $nipPegawaiSibuk);
+        
+        if ($penggunaAktif->role === 'pegawai') {
+            $query->where('nip', $penggunaAktif->nip);
+        }
+
+        $pegawaiTersedia = $query->select('nama', 'nip')->paginate(50, ['*'], 'available_page');
+
+        return view('dashboard.partials.available_employees', compact('pegawaiTersedia'))->render();
+    }
+
+    public function ajaxOverdueTasks(Request $request)
+    {
+        $hariIni = Carbon::today()->toDateString();
+        $penggunaAktif = auth()->user();
+
+        $query = DB::table('d_st')
+            ->where('end_date', '<', $hariIni)
+            ->whereNotIn('status_st', ['Selesai', 'Batal']);
+
+        if ($penggunaAktif->role === 'pegawai') {
+            $query->whereExists(function ($queryExists) use ($penggunaAktif) {
+                $queryExists->select(DB::raw(1))
+                    ->from('d_st_tim')
+                    ->whereColumn('d_st_tim.id_st', 'd_st.id_st')
+                    ->where('d_st_tim.nip', $penggunaAktif->nip);
+            });
+        }
+
+        $daftarSuratTugasBelumSelesai = $query->orderBy('end_date', 'asc')
+            ->paginate(50, ['*'], 'overdue_page');
+
+        return view('dashboard.partials.overdue_tasks', compact('daftarSuratTugasBelumSelesai'))->render();
     }
 
     public function daily(Request $request)

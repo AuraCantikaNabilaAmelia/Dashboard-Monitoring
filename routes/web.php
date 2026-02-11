@@ -19,13 +19,15 @@ Route::prefix('dashboard')
         Route::get('/bidwas/{id}', 'App\Http\Controllers\DashboardController@bidwasDetail')->name('bidwas.detail');
         Route::get('/detail/{id}', 'App\Http\Controllers\DashboardController@detail')->name('st.detail');
         Route::get('/employee/{nip}', 'App\Http\Controllers\DashboardController@employeeDetail')->name('employee.detail');
+        Route::get('/ajax/available-employees', 'App\Http\Controllers\DashboardController@ajaxAvailableEmployees');
+        Route::get('/ajax/overdue-tasks', 'App\Http\Controllers\DashboardController@ajaxOverdueTasks');
 
         Route::get('/tindaklanjut', 'App\Http\Controllers\TindakLanjutController@index')->name('tindaklanjut.index');
         Route::get('/tindaklanjut/{id}', 'App\Http\Controllers\TindakLanjutController@show')->name('tindaklanjut.show');
         Route::post('/tindaklanjut/{id}/entry', 'App\Http\Controllers\TindakLanjutController@addEntry')->name('tindaklanjut.addEntry');
         Route::delete('/tindaklanjut/entry/{id}', 'App\Http\Controllers\TindakLanjutController@deleteEntry')->name('tindaklanjut.deleteEntry');
 
-        // Export Routes
+
         Route::get('/export/st/excel', 'App\Http\Controllers\DashboardController@exportStExcel')->name('export.st.excel');
         Route::get('/export/st/pdf', 'App\Http\Controllers\DashboardController@exportStPdf')->name('export.st.pdf');
         Route::get('/export/lhp/excel', 'App\Http\Controllers\DashboardController@exportLhpExcel')->name('export.lhp.excel');
