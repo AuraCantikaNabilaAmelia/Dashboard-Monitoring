@@ -104,7 +104,7 @@
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-        @forelse($statistikPegawai as $dataStatistik)
+        @forelse($rekapPenugasanBulanan as $dataStatistik)
         <a href="{{ route('employee.detail', ['nip' => $dataStatistik->nip, 'start_date' => $tanggalMulai, 'end_date' => $tanggalSelesai, 'bidwas' => $idBidwas]) }}"
            class="glass dark:bg-slate-900/40 bg-white p-6 rounded-[2rem] border border-slate-200/50 dark:border-white/5 hover:border-blue-500/30 hover:shadow-2xl hover:shadow-blue-500/10 transition-all group relative overflow-hidden flex items-center justify-between">
 

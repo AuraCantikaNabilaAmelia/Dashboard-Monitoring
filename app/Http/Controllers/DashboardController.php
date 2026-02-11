@@ -41,12 +41,12 @@ class DashboardController extends Controller
         $bebanKerjaPegawaiQuery = DB::table('d_st_tim')
             ->join('d_st', 'd_st_tim.id_st', '=', 'd_st.id_st')
             ->join('r_pegawai', 'd_st_tim.nip', '=', 'r_pegawai.nip')
-            ->where('d_st.start_date', '<=', $today)
-            ->where('d_st.end_date', '>=', $today)
+            ->where('d_st.start_date', '<=', $hariIni)
+            ->where('d_st.end_date', '>=', $hariIni)
             ->whereIn('d_st.status_st', ['Realisasi', 'Perpanjangan ST']);
 
-        if ($user->role === 'pegawai') {
-            $bebanKerjaPegawaiQuery->where('d_st_tim.nip', $user->nip);
+        if ($penggunaAktif->role === 'pegawai') {
+            $bebanKerjaPegawaiQuery->where('d_st_tim.nip', $penggunaAktif->nip);
         }
 
         $pegawaiPalingSibuk = (clone $bebanKerjaPegawaiQuery)
@@ -61,8 +61,8 @@ class DashboardController extends Controller
         $queryPegawaiTersedia = DB::table('r_pegawai')
             ->whereNotIn('nip', $nipPegawaiSibuk);
 
-        if ($user->role === 'pegawai') {
-            $queryPegawaiTersedia->where('nip', $user->nip);
+        if ($penggunaAktif->role === 'pegawai') {
+            $queryPegawaiTersedia->where('nip', $penggunaAktif->nip);
         }
 
         $pegawaiTersedia = $queryPegawaiTersedia
@@ -71,15 +71,15 @@ class DashboardController extends Controller
             ->get();
 
         $querySuratTugasBelumSelesai = DB::table('d_st')
-            ->where('end_date', '<', $today)
+            ->where('end_date', '<', $hariIni)
             ->whereNotIn('status_st', ['Selesai', 'Batal']);
 
-        if ($user->role === 'pegawai') {
-            $querySuratTugasBelumSelesai->whereExists(function ($query) use ($user) {
+        if ($penggunaAktif->role === 'pegawai') {
+            $querySuratTugasBelumSelesai->whereExists(function ($query) use ($penggunaAktif) {
                 $query->select(DB::raw(1))
                     ->from('d_st_tim')
                     ->whereColumn('d_st_tim.id_st', 'd_st.id_st')
-                    ->where('d_st_tim.nip', $user->nip);
+                    ->where('d_st_tim.nip', $penggunaAktif->nip);
             });
         }
 
@@ -109,12 +109,12 @@ class DashboardController extends Controller
         $queryDistribusiStatus = DB::table('d_st')
             ->select('status_st', DB::raw('count(*) as total'));
 
-        if ($user->role === 'pegawai') {
-            $queryDistribusiStatus->whereExists(function ($query) use ($user) {
+        if ($penggunaAktif->role === 'pegawai') {
+            $queryDistribusiStatus->whereExists(function ($query) use ($penggunaAktif) {
                 $query->select(DB::raw(1))
                     ->from('d_st_tim')
                     ->whereColumn('d_st_tim.id_st', 'd_st.id_st')
-                    ->where('d_st_tim.nip', $user->nip);
+                    ->where('d_st_tim.nip', $penggunaAktif->nip);
             });
         }
         $distribusiStatus = $queryDistribusiStatus->groupBy('status_st')->get();
@@ -140,9 +140,9 @@ class DashboardController extends Controller
 
     public function daily(Request $request)
     {
-        $tanggalLaporan = $request->get('date', Carbon::today()->toDateString());
-        $daftarPenugasanHarian = $this->getDailyData($request)->paginate(25);
-        return view('dashboard.daily', compact('daftarPenugasanHarian', 'tanggalLaporan'));
+        $tanggalTerpilih = $request->get('date', Carbon::today()->toDateString());
+        $daftarPenugasan = $this->getDailyData($request)->paginate(25);
+        return view('dashboard.daily', compact('daftarPenugasan', 'tanggalTerpilih'));
     }
 
     public function monthly(Request $request)
@@ -152,9 +152,9 @@ class DashboardController extends Controller
         $tanggalMulai = $request->get('start_date');
         $tanggalSelesai = $request->get('end_date');
         $idBidwas = $request->get('bidwas');
-        $pencarian = $request->get('search');
+        $kataKunci = $request->get('search');
 
-        $rekapPenugasanBulanan = $this->getMonthlyData($request)->limit(50)->get();
+        $rekapPenugasanBulanan = $this->getMonthlyData($request)->get();
 
         $daftarBidwas = DB::table('r_bidwas')->get()->map(function ($bidwas) {
             $bidwas->short_name = $bidwas->nm_bidwas;
@@ -179,7 +179,7 @@ class DashboardController extends Controller
 
         $bidwasTerpilih = $idBidwas ? $daftarBidwas->firstWhere('id_bidwas', $idBidwas) : null;
 
-        return view('dashboard.monthly', compact('rekapPenugasanBulanan', 'bulanTerpilih', 'tahunTerpilih', 'tanggalMulai', 'tanggalSelesai', 'daftarBidwas', 'idBidwas', 'bidwasTerpilih', 'daftarTahun', 'pencarian'));
+        return view('dashboard.monthly', compact('rekapPenugasanBulanan', 'bulanTerpilih', 'tahunTerpilih', 'tanggalMulai', 'tanggalSelesai', 'daftarBidwas', 'idBidwas', 'bidwasTerpilih', 'daftarTahun', 'kataKunci'));
     }
 
     public function employeeDetail(Request $request, $nip)
