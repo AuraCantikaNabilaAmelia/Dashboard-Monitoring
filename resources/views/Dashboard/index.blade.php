@@ -221,7 +221,7 @@
                 <i data-lucide="maximize-2" class="w-5 h-5"></i>
             </button>
         </div>
-        <div class="h-75 w-full relative">
+        <div class="h-[280px] w-full relative">
             <canvas id="bidwasChart"></canvas>
         </div>
     </div>
@@ -472,30 +472,34 @@
                     datasets: [{
                         label: 'Penugasan',
                         data: bidwasData,
-                        backgroundColor: gradients,
+                        backgroundColor: borderColors,
                         borderColor: borderColors,
-                        borderWidth: 2,
-                        borderRadius: 12,
-                        hoverBorderWidth: 4,
-                        hoverBorderColor: (ctx) => borderColors[ctx.dataIndex]
+                        borderWidth: 0,
+                        borderRadius: 6,
+                        maxBarThickness: 22,
                     }]
                 },
                 options: {
+                    indexAxis: 'y',
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
                         legend: { display: false },
-                        datalabels: { display: false }
+                        datalabels: {
+                            anchor: 'end', align: 'end', color: colors.text,
+                            font: { weight: 'bold', size: 11 },
+                            formatter: (v) => v > 0 ? v : ''
+                        }
                     },
                     scales: {
-                        y: {
+                        x: {
                             beginAtZero: true,
                             grid: { color: colors.grid },
-                            ticks: { color: colors.text, font: { weight: '500' } }
+                            ticks: { color: colors.text, font: { weight: '500' }, precision: 0 }
                         },
-                        x: {
+                        y: {
                             grid: { display: false },
-                            ticks: { color: colors.text, autoSkip: false, maxRotation: 45, minRotation: 45, font: { weight: '500' } }
+                            ticks: { color: colors.text, font: { weight: '500' }, autoSkip: false }
                         }
                     }
                 }
