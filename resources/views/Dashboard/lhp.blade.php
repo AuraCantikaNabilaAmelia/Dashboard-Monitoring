@@ -700,7 +700,6 @@
         document.getElementById('filterForm').submit();
     }
 
-    // --- Helper dropdown form ---
     function toggleFormDropdown(listId) {
         const list = document.getElementById(listId);
         const arrow = document.getElementById(listId.replace('-list','-arrow'));
@@ -734,7 +733,6 @@
         }
     });
 
-    // --- Flatpickr form LHP ---
     const fpLHPConfig = {
         dateFormat: "Y-m-d",
         altInput: true,
@@ -746,7 +744,6 @@
 
     const fpLHP = flatpickr("#lhp-tanggal", { ...fpLHPConfig });
 
-    // Init TomSelect langsung (DOMContentLoaded sudah lewat saat scripts push jalan)
     let tomSelectST = null;
     (function initTomSelectST() {
         const el = document.getElementById('lhp-id-st');

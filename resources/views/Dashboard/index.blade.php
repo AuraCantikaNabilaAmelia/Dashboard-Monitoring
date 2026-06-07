@@ -114,7 +114,6 @@
 
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
 
-    {{-- ST Aktif - Purple --}}
     <div class="rounded-2xl p-5 relative overflow-hidden group cursor-default transition-transform duration-200 hover:-translate-y-0.5" style="background: linear-gradient(135deg, #c4b5fd 0%, #a78bfa 100%); box-shadow: 0 8px 24px rgba(167,139,250,0.35);">
         <div class="flex items-start justify-between mb-4">
             <p class="text-sm font-semibold" style="color: rgba(255,255,255,0.8);">ST Aktif Hari Ini</p>
@@ -126,7 +125,6 @@
         <p class="text-xs font-medium" style="color: rgba(255,255,255,0.65);">{{ $statStaf ? 'Penugasan saya hari ini' : 'Penugasan berjalan hari ini' }}</p>
     </div>
 
-    {{-- Kartu 2: Total Pegawai / (staf) Total ST - Blue --}}
     <div class="rounded-2xl p-5 relative overflow-hidden group cursor-default transition-transform duration-200 hover:-translate-y-0.5" style="background: linear-gradient(135deg, #93c5fd 0%, #6ea8f7 100%); box-shadow: 0 8px 24px rgba(99,164,253,0.35);">
         <div class="flex items-start justify-between mb-4">
             <p class="text-sm font-semibold" style="color: rgba(255,255,255,0.8);">{{ $statStaf ? 'Total ST' : 'Total Pegawai' }}</p>
@@ -138,7 +136,6 @@
         <p class="text-xs font-medium" style="color: rgba(255,255,255,0.65);">{{ $statStaf ? 'Surat tugas yang saya ikuti' : ($labelBidang ? 'Bidang '.$labelBidang : 'Seluruh pegawai terdaftar') }}</p>
     </div>
 
-    {{-- Kartu 3: Total LHP / (staf) ST Aktif - Mint Green --}}
     <div class="rounded-2xl p-5 relative overflow-hidden group cursor-default transition-transform duration-200 hover:-translate-y-0.5" style="background: linear-gradient(135deg, #6ee7b7 0%, #34d399 100%); box-shadow: 0 8px 24px rgba(52,211,153,0.35);">
         <div class="flex items-start justify-between mb-4">
             <p class="text-sm font-semibold" style="color: rgba(255,255,255,0.8);">{{ $statStaf ? 'ST Aktif' : 'Total LHP Terbit' }}</p>
@@ -150,7 +147,6 @@
         <p class="text-xs font-medium" style="color: rgba(255,255,255,0.65);">{{ $statStaf ? 'Penugasan sedang berjalan' : ($labelBidang ? 'LHP Bidang '.$labelBidang : 'Laporan hasil pengawasan') }}</p>
     </div>
 
-    {{-- Kartu 4: Target PKPT / (staf) ST Belum Selesai - Teal --}}
     <div class="rounded-2xl p-5 relative overflow-hidden group cursor-default transition-transform duration-200 hover:-translate-y-0.5" style="background: linear-gradient(135deg, #2dd4bf 0%, #0d9488 100%); box-shadow: 0 8px 24px rgba(13,148,136,0.35);">
         <div class="flex items-start justify-between mb-4">
             <p class="text-sm font-semibold" style="color: rgba(255,255,255,0.8);">{{ $statStaf ? 'ST Selesai ' : 'Target PKPT' }}</p>
@@ -165,7 +161,6 @@
 
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
     @if($statStaf)
-    {{-- Staf: Daftar Penugasan Saya --}}
     <div class="glass p-6 rounded-3xl relative">
         <h3 class="text-lg font-bold mb-5 flex items-center gap-2">
             <i data-lucide="clipboard-list" class="w-5 h-5 text-blue-500"></i>
@@ -204,7 +199,6 @@
         </div>
     </div>
     @elseif($bebanPegawaiDivisi->isNotEmpty())
-    {{-- Kabid: Beban Kerja per Pegawai (divisinya) --}}
     <div class="glass p-6 rounded-3xl relative">
         <div class="flex justify-between items-center mb-6">
             <h3 class="text-lg font-bold flex items-center gap-2">
@@ -218,7 +212,6 @@
         <div class="h-[300px] w-full relative"><canvas id="bebanChart"></canvas></div>
     </div>
     @else
-    {{-- Pimpinan & Staf: Distribusi per Bidang --}}
     <div class="glass p-6 rounded-3xl relative">
         <div class="flex justify-between items-center mb-6">
             <h3 class="text-lg font-bold">Distribusi Penugasan per Bidang</h3>
@@ -233,7 +226,6 @@
     @endif
 
     @if($leaderboardBidang->isNotEmpty())
-    {{-- Pimpinan: Peringkat Bidang per Rasio LHP (menggantikan Tren ST) --}}
     <div class="glass p-6 rounded-3xl">
         <h3 class="text-lg font-bold mb-5 flex items-center gap-2">
             <i data-lucide="trophy" class="w-5 h-5 text-amber-500"></i>
@@ -255,7 +247,6 @@
         </div>
     </div>
     @else
-    {{-- Kabid: Tren LHP | Staf: Tren ST --}}
     <div class="glass p-6 rounded-3xl relative">
         <div class="flex justify-between items-center mb-6">
             @if($statStaf)
@@ -330,7 +321,6 @@
 </div>
 
 @if($leaderboardBidang->isNotEmpty())
-{{-- Pimpinan: Tren LHP full-width (leaderboard sudah di atas) --}}
 <div class="mb-8">
     <div class="glass p-6 rounded-3xl relative">
         <div class="flex justify-between items-center mb-6">

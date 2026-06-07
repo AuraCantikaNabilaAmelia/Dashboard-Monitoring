@@ -37,8 +37,6 @@ class DashboardController extends Controller
         $bidangPengguna = $this->bidangIdPengguna($penggunaAktif);
         $isKabidDivisi = $penggunaAktif->role === 'kabid' && $bidangPengguna;
 
-        // Role efektif untuk Overview: subkoor (kabid tanpa divisi) diperlakukan seperti staf
-        // karena tidak punya divisi pengawasan untuk dipantau.
         $roleEfektif = ($penggunaAktif->role === 'kabid' && !$bidangPengguna)
             ? 'pegawai'
             : $penggunaAktif->role;
@@ -60,8 +58,6 @@ class DashboardController extends Controller
         }
         $totalSuratTugasAktif = $querySuratTugasAktif->count();
 
-        // Widget Leadership Insights (Tersibuk, Pegawai Tersedia, Perhatian Khusus)
-        // hanya ditampilkan untuk role pimpinan — staf tidak perlu, jadi skip komputasinya.
         $pegawaiPalingSibuk           = collect();
         $pegawaiTersedia              = collect();
         $daftarSuratTugasBelumSelesai = collect();
@@ -70,7 +66,6 @@ class DashboardController extends Controller
         $isPimpinanLevel              = in_array($roleEfektif, self::ROLE_PIMPINAN);
 
         if ($isPimpinanLevel) {
-            // Pegawai tersibuk: semua ST berstatus aktif (tidak dibatasi tanggal hari ini)
             $bebanKerjaPegawaiQuery = DB::table('d_st_tim')
                 ->join('d_st', 'd_st_tim.id_st', '=', 'd_st.id_st')
                 ->join('r_pegawai', 'd_st_tim.nip', '=', 'r_pegawai.nip')
@@ -88,7 +83,6 @@ class DashboardController extends Controller
                 ->limit(5)
                 ->get();
 
-            // Pegawai tersedia: berdasarkan ST aktif hari ini (untuk utilisasi harian)
             $nipPegawaiSibukHariIni = DB::table('d_st_tim')
                 ->join('d_st', 'd_st_tim.id_st', '=', 'd_st.id_st')
                 ->where('d_st.start_date', '<=', $hariIni)
@@ -148,7 +142,6 @@ class DashboardController extends Controller
         }
         $distribusiStatus = $queryDistribusiStatus->groupBy('status_st')->get();
 
-        // Total Pegawai & LHP: kabid → sesuai divisinya, pimpinan/staf → semua
         if ($isKabidDivisi) {
             $totalPegawai = DB::table('r_pegawai')->where('id_bidwas', $bidangPengguna)->count();
             $totalLHP = DB::table('d_lhp')
@@ -161,14 +154,12 @@ class DashboardController extends Controller
         }
         $targetPKPT = DB::table('r_pkpt')->count();
 
-        // Label bidang untuk subtitle kartu (hanya kabid berbidang)
         $labelBidang = null;
         if ($isKabidDivisi) {
             $nm = DB::table('r_bidwas')->where('id_bidwas', $bidangPengguna)->value('nm_bidwas');
             $labelBidang = $this->namaBidangPendek($nm);
         }
 
-        // Statistik pribadi untuk staf (kartu Overview dipersonalkan)
         $statStaf = null;
         $daftarStSaya = collect();
         if ($roleEfektif === 'pegawai') {
@@ -195,9 +186,7 @@ class DashboardController extends Controller
             ];
         }
 
-        // ============ METRIK KINERJA (real, role-aware) ============
         $role = $roleEfektif;
-        // Closure scope filter untuk query d_st
         $scopeSt = function ($q) use ($role, $isKabidDivisi, $bidangPengguna, $penggunaAktif) {
             if ($role === 'pegawai') {
                 $q->whereExists(function ($e) use ($penggunaAktif) {
@@ -255,7 +244,6 @@ class DashboardController extends Controller
             $metrik4,
         ];
 
-        // ============ AGING ST TERLAMBAT (scoped) ============
         $ovBase = fn () => $scopeSt(DB::table('d_st'))
             ->where('end_date', '<', $hariIni)
             ->whereNotIn('status_st', self::STATUS_TAK_OVERDUE);
@@ -265,7 +253,6 @@ class DashboardController extends Controller
             $ovBase()->whereRaw('DATEDIFF(?, end_date) > 30', [$hariIni])->count(),
         ];
 
-        // ============ TREN LHP per bulan (scoped) ============
         $qTrendLhp = DB::table('d_lhp')->join('d_st', 'd_lhp.id_st', '=', 'd_st.id_st')
             ->select(DB::raw('MONTH(d_lhp.tanggal_lhp) as bulan'), DB::raw('count(*) as total'))
             ->whereYear('d_lhp.tanggal_lhp', $tahunIni);
@@ -280,7 +267,6 @@ class DashboardController extends Controller
         }
         $trendLhpBulanan = $qTrendLhp->groupBy('bulan')->orderBy('bulan')->get();
 
-        // ============ BEBAN KERJA PER PEGAWAI (kabid: divisinya) ============
         $bebanPegawaiDivisi = collect();
         if ($isKabidDivisi) {
             $bebanPegawaiDivisi = DB::table('r_pegawai')
@@ -297,7 +283,6 @@ class DashboardController extends Controller
                 ->get();
         }
 
-        // ============ LEADERBOARD BIDANG (pimpinan) ============
         $leaderboardBidang = collect();
         if ($role === 'pimpinan') {
             $leaderboardBidang = $this->getBidwasData()
@@ -438,18 +423,15 @@ class DashboardController extends Controller
         $isPimpinan = $penggunaAktif->role === 'pimpinan';
         $bidangTerkunci = !$isPimpinan;
 
-        // Resolve bidang_id: cek users.bidang_id dulu, fallback ke r_pegawai.id_bidwas
         $bidangIdUser = $penggunaAktif->bidang_id
             ?: optional(DB::table('r_pegawai')->where('nip', $penggunaAktif->nip)->first('id_bidwas'))->id_bidwas;
 
-        // Untuk non-pimpinan, idBidwas selalu bidangnya sendiri (tidak bisa diubah)
         $idBidwas = $isPimpinan
             ? $request->get('bidwas')
             : $bidangIdUser;
 
         $rekapPenugasanBulanan = $this->getMonthlyData($request)->get();
 
-        // Staff: ambil daftar ST langsung (bukan rekap pegawai)
         $daftarStStaff = collect();
         if ($penggunaAktif->role === 'pegawai') {
             $tMulai = $tanggalMulai ?: \Carbon\Carbon::create($tahunTerpilih, $bulanTerpilih, 1)->startOfMonth()->toDateString();
@@ -488,7 +470,6 @@ class DashboardController extends Controller
 
         $bidwasTerpilih = $idBidwas ? $daftarBidwas->firstWhere('id_bidwas', (int) $idBidwas) : null;
 
-        // Untuk user terkunci, pastikan bidwasTerpilih selalu ada
         if ($bidangTerkunci && !$bidwasTerpilih && $penggunaAktif->bidang_id) {
             $bidwasTerpilih = $daftarBidwas->firstWhere('id_bidwas', (int) $penggunaAktif->bidang_id);
         }
@@ -683,15 +664,12 @@ class DashboardController extends Controller
         $querySuratTugas = DB::table('d_st');
 
         if ($penggunaAktif->role === 'pegawai' || ($penggunaAktif->role === 'kabid' && !$bidangPengguna)) {
-            // Staf & kabid tanpa divisi (subkoor) → hanya ST yang dia terlibat
             $querySuratTugas->join('d_st_tim', 'd_st.id_st', '=', 'd_st_tim.id_st')
                 ->where('d_st_tim.nip', $penggunaAktif->nip)
                 ->select('d_st.*');
         } elseif ($penggunaAktif->role === 'kabid') {
-            // Korwas → hanya ST divisinya sendiri
             $querySuratTugas->where('d_st.id_bidwas', $bidangPengguna);
         }
-        // Pimpinan → semua ST (tanpa filter)
 
         if ($kataKunci) {
             $querySuratTugas->where(function ($query) use ($kataKunci) {
@@ -783,7 +761,6 @@ class DashboardController extends Controller
         return view('dashboard.lhp', compact('daftarLhp', 'kataKunci', 'statusTerpilih', 'daftarStatus', 'tanggalMulai', 'tanggalSelesai', 'daftarSt'));
     }
 
-    // --- Authorization helpers ---
     private function bisaKelolaSTBaru(): bool
     {
         return in_array(auth()->user()->role, ['pimpinan', 'kabid']);
@@ -874,7 +851,6 @@ class DashboardController extends Controller
             ->toArray();
     }
 
-    // --- ST CRUD ---
     public function stStore(Request $request)
     {
         abort_unless($this->bisaKelolaSTBaru(), 403);
@@ -998,7 +974,6 @@ class DashboardController extends Controller
         return redirect()->route('dashboard.st')->with('success', 'Surat Tugas berhasil dihapus.');
     }
 
-    // --- LHP CRUD ---
     public function lhpStore(Request $request)
     {
         $st = $request->id_st ? DB::table('d_st')->where('id_st', $request->id_st)->first() : null;
@@ -1169,7 +1144,6 @@ class DashboardController extends Controller
 
         // Rekap (ringkasan per pegawai) hanya untuk yang mengawasi grup:
         //   pimpinan (semua/pilihan) & korwas (punya bidang).
-        // Staf & subkoor (tanpa bidang) → rincian list penugasan dirinya.
         $modeRekap = $isPimpinan || ($penggunaAktif->role === 'kabid' && $idBidwasExport);
 
         if ($modeRekap) {
@@ -1263,12 +1237,10 @@ class DashboardController extends Controller
             // Staff hanya lihat dirinya sendiri
             $kueriBebanKerjaBulanan->where('r_pegawai.nip', $penggunaAktif->nip);
         } elseif ($isPimpinan) {
-            // Pimpinan → bidang pilihan (atau semua jika tidak dipilih)
             if ($idBidwas) {
                 $kueriBebanKerjaBulanan->where('r_pegawai.id_bidwas', $idBidwas);
             }
         } elseif ($idBidwas) {
-            // Korwas → seluruh bidangnya
             $kueriBebanKerjaBulanan->where('r_pegawai.id_bidwas', $idBidwas);
         } else {
             // Kabid tanpa bidang (subkoor) → hanya dirinya sendiri (cegah lihat semua)
@@ -1393,11 +1365,9 @@ class DashboardController extends Controller
 
         $bidangPengguna = $this->bidangIdPengguna($penggunaAktif);
         if ($penggunaAktif->role === 'pegawai' || ($penggunaAktif->role === 'kabid' && !$bidangPengguna)) {
-            // Staf & kabid tanpa divisi (subkoor) → hanya ST yang dia terlibat
             $kueriDataSuratTugas->join('d_st_tim', 'd_st.id_st', '=', 'd_st_tim.id_st')
                 ->where('d_st_tim.nip', $penggunaAktif->nip);
         } elseif ($penggunaAktif->role === 'kabid') {
-            // Korwas → hanya ST divisinya sendiri
             $kueriDataSuratTugas->where('d_st.id_bidwas', $bidangPengguna);
         }
 

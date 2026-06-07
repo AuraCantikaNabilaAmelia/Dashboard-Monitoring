@@ -62,7 +62,6 @@
                     <label class="block text-[10px] uppercase tracking-widest text-slate-400 font-black mb-2 ml-1">Bidang</label>
 
                     @if($bidangTerkunci)
-                    {{-- Kabid / Pegawai: bidang terkunci --}}
                     <div class="h-12 px-4 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl flex items-center justify-between gap-2 cursor-not-allowed select-none" title="{{ $bidwasTerpilih->nm_bidwas ?? '' }}">
                         <span class="text-sm font-bold text-blue-600 dark:text-blue-400 truncate">
                             {{ $bidwasTerpilih ? $bidwasTerpilih->short_name : '-' }}
@@ -70,7 +69,6 @@
                         <i data-lucide="lock" class="w-3.5 h-3.5 text-slate-400 shrink-0"></i>
                     </div>
                     @else
-                    {{-- Pimpinan: dropdown bebas --}}
                     <div class="custom-dropdown-container w-full">
                         <div class="status-filter-dropdown dark:bg-white/5 bg-white h-12 border border-slate-200 dark:border-white/10 rounded-xl">
                             <input hidden="" class="sr-only" name="bidwas-dropdown" id="bidwas-dropdown" type="checkbox" />
@@ -139,7 +137,6 @@
 </div>
 
 @if(auth()->user()->role === 'pegawai')
-    {{-- TAMPILAN STAFF: daftar surat tugas langsung --}}
     <div class="glass dark:bg-slate-900/30 bg-white rounded-2xl overflow-hidden shadow-xl border border-slate-200/50 dark:border-white/5">
         <div class="px-6 py-4 border-b border-slate-100 dark:border-white/5 flex items-center gap-3">
             <div class="w-8 h-8 bg-blue-500/10 rounded-lg flex items-center justify-center">
@@ -194,7 +191,6 @@
     </div>
 
 @else
-    {{-- TAMPILAN PIMPINAN & KORWAS: kartu pegawai --}}
     <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
         @forelse($rekapPenugasanBulanan as $dataStatistik)
         <a href="{{ route('employee.detail', ['nip' => $dataStatistik->nip, 'start_date' => $tanggalMulai, 'end_date' => $tanggalSelesai, 'bidwas' => $idBidwas]) }}"

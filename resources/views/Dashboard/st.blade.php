@@ -424,7 +424,6 @@
                     </div>
                     @enderror
                     <div id="container-tim" class="space-y-2 max-h-48 overflow-y-auto pr-1">
-                        {{-- Baris anggota akan ditambah via JS --}}
                     </div>
                 </div>
 
@@ -669,7 +668,6 @@
 </style>
 
 <script>
-    // --- Helper dropdown form ---
     function toggleFormDropdown(listId) {
         const list = document.getElementById(listId);
         const arrow = document.getElementById(listId.replace('-list','-arrow'));
@@ -705,7 +703,6 @@
         }
     });
 
-    // --- Flatpickr untuk form ST ---
     const fpConfig = {
         dateFormat: "Y-m-d",
         altInput: true,
@@ -850,13 +847,11 @@
         div.appendChild(btn);
         container.appendChild(div);
 
-        // Buat warning element untuk pegawai yang sudah penuh
         const warnEl = document.createElement('p');
         warnEl.className = 'text-[10px] text-red-500 font-semibold mt-0.5 hidden';
         warnEl.textContent = `⚠ Pegawai ini sudah memiliki ${MAX_ST_AKTIF} ST aktif`;
         div.insertBefore(warnEl, inp);
 
-        // Init TomSelect setelah elemen masuk DOM
         new TomSelect(sel, {
             dropdownParent: 'body',
             placeholder: 'Pilih Pegawai',
