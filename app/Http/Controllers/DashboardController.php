@@ -17,17 +17,11 @@ use App\Exports\MonthlyExport;
 
 class DashboardController extends Controller
 {
-    /** Status yang dianggap ST sudah tuntas/selesai. */
-    private const STATUS_SELESAI = ['Final', 'Tidak Aktif'];
-
-    /** Status yang TIDAK dihitung terlambat (sudah selesai atau dibatalkan). */
+    // Konstanta status ST
+    private const STATUS_SELESAI     = ['Final', 'Tidak Aktif'];
     private const STATUS_TAK_OVERDUE = ['Final', 'Tidak Aktif', 'Batal'];
-
-    /** Maksimum ST aktif yang boleh dipegang satu pegawai secara bersamaan. */
-    private const MAX_ST_AKTIF = 3;
-
-    /** Role yang dianggap level pimpinan dan mendapat tampilan overview leadership. */
-    private const ROLE_PIMPINAN = ['pimpinan', 'kabid'];
+    private const MAX_ST_AKTIF       = 3;
+    private const ROLE_PIMPINAN      = ['pimpinan', 'kabid'];
 
     public function index()
     {
@@ -322,6 +316,7 @@ class DashboardController extends Controller
         ));
     }
 
+    // API
     public function apiTim($id)
     {
         $tim = DB::table('d_st_tim')->where('id_st', $id)->get(['nip', 'peran']);
@@ -761,6 +756,7 @@ class DashboardController extends Controller
         return view('dashboard.lhp', compact('daftarLhp', 'kataKunci', 'statusTerpilih', 'daftarStatus', 'tanggalMulai', 'tanggalSelesai', 'daftarSt'));
     }
 
+    // Otorisasi
     private function bisaKelolaSTBaru(): bool
     {
         return in_array(auth()->user()->role, ['pimpinan', 'kabid']);
@@ -851,6 +847,7 @@ class DashboardController extends Controller
             ->toArray();
     }
 
+    // CRUD Surat Tugas
     public function stStore(Request $request)
     {
         abort_unless($this->bisaKelolaSTBaru(), 403);
@@ -974,6 +971,7 @@ class DashboardController extends Controller
         return redirect()->route('dashboard.st')->with('success', 'Surat Tugas berhasil dihapus.');
     }
 
+    // CRUD LHP
     public function lhpStore(Request $request)
     {
         $st = $request->id_st ? DB::table('d_st')->where('id_st', $request->id_st)->first() : null;
@@ -1052,6 +1050,7 @@ class DashboardController extends Controller
         return redirect()->route('dashboard.lhp')->with('success', 'LHP berhasil dihapus.');
     }
 
+    // Export
     public function exportStExcel(Request $request)
     {
         $dataLaporan = $this->getStData($request);
@@ -1160,6 +1159,7 @@ class DashboardController extends Controller
         return $berkasPdf->download('Rekap_Penugasan_Pegawai.pdf');
     }
 
+    // Query helpers
     private function getBidwasData()
     {
         $rekapBidang = DB::table('r_bidwas')

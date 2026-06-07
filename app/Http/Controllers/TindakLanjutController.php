@@ -10,15 +10,14 @@ use Carbon\Carbon;
 
 class TindakLanjutController extends Controller
 {
-    /** Role yang bypass scoping & berhak edit/hapus catatan siapa pun. */
     private const MANAGER_ROLES = ['admin', 'pimpinan', 'kabid'];
 
+    // Helpers
     private function isManager(): bool
     {
         return in_array(auth()->user()->role, self::MANAGER_ROLES, true);
     }
 
-    /** Cek apakah NIP user berada di tim ST tertentu. */
     private function userInTim($idSuratTugas): bool
     {
         return DB::table('d_st_tim')
@@ -112,6 +111,7 @@ class TindakLanjutController extends Controller
         ));
     }
 
+    // CRUD Tindak Lanjut
     public function addEntry(Request $request, $idSuratTugas)
     {
         $request->validate([
