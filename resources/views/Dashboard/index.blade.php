@@ -9,7 +9,7 @@
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-start">
         <div class="glass p-6 rounded-3xl border-l-4 border-blue-500">
             <h3 class="text-lg font-bold mb-4">Pegawai Beban Tinggi <span class="text-xs font-normal text-slate-400">(≥ 2 ST aktif)</span></h3>
-            <div class="space-y-3 max-h-[280px] overflow-y-auto pr-2">
+            <div class="space-y-3 max-h-70 overflow-y-auto pr-2">
                 @forelse($pegawaiPalingSibuk as $indeks => $dataPegawai)
                 @php $overloaded = $dataPegawai->active_tasks >= 3; @endphp
                 <div class="flex items-center justify-between p-3 rounded-xl border transition-colors
@@ -50,7 +50,7 @@
                     <i data-lucide="arrow-right" class="w-3 h-3 group-hover:translate-x-0.5 transition-transform"></i>
                 </button>
             </div>
-            <div class="space-y-3 max-h-[280px] overflow-y-auto pr-2">
+            <div class="space-y-3 max-h-70 overflow-y-auto pr-2">
                 @forelse($pegawaiTersedia as $dataPegawai)
                 <div class="flex items-center justify-between p-3 bg-emerald-50 dark:bg-emerald-500/10 rounded-xl border border-emerald-100 dark:border-emerald-500/20 hover:bg-emerald-100 dark:hover:bg-emerald-500/20 transition-colors">
                     <div class="flex items-center gap-3">
@@ -82,14 +82,14 @@
                     <i data-lucide="arrow-right" class="w-3 h-3 group-hover:translate-x-0.5 transition-transform"></i>
                 </button>
             </div>
-             <div class="space-y-3 max-h-[280px] overflow-y-auto pr-2">
+             <div class="space-y-3 max-h-70 overflow-y-auto pr-2">
                 @forelse($daftarSuratTugasBelumSelesai as $suratTugas)
                 <div class="p-3 bg-red-50 dark:bg-red-500/10 rounded-xl border border-red-100 dark:border-red-500/20 hover:border-red-500/40 transition-all">
                     <div class="flex justify-between items-start mb-1">
                         <p class="font-bold text-slate-800 dark:text-slate-200 text-sm line-clamp-1" title="{{ $suratTugas->nama_penugasan }}">
                             {{ $suratTugas->nama_penugasan }}
                         </p>
-                        <span class="text-xs font-bold text-red-500 bg-red-100 dark:bg-red-500/20 px-2 py-0.5 rounded flex-shrink-0 ml-2">
+                        <span class="text-xs font-bold text-red-500 bg-red-100 dark:bg-red-500/20 px-2 py-0.5 rounded shrink-0 ml-2">
                             Telat {{ (int) \Carbon\Carbon::parse($suratTugas->end_date)->diffInDays(now()) }} H
                         </span>
                     </div>
@@ -166,7 +166,7 @@
             <i data-lucide="clipboard-list" class="w-5 h-5 text-blue-500"></i>
             Penugasan Saya
         </h3>
-        <div class="space-y-3 max-h-[300px] overflow-y-auto pr-2">
+        <div class="space-y-3 max-h-75 overflow-y-auto pr-2">
             @forelse($daftarStSaya as $st)
             @php
                 $warnaStatus = match($st->status_st) {
@@ -209,7 +209,7 @@
                 <i data-lucide="maximize-2" class="w-5 h-5"></i>
             </button>
         </div>
-        <div class="h-[300px] w-full relative"><canvas id="bebanChart"></canvas></div>
+        <div class="h-75 w-full relative"><canvas id="bebanChart"></canvas></div>
     </div>
     @else
     <div class="glass p-6 rounded-3xl relative">
@@ -219,7 +219,7 @@
                 <i data-lucide="maximize-2" class="w-5 h-5"></i>
             </button>
         </div>
-        <div class="h-[300px] w-full relative">
+        <div class="h-75 w-full relative">
             <canvas id="bidwasChart"></canvas>
         </div>
     </div>
@@ -231,7 +231,7 @@
             <i data-lucide="trophy" class="w-5 h-5 text-amber-500"></i>
             Peringkat Bidang Berdasarkan Rasio LHP
         </h3>
-        <div class="space-y-3 max-h-[300px] overflow-y-auto pr-2">
+        <div class="space-y-3 max-h-75 overflow-y-auto pr-2">
             @foreach($leaderboardBidang as $i => $b)
             <div class="flex items-center gap-3 p-3 bg-slate-50 dark:bg-white/5 rounded-xl border border-slate-100 dark:border-white/5">
                 <div class="w-7 h-7 rounded-lg flex items-center justify-center text-xs font-black shrink-0 bg-slate-200 dark:bg-white/10 text-slate-600 dark:text-slate-300">
@@ -256,9 +256,9 @@
             @endif
         </div>
         @if($statStaf)
-            <div class="h-[300px] w-full relative"><canvas id="trendChart"></canvas></div>
+            <div class="h-75 w-full relative"><canvas id="trendChart"></canvas></div>
         @else
-            <div class="h-[300px] w-full relative"><canvas id="trendLhpChart"></canvas></div>
+            <div class="h-75 w-full relative"><canvas id="trendLhpChart"></canvas></div>
         @endif
     </div>
     @endif
@@ -273,11 +273,11 @@
             </h3>
         </div>
         @if(array_sum($agingData) > 0)
-        <div class="h-[300px] flex items-center justify-center relative">
+        <div class="h-75 flex items-center justify-center relative">
             <canvas id="agingChart"></canvas>
         </div>
         @else
-        <div class="h-[300px] flex flex-col items-center justify-center text-center">
+        <div class="h-75 flex flex-col items-center justify-center text-center">
             <div class="w-16 h-16 bg-emerald-100 dark:bg-emerald-500/20 rounded-full flex items-center justify-center mb-4">
                 <i data-lucide="check-circle" class="w-8 h-8 text-emerald-500"></i>
             </div>
@@ -326,15 +326,15 @@
         <div class="flex justify-between items-center mb-6">
             <h3 class="text-lg font-bold">Tren LHP Terbit ({{ date('Y') }})</h3>
         </div>
-        <div class="h-[280px] w-full relative"><canvas id="trendLhpChart"></canvas></div>
+        <div class="h-70 w-full relative"><canvas id="trendLhpChart"></canvas></div>
     </div>
 </div>
 @endif
 
 @push('modals')
-<div id="chartModal" class="fixed inset-0 dark:bg-slate-950/95 bg-white/98 backdrop-blur-3xl z-[100] hidden flex flex-col p-4 md:p-8 modal-root">
+<div id="chartModal" class="fixed inset-0 dark:bg-slate-950/95 bg-white/98 backdrop-blur-3xl z-100 hidden flex-col p-4 md:p-8 modal-root">
     <div class="glass w-full max-w-7xl mx-auto rounded-[40px] p-6 md:p-10 flex flex-col h-full overflow-hidden shadow-2xl border border-white/10 dark:border-white/5">
-        <div class="flex justify-between items-center mb-6 flex-shrink-0">
+        <div class="flex justify-between items-center mb-6 shrink-0">
             <div>
                 <h2 id="modalChartTitle" class="text-2xl md:text-3xl font-semibold tracking-tight transition-colors" style="color: var(--bpkp-text-light)">Chart Detail</h2>
                 <p id="modalChartSubtitle" class="mt-1 font-medium text-sm" style="color: var(--bpkp-text-muted)">Analisis mendalam data operasional BPKP Jawa Barat</p>
@@ -348,14 +348,14 @@
             <canvas id="expandedChart"></canvas>
         </div>
 
-        <div id="chartDescription" class="bg-gradient-to-r from-blue-500/10 to-purple-500/10 dark:from-blue-500/20 dark:to-purple-500/20 p-6 rounded-3xl border border-blue-500/10 dark:border-white/10 shadow-lg flex-shrink-0">
+        <div id="chartDescription" class="bg-linear-to-r from-blue-500/10 to-purple-500/10 dark:from-blue-500/20 dark:to-purple-500/20 p-6 rounded-3xl border border-blue-500/10 dark:border-white/10 shadow-lg shrink-0">
         </div>
     </div>
 </div>
 
-<div id="detailsModal" class="fixed inset-0 dark:bg-slate-950/95 bg-white/90 backdrop-blur-2xl z-[100] hidden flex items-center justify-center p-4 modal-root">
+<div id="detailsModal" class="fixed inset-0 dark:bg-slate-950/95 bg-white/90 backdrop-blur-2xl z-100 hidden items-center justify-center p-4 modal-root">
     <div class="glass w-full max-w-2xl rounded-[40px] overflow-hidden shadow-2xl border border-slate-200 dark:border-white/10 flex flex-col h-[80vh]">
-        <div class="p-8 border-b border-slate-200 dark:border-white/10 flex justify-between items-center flex-shrink-0">
+        <div class="p-8 border-b border-slate-200 dark:border-white/10 flex justify-between items-center shrink-0">
             <div>
                 <h3 id="modalDetailsTitle" class="text-2xl font-bold text-slate-800 dark:text-white">Detail Data</h3>
                 <p id="modalDetailsSubtitle" class="text-sm text-slate-500 dark:text-slate-400 mt-1">Menampilkan daftar lengkap</p>
@@ -378,7 +378,7 @@
         <div id="modal-container" class="p-8 overflow-y-auto space-y-4 custom-scrollbar flex-1 relative">
             <!-- Content loaded via AJAX -->
         </div>
-        <div class="p-6 bg-slate-50/50 dark:bg-white/5 border-t border-slate-200 dark:border-white/10 text-center flex-shrink-0">
+        <div class="p-6 bg-slate-50/50 dark:bg-white/5 border-t border-slate-200 dark:border-white/10 text-center shrink-0">
             <p class="text-xs text-slate-500 dark:text-slate-400 font-bold uppercase tracking-widest">Total: <span id="modal-total" class="text-blue-500 text-lg mx-1">0</span> Item Terdata</p>
         </div>
     </div>
@@ -690,6 +690,7 @@
 
         modalTitle.innerText = title;
         modal.classList.remove('hidden');
+        modal.classList.add('flex');
         document.body.style.overflow = 'hidden';
 
         if (expandedChartInstance) expandedChartInstance.destroy();
@@ -786,7 +787,9 @@
     }
 
     function closeChartModal() {
-        document.getElementById('chartModal').classList.add('hidden');
+        const m = document.getElementById('chartModal');
+        m.classList.add('hidden');
+        m.classList.remove('flex');
         document.body.style.overflow = 'auto';
     }
 
@@ -811,14 +814,17 @@
         }
 
         modal.classList.remove('hidden');
+        modal.classList.add('flex');
         document.body.style.overflow = 'hidden';
-        
+
         dashboardState[type].current = 1;
         loadModalData(type, 1);
     }
 
     function closeDetailsModal() {
-        document.getElementById('detailsModal').classList.add('hidden');
+        const m = document.getElementById('detailsModal');
+        m.classList.add('hidden');
+        m.classList.remove('flex');
         document.body.style.overflow = 'auto';
     }
 
