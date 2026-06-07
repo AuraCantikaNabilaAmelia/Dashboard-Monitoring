@@ -16,22 +16,24 @@
                     {{ $overloaded
                         ? 'bg-red-50 dark:bg-red-500/10 border-red-200 dark:border-red-500/20'
                         : 'bg-slate-50 dark:bg-white/5 border-slate-100 dark:border-white/5 hover:bg-slate-100 dark:hover:bg-white/10' }}">
-                    <div class="flex items-center gap-3">
-                        <div class="w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm
+                    <div class="flex items-center gap-3 min-w-0">
+                        <div class="w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm shrink-0
                             {{ $overloaded ? 'bg-red-100 dark:bg-red-500/20 text-red-600 dark:text-red-400' : 'bg-blue-100 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400' }}">
                             {{ $indeks + 1 }}
                         </div>
-                        <div>
-                            <p class="font-bold text-sm {{ $overloaded ? 'text-red-700 dark:text-red-300' : 'text-slate-800 dark:text-slate-200' }}">
+                        <div class="min-w-0">
+                            <p class="font-bold text-sm truncate {{ $overloaded ? 'text-red-700 dark:text-red-300' : 'text-slate-800 dark:text-slate-200' }}">
                                 {{ $dataPegawai->nama }}
-                                @if($overloaded)
-                                    <span class="ml-1 text-[10px] font-black uppercase tracking-wider text-red-500">PENUH</span>
-                                @endif
                             </p>
-                            <p class="text-xs text-slate-500">{{ $dataPegawai->nip }}</p>
+                            <div class="flex items-center gap-1.5">
+                                <p class="text-xs text-slate-500">{{ $dataPegawai->nip }}</p>
+                                @if($overloaded)
+                                    <span class="text-[9px] font-black uppercase tracking-wider text-red-500 bg-red-100 dark:bg-red-500/20 px-1.5 py-0.5 rounded">PENUH</span>
+                                @endif
+                            </div>
                         </div>
                     </div>
-                    <div class="px-3 py-1 text-white text-xs font-bold rounded-full
+                    <div class="px-3 py-1 text-white text-xs font-bold rounded-full shrink-0
                         {{ $overloaded ? 'bg-red-500' : 'bg-blue-500' }}">
                         {{ $dataPegawai->active_tasks }} ST
                     </div>
