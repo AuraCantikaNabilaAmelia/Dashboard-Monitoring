@@ -9,6 +9,8 @@ class PegawaiBidwasSeeder extends Seeder
 {
     public function run(): void
     {
+        // Hanya korwas yang masuk divisi (sesuai bidangnya).
+        // Kepala perwakilan, kepala bagian umum, dan subkoor TIDAK masuk divisi manapun (NULL).
         $roleMapping = [
             'korwas_apd_1'            => 159,
             'korwas_apd_2'            => 159,
@@ -19,10 +21,6 @@ class PegawaiBidwasSeeder extends Seeder
             'korwas_investigasi_1'    => 161,
             'korwas_investigasi_2'    => 161,
             'korwas_p3a'              => 320,
-            'kepala_perwakilan'       => 157,
-            'kepala_bagian_umum'      => 553,
-            'subkoor_keuangan'        => 552,
-            'subkoor_bmn_rt_kearsipan'=> 553,
         ];
 
         foreach ($roleMapping as $role => $bidwasId) {
@@ -31,7 +29,12 @@ class PegawaiBidwasSeeder extends Seeder
                 ->update(['id_bidwas' => $bidwasId]);
         }
 
-        $this->command->info('✓ 13 pegawai dengan role spesifik berhasil di-assign ke bidang.');
+        // Pastikan role non-divisi selalu NULL
+        DB::table('r_pegawai')
+            ->whereIn('user_role', ['kepala_perwakilan', 'kepala_bagian_umum', 'subkoor_keuangan', 'subkoor_bmn_rt_kearsipan'])
+            ->update(['id_bidwas' => null]);
+
+        $this->command->info('✓ 9 korwas di-assign ke bidang; kepala & subkoor di-set NULL (tanpa divisi).');
 
         $mainBidwas = [
             158,

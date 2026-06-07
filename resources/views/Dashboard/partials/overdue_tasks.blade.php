@@ -5,7 +5,7 @@
             {{ $suratTugas->nama_penugasan }}
         </p>
         <span class="text-xs font-bold text-red-500 bg-red-100 dark:bg-red-500/20 px-2 py-0.5 rounded flex-shrink-0 ml-2">
-            Telat {{ \Carbon\Carbon::parse($suratTugas->end_date)->diffInDays(now()) }} Hari
+            Telat {{ (int) \Carbon\Carbon::parse($suratTugas->end_date)->diffInDays(now()) }} Hari
         </span>
     </div>
     <div class="flex justify-between items-center mt-2">

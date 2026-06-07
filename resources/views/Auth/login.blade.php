@@ -23,7 +23,7 @@
         :root {
             --bpkp-navy: #1e293b;
             --bpkp-blue: #3b82f6;
-            --bpkp-dark-glass: rgba(15, 23, 42, 0.8);
+            --bpkp-dark-glass: rgba(15, 23, 42, 0.45);
             --bpkp-text-light: #f1f5f9;
             --bpkp-text-muted: #94a3b8;
             --glass-border: rgba(255, 255, 255, 0.1);
@@ -39,9 +39,23 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            background-color: #f8fafc;
+            background-color: #0f172a;
+            background-image: url("{{ asset('login-assets/backgorund.png') }}");
+            background-size: cover;
+            background-position: center center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
             position: relative;
             color: #1e293b;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(2, 6, 23, 0.55) 0%, rgba(30, 41, 59, 0.45) 100%);
+            z-index: 0;
+            pointer-events: none;
         }
 
         .background-blobs {
@@ -53,6 +67,7 @@
             overflow: hidden;
             z-index: 0;
             pointer-events: none;
+            opacity: 0.35;
         }
 
         .blob {
@@ -105,6 +120,10 @@
              color: #f1f5f9;
         }
 
+        [data-bs-theme="dark"] body::before {
+            background: linear-gradient(135deg, rgba(2, 6, 23, 0.7) 0%, rgba(15, 23, 42, 0.6) 100%);
+        }
+
         [data-bs-theme="dark"] .blob {
             opacity: 0.5;
         }
@@ -131,10 +150,10 @@
             width: 900px;
             max-width: 100%;
             background: var(--bpkp-dark-glass);
-            backdrop-filter: blur(15px);
-            -webkit-backdrop-filter: blur(15px);
+            backdrop-filter: blur(20px) saturate(140%);
+            -webkit-backdrop-filter: blur(20px) saturate(140%);
             border-radius: 24px;
-            border: 1px solid var(--glass-border);
+            border: 1px solid rgba(255, 255, 255, 0.12);
             overflow: hidden;
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
             min-height: 550px;
@@ -534,8 +553,12 @@
         }
 
         [data-bs-theme="dark"] body {
-            background: linear-gradient(-45deg, #020617, #1e1b4b, #172554, #0f172a);
-            background-size: 400% 400%;
+            background-color: #020617;
+            background-image: url("{{ asset('login-assets/backgorund.png') }}");
+            background-size: cover;
+            background-position: center center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
         }
 
         .password-toggle {
@@ -622,13 +645,13 @@ const currentTheme = htmlElement.getAttribute('data-bs-theme') || 'dark';
         <div class="login-sidebar">
             <div class="brand-glow"></div>
             <div class="login-content">
-                <h1 class="login-title">Welcome To<br>Dashboard Monitoring</h1>
-                <p class="login-subtitle">BPKP Perwakilan Provinsi Jawa Barat.<br>Terintegrasi, Real-time, Profesional.</p>
+                <h1 class="login-title">Dashboard<br>Monitoring Pengawasan</h1>
+                <p class="login-subtitle">Perwakilan BPKP Provinsi Jawa Barat<br>Pantau Surat Tugas, LHP, dan Tindak Lanjut dalam satu tampilan.</p>
 
                 <div class="feature-list">
-                    <div class="feature-item"><i class="bi bi-check-circle-fill"></i> Secure</div>
-                    <div class="feature-item"><i class="bi bi-lightning-charge-fill"></i> Fast</div>
-                    <div class="feature-item"><i class="bi bi-graph-up-arrow"></i> Analytics</div>
+                    <div class="feature-item"><i class="bi bi-file-earmark-text-fill"></i> Surat Tugas</div>
+                    <div class="feature-item"><i class="bi bi-clipboard2-check-fill"></i> LHP</div>
+                    <div class="feature-item"><i class="bi bi-arrow-repeat"></i> Tindak Lanjut</div>
                 </div>
             </div>
         </div>

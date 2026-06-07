@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Daftar LHP')
+@section('title', 'Daftar Laporan Hasil Pemeriksaan')
 
 @section('content')
 
@@ -103,12 +103,13 @@
                             <i data-lucide="x" class="w-4 h-4 group-hover:scale-110 transition-transform"></i>
                         </a>
                     @endif
+
                 </div>
             </div>
         </form>
     </div>
 
-    <div class="flex flex-wrap gap-3 mb-6">
+    <div class="flex flex-wrap gap-3 mb-6 items-center">
         <div class="glass dark:bg-blue-500/10 bg-blue-50 border border-blue-200/50 dark:border-blue-500/20 rounded-xl px-4 py-2.5 flex items-center gap-3">
             <div class="w-8 h-8 bg-blue-500/20 rounded-lg flex items-center justify-center">
                 <i data-lucide="clipboard-check" class="w-4 h-4 text-blue-500"></i>
@@ -118,6 +119,12 @@
                 <div class="text-lg font-black text-blue-600 dark:text-blue-400">{{ $daftarLhp->total() }}</div>
             </div>
         </div>
+        @if(auth()->user()->role !== 'pegawai')
+        <button type="button" onclick="openModalTambahLHP()" class="h-[52px] px-5 bg-gradient-to-r from-violet-600 to-violet-500 hover:from-violet-700 hover:to-violet-600 text-white rounded-xl transition-all font-bold shadow-lg shadow-violet-500/25 flex items-center gap-2 group">
+            <i data-lucide="plus" class="w-4 h-4 group-hover:scale-110 transition-transform"></i>
+            <span class="text-sm">Tambah LHP</span>
+        </button>
+        @endif
         @if($kataKunci || $statusTerpilih || $tanggalMulai || $tanggalSelesai)
         <div class="glass dark:bg-amber-500/10 bg-amber-50 border border-amber-200/50 dark:border-amber-500/20 rounded-xl px-4 py-2.5 flex items-center gap-3">
             <div class="w-8 h-8 bg-amber-500/20 rounded-lg flex items-center justify-center">
@@ -157,6 +164,9 @@
                             </div>
                         </th>
                         <th class="px-6 py-4 text-[10px] uppercase tracking-widest font-black text-slate-500 dark:text-slate-400 text-center">Status</th>
+                        @if(in_array(auth()->user()->role, ['pimpinan', 'kabid']))
+                        <th class="px-6 py-4 text-[10px] uppercase tracking-widest font-black text-slate-500 dark:text-slate-400 text-center">Aksi</th>
+                        @endif
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100 dark:divide-white/5">
@@ -194,6 +204,32 @@
                                 {{ $dataLhp->status_lhp ?: 'Terbit' }}
                             </span>
                         </td>
+                        @php
+                            $lhpBidwas = DB::table('d_st')->where('id_st', $dataLhp->st_id)->value('id_bidwas');
+                            $bolehEditLhp  = auth()->user()->role === 'pimpinan'
+                                || (auth()->user()->role === 'kabid' && $lhpBidwas == auth()->user()->bidang_id);
+                            $bolehHapusLhp = auth()->user()->role === 'pimpinan';
+                        @endphp
+                        @if($bolehEditLhp || $bolehHapusLhp)
+                        <td class="px-6 py-5">
+                            <div class="flex items-center justify-center gap-2 flex-nowrap">
+                                @if($bolehEditLhp)
+                                <button type="button"
+                                    onclick="openModalEditLHP({{ $dataLhp->id_lhp }}, {{ $dataLhp->st_id }}, '{{ addslashes($dataLhp->nomor_lhp) }}', '{{ addslashes($dataLhp->judul_lhp ?? '') }}', '{{ $dataLhp->tanggal_lhp }}', '{{ $dataLhp->status_lhp }}')"
+                                    class="inline-flex items-center gap-1.5 h-8 px-3 bg-amber-50 dark:bg-amber-500/10 hover:bg-amber-100 dark:hover:bg-amber-500/20 text-amber-600 dark:text-amber-400 rounded-lg border border-amber-200 dark:border-amber-500/20 transition-all text-xs font-bold whitespace-nowrap">
+                                    <i data-lucide="pencil" class="w-3.5 h-3.5"></i> Edit
+                                </button>
+                                @endif
+                                @if($bolehHapusLhp)
+                                <button type="button"
+                                    onclick="konfirmasiHapusLHP('{{ route('lhp.destroy', $dataLhp->id_lhp) }}', '{{ addslashes($dataLhp->nomor_lhp ?? $dataLhp->nama_penugasan) }}')"
+                                    class="inline-flex items-center gap-1.5 h-8 px-3 bg-red-50 dark:bg-red-500/10 hover:bg-red-100 dark:hover:bg-red-500/20 text-red-600 dark:text-red-400 rounded-lg border border-red-200 dark:border-red-500/20 transition-all text-xs font-bold whitespace-nowrap">
+                                    <i data-lucide="trash-2" class="w-3.5 h-3.5"></i> Hapus
+                                </button>
+                                @endif
+                            </div>
+                        </td>
+                        @endif
                     </tr>
                     @empty
                     <tr>
@@ -243,6 +279,125 @@
         </div>
         @endif
     </div>
+{{-- Notifikasi sukses --}}
+@if(session('success'))
+<div id="toast-sukses" class="fixed bottom-6 right-6 z-[9999] flex items-center gap-3 bg-emerald-600 text-white px-5 py-3.5 rounded-2xl shadow-2xl shadow-emerald-500/30 font-bold text-sm">
+    <i data-lucide="check-circle" class="w-5 h-5 shrink-0"></i>
+    {{ session('success') }}
+</div>
+<script>setTimeout(() => { const t = document.getElementById('toast-sukses'); if(t) t.remove(); }, 3500);</script>
+@endif
+
+{{-- Form hapus tersembunyi --}}
+<form id="form-hapus-lhp" method="POST" action="" class="hidden">
+    @csrf @method('DELETE')
+</form>
+
+{{-- Modal Konfirmasi Hapus --}}
+<div id="modal-konfirmasi-hapus-lhp" class="fixed inset-0 z-[9995] hidden">
+    <div class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
+    <div class="absolute inset-0 flex items-center justify-center p-4">
+        <div class="relative bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-sm border border-slate-200 dark:border-white/10 p-6">
+            <div class="flex items-center gap-4 mb-4">
+                <div class="w-12 h-12 bg-red-100 dark:bg-red-500/20 rounded-2xl flex items-center justify-center shrink-0">
+                    <i data-lucide="triangle-alert" class="w-6 h-6 text-red-500"></i>
+                </div>
+                <div>
+                    <h3 class="font-black text-slate-800 dark:text-white text-base">Hapus LHP?</h3>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Tindakan ini tidak bisa dibatalkan</p>
+                </div>
+            </div>
+            <p class="text-sm text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-white/5 rounded-xl px-4 py-3 font-medium mb-5" id="konfirmasi-nama-lhp"></p>
+            <div class="flex gap-3">
+                <button type="button" onclick="document.getElementById('modal-konfirmasi-hapus-lhp').classList.add('hidden')"
+                    class="flex-1 h-10 bg-slate-100 dark:bg-white/10 text-slate-700 dark:text-slate-300 rounded-xl text-sm font-bold hover:bg-slate-200 dark:hover:bg-white/20 transition-all">
+                    Batal
+                </button>
+                <button type="button" onclick="document.getElementById('form-hapus-lhp').submit()"
+                    class="flex-1 h-10 bg-gradient-to-r from-red-600 to-red-500 hover:from-red-700 hover:to-red-600 text-white rounded-xl text-sm font-bold shadow-lg shadow-red-500/25 transition-all">
+                    Ya, Hapus
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{-- Modal Tambah/Edit LHP --}}
+@if(auth()->user()->role !== 'pegawai')
+<div id="modal-tambah-lhp" class="fixed inset-0 z-[9990] hidden">
+    <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" onclick="closeModalLHP()"></div>
+    <div class="absolute inset-0 flex items-center justify-center p-4">
+        <div class="relative bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-lg border border-slate-200 dark:border-white/10">
+            <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-white/10">
+                <h2 id="modal-lhp-title" class="text-base font-black text-slate-800 dark:text-white">Tambah LHP</h2>
+                <button onclick="closeModalLHP()" class="w-8 h-8 bg-slate-100 dark:bg-white/10 rounded-lg flex items-center justify-center text-slate-500 hover:text-red-500 transition-colors">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+            </div>
+            <form id="form-lhp" method="POST" action="{{ route('lhp.store') }}" class="px-6 py-5 space-y-4">
+                @csrf
+                <input type="hidden" name="_method" id="form-lhp-method" value="POST">
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1.5">Surat Tugas Terkait <span class="text-red-500">*</span></label>
+                    <select name="id_st" id="lhp-id-st" required onchange="autoFillLhp(this)"
+                        class="w-full h-11 px-4 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl text-sm text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 transition-all font-medium">
+                        <option value="">Pilih Surat Tugas</option>
+                        @foreach($daftarSt as $st)
+                        <option value="{{ $st->id_st }}" data-nama="{{ $st->nama_penugasan }}">
+                            {{ $st->no_surat_tugas ? $st->no_surat_tugas.' — ' : '' }}{{ Str::limit($st->nama_penugasan, 60) }}
+                        </option>
+                        @endforeach
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1.5">Nomor LHP</label>
+                    <input type="text" name="nomor_lhp" id="lhp-nomor"
+                        class="w-full h-11 px-4 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl text-sm text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 transition-all font-medium">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1.5">Judul LHP</label>
+                    <input type="text" name="judul_lhp" id="lhp-judul"
+                        class="w-full h-11 px-4 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl text-sm text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 transition-all font-medium">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1.5">Tanggal LHP <span class="text-red-500">*</span></label>
+                        <div class="relative group">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none z-10">
+                                <i data-lucide="calendar" class="w-4 h-4 text-slate-400 group-focus-within:text-violet-500 transition-colors"></i>
+                            </div>
+                            <input type="text" name="tanggal_lhp" id="lhp-tanggal" required readonly placeholder="Pilih tanggal"
+                                class="lhp-date-input w-full h-11 pl-10 pr-4 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl text-sm text-slate-800 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 transition-all font-medium cursor-pointer">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1.5">Status LHP <span class="text-red-500">*</span></label>
+                        <input type="hidden" name="status_lhp" id="lhp-status" value="">
+                        <div class="form-dropdown-wrap relative">
+                            <button type="button" id="lhp-status-trigger" onclick="toggleFormDropdown('lhp-status-list')"
+                                class="w-full h-11 px-4 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl text-sm font-medium text-left flex items-center transition-all hover:border-violet-400 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500">
+                                <span id="lhp-status-label" style="color:rgb(148 163 184);font-weight:500;flex:1">Status</span>
+                                <svg id="lhp-status-arrow" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" style="color:rgb(148 163 184);transition:transform 0.2s ease;flex-shrink:0"><polyline points="6 9 12 15 18 9"/></svg>
+                            </button>
+                            <ul id="lhp-status-list" class="hidden absolute left-0 right-0 top-full mt-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-2xl shadow-2xl z-[9999] overflow-hidden py-2">
+                                @foreach(['Konsep','Review Dalnis','Final','FINAL'] as $s)
+                                <li><button type="button" onclick="setFormDropdown('lhp-status','lhp-status-label','lhp-status-list','lhp-status-arrow','{{ $s }}')"
+                                    class="w-full text-left px-4 py-2.5 text-sm font-semibold text-slate-600 dark:text-slate-300 hover:bg-blue-50 dark:hover:bg-blue-500/15 hover:text-blue-600 dark:hover:text-blue-400 transition-all">{{ $s }}</button></li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex justify-end gap-3 pt-2">
+                    <button type="button" onclick="closeModalLHP()" class="h-10 px-5 bg-slate-100 dark:bg-white/10 text-slate-700 dark:text-slate-300 rounded-xl text-sm font-bold hover:bg-slate-200 dark:hover:bg-white/20 transition-all">Batal</button>
+                    <button type="submit" class="h-10 px-6 bg-gradient-to-r from-violet-600 to-violet-500 text-white rounded-xl text-sm font-bold shadow-lg shadow-violet-500/25 hover:from-violet-700 hover:to-violet-600 transition-all">Simpan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+@endif
 @endsection
 
 @include('components.custom-dropdown-css')
@@ -251,6 +406,130 @@
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.bootstrap5.min.css">
+<script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
+<style>
+    .ts-wrapper { width: 100% !important; }
+    .ts-control {
+        min-height: 44px !important;
+        padding: 0 12px !important;
+        padding-right: 36px !important;
+        background: rgb(248 250 252) !important;
+        border: 1px solid rgb(226 232 240) !important;
+        border-radius: 12px !important;
+        box-shadow: none !important;
+        font-size: 0.875rem !important;
+        font-weight: 500 !important;
+        color: rgb(71 85 105) !important;
+        display: flex !important;
+        align-items: center !important;
+        background-image: none !important;
+    }
+    [data-theme="dark"] .ts-control {
+        background: rgba(255,255,255,0.05) !important;
+        border-color: rgba(255,255,255,0.1) !important;
+        color: #cbd5e1 !important;
+        background-image: none !important;
+    }
+    .ts-wrapper .ts-control .placeholder,
+    .ts-wrapper .ts-control .item,
+    .ts-wrapper .ts-control > input { color: rgb(148 163 184) !important; font-size: 0.875rem !important; font-weight: 500 !important; opacity: 1 !important; }
+    [data-theme="dark"] .ts-wrapper .ts-control .placeholder,
+    [data-theme="dark"] .ts-wrapper .ts-control .item,
+    [data-theme="dark"] .ts-wrapper .ts-control > input { color: rgba(203 213 225 / 0.6) !important; opacity: 1 !important; }
+    .ts-wrapper.single .ts-control::after, .ts-wrapper .ts-control::after { display: none !important; }
+    .ts-wrapper { position: relative !important; }
+    .ts-arrow-wrap {
+        position: absolute !important; right: 12px !important; top: 50% !important;
+        transform: translateY(-50%) !important; pointer-events: none !important;
+        display: flex !important; align-items: center !important; z-index: 2 !important;
+    }
+    .ts-chevron { color: rgb(148 163 184); transition: transform 0.2s ease; }
+    .ts-wrapper.is-open .ts-chevron { transform: rotate(180deg); color: rgb(139 92 246); }
+    .ts-dropdown,
+    body > .ts-dropdown {
+        background: #ffffff !important;
+        border-radius: 16px !important;
+        border: 1px solid rgb(226 232 240) !important;
+        box-shadow: 0 20px 40px -8px rgba(0,0,0,0.12), 0 4px 12px rgba(0,0,0,0.06) !important;
+        font-size: 0.875rem !important;
+        z-index: 999999 !important;
+        overflow: hidden !important;
+        padding: 6px !important;
+        margin-top: 6px !important;
+    }
+    [data-theme="dark"] .ts-dropdown,
+    [data-theme="dark"] body > .ts-dropdown {
+        background: rgb(15 23 42) !important;
+        border-color: rgba(255,255,255,0.1) !important;
+    }
+    .ts-dropdown .ts-dropdown-content,
+    body > .ts-dropdown .ts-dropdown-content {
+        max-height: 220px !important;
+        overflow-y: auto !important;
+    }
+    .ts-dropdown .option,
+    body > .ts-dropdown .option {
+        padding: 10px 14px !important;
+        font-weight: 500 !important;
+        font-size: 0.875rem !important;
+        color: rgb(71 85 105) !important;
+        border-radius: 10px !important;
+        transition: background 0.15s, color 0.15s !important;
+    }
+    [data-theme="dark"] .ts-dropdown .option,
+    [data-theme="dark"] body > .ts-dropdown .option { color: #cbd5e1 !important; }
+    .ts-dropdown .option.active,
+    .ts-dropdown .option:hover,
+    body > .ts-dropdown .option.active,
+    body > .ts-dropdown .option:hover {
+        background: rgb(239 246 255) !important;
+        color: rgb(37 99 235) !important;
+    }
+    [data-theme="dark"] .ts-dropdown .option.active,
+    [data-theme="dark"] .ts-dropdown .option:hover,
+    [data-theme="dark"] body > .ts-dropdown .option.active,
+    [data-theme="dark"] body > .ts-dropdown .option:hover {
+        background: rgba(59,130,246,0.15) !important;
+        color: #60a5fa !important;
+    }
+    .ts-wrapper.focus .ts-control { border-color: rgb(139 92 246) !important; box-shadow: 0 0 0 3px rgba(139,92,246,0.15) !important; }
+    .ts-arrow-wrap { margin-left: auto; display: flex; align-items: center; padding-left: 6px; pointer-events: none; }
+    .ts-chevron { color: rgb(148 163 184); transition: transform 0.2s; }
+    .ts-wrapper.is-open .ts-chevron { transform: rotate(180deg); }
+    body > .ts-dropdown[style*="bottom"] { margin-bottom: 0 !important; margin-top: 0 !important; }
+    .ts-dropdown .divider { display: none !important; }
+
+    /* altInput flatpickr – agar sama persis dengan input lain di form */
+    .lhp-date-input.flatpickr-input { display: none !important; }
+    .flatpickr-input.flatpickr-mobile { display: none !important; }
+    input.lhp-date-input + input[readonly] {
+        width: 100% !important;
+        height: 44px !important;
+        padding-left: 2.5rem !important;
+        padding-right: 1rem !important;
+        background: rgb(248 250 252) !important;
+        border: 1px solid rgb(226 232 240) !important;
+        border-radius: 12px !important;
+        font-size: 0.875rem !important;
+        font-weight: 500 !important;
+        color: rgb(30 41 59) !important;
+        cursor: pointer !important;
+        outline: none !important;
+        transition: all 0.2s !important;
+        font-family: inherit !important;
+    }
+    [data-theme="dark"] input.lhp-date-input + input[readonly] {
+        background: rgba(255,255,255,0.05) !important;
+        border-color: rgba(255,255,255,0.1) !important;
+        color: #f1f5f9 !important;
+    }
+    input.lhp-date-input + input[readonly]:focus {
+        border-color: rgb(139 92 246) !important;
+        box-shadow: 0 0 0 3px rgba(139,92,246,0.15) !important;
+    }
+    input.lhp-date-input + input[readonly]::placeholder { color: rgb(148 163 184) !important; font-weight: 500 !important; }
+</style>
 
 <style>
     .flatpickr-calendar {
@@ -419,6 +698,125 @@
     function applyStatus(status) {
         document.getElementById('status_input').value = status;
         document.getElementById('filterForm').submit();
+    }
+
+    // --- Helper dropdown form ---
+    function toggleFormDropdown(listId) {
+        const list = document.getElementById(listId);
+        const arrow = document.getElementById(listId.replace('-list','-arrow'));
+        const isHidden = list.classList.contains('hidden');
+        document.querySelectorAll('.form-dropdown-wrap ul').forEach(el => el.classList.add('hidden'));
+        document.querySelectorAll('.form-dropdown-wrap svg[id$="-arrow"]').forEach(el => el.style.transform = '');
+        if (isHidden) {
+            list.classList.remove('hidden');
+            if (arrow) arrow.style.transform = 'rotate(180deg)';
+        }
+    }
+
+    function setFormDropdown(inputId, labelId, listId, arrowId, value, placeholder) {
+        const label = document.getElementById(labelId);
+        document.getElementById(inputId).value = value;
+        if (placeholder !== undefined) {
+            label.textContent = placeholder;
+            label.style.color = 'rgb(148 163 184)';
+        } else {
+            label.textContent = value;
+            label.style.color = 'rgb(71 85 105)';
+        }
+        document.getElementById(listId).classList.add('hidden');
+        document.getElementById(arrowId).style.transform = '';
+    }
+
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.form-dropdown-wrap')) {
+            document.querySelectorAll('.form-dropdown-wrap ul').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.form-dropdown-wrap svg[id$="-arrow"]').forEach(el => el.style.transform = '');
+        }
+    });
+
+    // --- Flatpickr form LHP ---
+    const fpLHPConfig = {
+        dateFormat: "Y-m-d",
+        altInput: true,
+        altFormat: "d M Y",
+        allowInput: false,
+        prevArrow: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"></path></svg>',
+        nextArrow: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"></path></svg>',
+    };
+
+    const fpLHP = flatpickr("#lhp-tanggal", { ...fpLHPConfig });
+
+    // Init TomSelect langsung (DOMContentLoaded sudah lewat saat scripts push jalan)
+    let tomSelectST = null;
+    (function initTomSelectST() {
+        const el = document.getElementById('lhp-id-st');
+        if (!el) return;
+        const arrowSVG = `<svg class="ts-chevron" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>`;
+        tomSelectST = new TomSelect(el, {
+            dropdownParent: 'body',
+            placeholder: 'Cari atau pilih Surat Tugas...',
+            allowEmptyOption: true,
+            searchField: ['text'],
+            maxOptions: 100,
+            render: {
+                option: (data, escape) => `<div>${escape(data.text)}</div>`,
+                item:   (data, escape) => `<div>${escape(data.text)}</div>`,
+            },
+            onInitialize() {
+                const wrap = document.createElement('div');
+                wrap.className = 'ts-arrow-wrap';
+                wrap.innerHTML = arrowSVG;
+                this.control.appendChild(wrap);
+            }
+        });
+    })();
+
+    const tahunSekarang = new Date().getFullYear();
+
+    function autoFillLhp(select) {
+        const opt = select.options[select.selectedIndex];
+        if (!opt || !opt.value) return;
+        const idSt  = opt.value;
+        const nama  = opt.dataset.nama || '';
+        const nomor = document.getElementById('lhp-nomor');
+        const judul = document.getElementById('lhp-judul');
+        // Hanya auto-fill jika field masih kosong (tidak tindih isian manual)
+        if (!nomor.value) nomor.value = `LHP/${idSt}/PW10/${tahunSekarang}`;
+        if (!judul.value) judul.value = `Laporan Hasil Pengawasan — ${nama}`;
+    }
+
+    function openModalTambahLHP() {
+        document.getElementById('modal-lhp-title').textContent = 'Tambah LHP';
+        document.getElementById('form-lhp').action = '{{ route('lhp.store') }}';
+        document.getElementById('form-lhp-method').value = 'POST';
+        if (tomSelectST) tomSelectST.clear();
+        document.getElementById('lhp-nomor').value = '';
+        document.getElementById('lhp-judul').value = '';
+        fpLHP.clear();
+        setFormDropdown('lhp-status','lhp-status-label','lhp-status-list','lhp-status-arrow','', 'Status');
+        document.getElementById('modal-tambah-lhp').classList.remove('hidden');
+    }
+
+    function openModalEditLHP(id, idSt, nomor, judul, tanggal, status) {
+        document.getElementById('modal-lhp-title').textContent = 'Edit LHP';
+        document.getElementById('form-lhp').action = '/dashboard/lhp/' + id;
+        document.getElementById('form-lhp-method').value = 'PUT';
+        if (tomSelectST) tomSelectST.setValue(String(idSt));
+        document.getElementById('lhp-nomor').value = nomor;
+        document.getElementById('lhp-judul').value = judul;
+        fpLHP.setDate(tanggal);
+        setFormDropdown('lhp-status','lhp-status-label','lhp-status-list','lhp-status-arrow', status);
+        document.getElementById('modal-tambah-lhp').classList.remove('hidden');
+    }
+
+    function closeModalLHP() {
+        document.getElementById('modal-tambah-lhp').classList.add('hidden');
+    }
+
+    function konfirmasiHapusLHP(action, nama) {
+        document.getElementById('form-hapus-lhp').action = action;
+        document.getElementById('konfirmasi-nama-lhp').textContent = nama;
+        document.getElementById('modal-konfirmasi-hapus-lhp').classList.remove('hidden');
     }
 
     document.addEventListener('click', function(e) {

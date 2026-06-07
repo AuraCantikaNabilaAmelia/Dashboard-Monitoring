@@ -11,8 +11,8 @@ Route::prefix('dashboard')
     ->middleware('auth')
     ->group(function () {
         Route::get('/', 'App\Http\Controllers\DashboardController@index');
-        Route::get('/st', 'App\Http\Controllers\DashboardController@stList');
-        Route::get('/lhp', 'App\Http\Controllers\DashboardController@lhpList');
+        Route::get('/st', 'App\Http\Controllers\DashboardController@stList')->name('dashboard.st');
+        Route::get('/lhp', 'App\Http\Controllers\DashboardController@lhpList')->name('dashboard.lhp');
         Route::get('/daily', 'App\Http\Controllers\DashboardController@daily');
         Route::get('/monthly', 'App\Http\Controllers\DashboardController@monthly')->name('dashboard.monthly');
         Route::get('/bidwas', 'App\Http\Controllers\DashboardController@bidwas');
@@ -21,10 +21,22 @@ Route::prefix('dashboard')
         Route::get('/employee/{nip}', 'App\Http\Controllers\DashboardController@employeeDetail')->name('employee.detail');
         Route::get('/ajax/available-employees', 'App\Http\Controllers\DashboardController@ajaxAvailableEmployees');
         Route::get('/ajax/overdue-tasks', 'App\Http\Controllers\DashboardController@ajaxOverdueTasks');
+        Route::get('/api/tim/{id}', 'App\Http\Controllers\DashboardController@apiTim');
+
+        // ST CRUD manual
+        Route::post('/st', 'App\Http\Controllers\DashboardController@stStore')->name('st.store');
+        Route::put('/st/{id}', 'App\Http\Controllers\DashboardController@stUpdate')->name('st.update');
+        Route::delete('/st/{id}', 'App\Http\Controllers\DashboardController@stDestroy')->name('st.destroy');
+
+        // LHP CRUD manual
+        Route::post('/lhp', 'App\Http\Controllers\DashboardController@lhpStore')->name('lhp.store');
+        Route::put('/lhp/{id}', 'App\Http\Controllers\DashboardController@lhpUpdate')->name('lhp.update');
+        Route::delete('/lhp/{id}', 'App\Http\Controllers\DashboardController@lhpDestroy')->name('lhp.destroy');
 
         Route::get('/tindaklanjut', 'App\Http\Controllers\TindakLanjutController@index')->name('tindaklanjut.index');
         Route::get('/tindaklanjut/{id}', 'App\Http\Controllers\TindakLanjutController@show')->name('tindaklanjut.show');
         Route::post('/tindaklanjut/{id}/entry', 'App\Http\Controllers\TindakLanjutController@addEntry')->name('tindaklanjut.addEntry');
+        Route::put('/tindaklanjut/entry/{id}', 'App\Http\Controllers\TindakLanjutController@updateEntry')->name('tindaklanjut.updateEntry');
         Route::delete('/tindaklanjut/entry/{id}', 'App\Http\Controllers\TindakLanjutController@deleteEntry')->name('tindaklanjut.deleteEntry');
 
 

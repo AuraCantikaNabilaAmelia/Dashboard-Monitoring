@@ -22,13 +22,13 @@
                 $statusClass = match(strtolower($dataSuratTugas->status_st)) {
                     'batal' => 'bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/20',
                     'final', 'selesai' => 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20',
-                    'tidak aktif' => 'bg-slate-500/10 text-slate-600 dark:text-slate-400 border-slate-500/20',
+                    'Tidak Aktif' => 'bg-slate-500/10 text-slate-600 dark:text-slate-400 border-slate-500/20',
                     default => 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20'
                 };
                 $statusIcon = match(strtolower($dataSuratTugas->status_st)) {
                     'batal' => 'x-circle',
                     'final', 'selesai' => 'check-circle',
-                    'tidak aktif' => 'minus-circle',
+                    'Tidak Aktif' => 'minus-circle',
                     default => 'clock'
                 };
             @endphp
@@ -74,7 +74,7 @@
         </div>
     </div>
 
-    @if(auth()->user()->role === 'pimpinan' || auth()->user()->bidang_id == $dataSuratTugas->id_bidwas)
+    @if($canAddCatatan)
     <div class="mb-12">
         <div class="glass bg-blue-500/5 border-blue-500/20 p-6 rounded-2xl">
             <div class="flex items-center gap-3 mb-4">
@@ -83,11 +83,19 @@
                 </div>
                 <h4 class="font-black text-slate-800 dark:text-white uppercase tracking-wider text-xs">Tambah Catatan Tindak Lanjut</h4>
             </div>
-            <form action="{{ route('tindaklanjut.addEntry', $dataSuratTugas->id_st) }}" method="POST" enctype="multipart/form-data" class="space-y-4">
+            <form action="{{ route('tindaklanjut.addEntry', $dataSuratTugas->id_st) }}" method="POST" enctype="multipart/form-data" class="space-y-4" x-data="{ catatan: '{{ old('catatan') }}', max: 2000 }">
                 @csrf
                 <div class="space-y-1">
-                    <textarea name="catatan" rows="3" class="w-full glass bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl px-5 py-4 text-sm font-medium focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500/50 transition-all outline-none" placeholder="Tuliskan perkembangan tindak lanjut atau penugasan di sini..."></textarea>
-                    @error('catatan') <p class="text-red-500 text-[10px] font-bold mt-1 ml-1 uppercase">{{ $message }}</p> @enderror
+                    <textarea name="catatan" rows="3" maxlength="2000" x-model="catatan" class="w-full glass bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl px-5 py-4 text-sm font-medium focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500/50 transition-all outline-none" placeholder="Tuliskan perkembangan tindak lanjut atau penugasan di sini..."></textarea>
+                    <div class="flex items-center justify-between">
+                        <div>
+                            @error('catatan') <p class="text-red-500 text-[10px] font-bold ml-1 uppercase">{{ $message }}</p> @enderror
+                        </div>
+                        <p class="text-[10px] font-bold uppercase tracking-wider"
+                           :class="catatan.length > max * 0.9 ? 'text-red-500' : 'text-slate-400'">
+                            <span x-text="catatan.length"></span> / <span x-text="max"></span>
+                        </p>
+                    </div>
                 </div>
                 
                 <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -110,7 +118,7 @@
     </div>
     @else
     <div class="mb-12 p-6 bg-slate-50 dark:bg-white/5 border-2 border-dashed border-slate-200 dark:border-white/10 rounded-2xl text-center">
-        <p class="text-slate-500 italic text-sm font-medium">Hanya anggota bidang terkait yang dapat menambahkan catatan tindak lanjut.</p>
+        <p class="text-slate-500 italic text-sm font-medium">Hanya anggota tim penugasan yang dapat menambahkan catatan tindak lanjut.</p>
     </div>
     @endif
 
@@ -118,38 +126,99 @@
         <div class="absolute left-6 top-0 bottom-0 w-[2px] bg-slate-100 dark:bg-white/5"></div>
         
         @forelse($riwayatTindakLanjut as $dataEntri)
-        <div class="relative pl-16 group">
+        @php
+            $isOwner = $dataEntri->created_by_nip === auth()->user()->nip;
+            $canEdit = $isOwner || $isManager;
+            $canDelete = $isOwner || $isManager;
+        @endphp
+        <div class="relative pl-16 group" x-data="{ editing: false, catatan: @js($dataEntri->catatan), max: 2000, hapusFile: false, fileName: '' }">
             <div class="absolute left-4 top-1 w-4 h-4 rounded-full border-4 border-white dark:border-slate-900 bg-blue-500 z-10 group-hover:scale-125 transition-transform"></div>
-            
+
             <div class="glass p-6 rounded-2xl group-hover:border-blue-500/30 transition-all border border-transparent shadow-sm hover:shadow-xl hover:shadow-blue-500/5">
                 <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-4">
                     <div class="flex items-center gap-3">
                         <span class="text-sm font-black text-slate-900 dark:text-white">{{ $dataEntri->created_by_nama }}</span>
                         <span class="text-[10px] font-bold px-2 py-0.5 bg-slate-100 dark:bg-white/10 text-slate-500 rounded-lg uppercase tracking-wider italic">{{ $dataEntri->created_by_nip }}</span>
+                        @if($dataEntri->updated_at && $dataEntri->updated_at->ne($dataEntri->created_at))
+                            <span class="text-[10px] font-bold px-2 py-0.5 bg-amber-100 dark:bg-amber-500/15 text-amber-600 dark:text-amber-400 rounded-lg uppercase tracking-wider" title="Diedit {{ $dataEntri->updated_at->format('d M Y - H:i') }}">Diedit</span>
+                        @endif
                     </div>
-                    <div class="flex items-center gap-4">
+                    <div class="flex items-center gap-3">
                         <span class="text-[11px] font-bold text-slate-400 uppercase tracking-widest font-mono">{{ $dataEntri->created_at->format('d M Y - H:i') }}</span>
-                        
-                        @if($dataEntri->created_by_nip === auth()->user()->nip)
+
+                        @if($canEdit)
+                        <button type="button" x-show="!editing" @click="editing = true"
+                                class="text-blue-400 hover:text-blue-500 p-1 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-500/10 transition-all" title="Edit catatan">
+                            <i data-lucide="pencil" class="w-4 h-4"></i>
+                        </button>
+                        @endif
+
+                        @if($canDelete)
                         <form id="delete-entry-{{ $dataEntri->id }}" action="{{ route('tindaklanjut.deleteEntry', $dataEntri->id) }}" method="POST">
                             @csrf
                             @method('DELETE')
-                            <button type="button" 
+                            <button type="button"
                                     @click="$store.confirm.ask('Hapus catatan ini?', () => document.getElementById('delete-entry-{{ $dataEntri->id }}').submit(), 'Hapus Catatan', 'Ya, Hapus')"
-                                    class="text-red-400 hover:text-red-500 p-1 rounded-lg hover:bg-red-50 dark:hover:bg-red-500/10 transition-all">
+                                    class="text-red-400 hover:text-red-500 p-1 rounded-lg hover:bg-red-50 dark:hover:bg-red-500/10 transition-all" title="Hapus catatan">
                                 <i data-lucide="trash-2" class="w-4 h-4"></i>
                             </button>
                         </form>
                         @endif
                     </div>
                 </div>
-                
-                <div class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed font-bold whitespace-pre-line mb-6 italic opacity-90">
+
+                <div x-show="!editing" class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed font-bold whitespace-pre-line mb-6 italic opacity-90">
                     "{{ $dataEntri->catatan }}"
                 </div>
-                
+
+                @if($canEdit)
+                <form x-show="editing" style="display: none;" action="{{ route('tindaklanjut.updateEntry', $dataEntri->id) }}" method="POST" enctype="multipart/form-data" class="space-y-3 mb-4">
+                    @csrf
+                    @method('PUT')
+                    <div class="space-y-1">
+                        <textarea name="catatan" rows="3" maxlength="2000" x-model="catatan"
+                                  class="w-full glass bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 text-sm font-medium focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500/50 transition-all outline-none"></textarea>
+                        <div class="flex items-center justify-end">
+                            <p class="text-[10px] font-bold uppercase tracking-wider"
+                               :class="catatan.length > max * 0.9 ? 'text-red-500' : 'text-slate-400'">
+                                <span x-text="catatan.length"></span> / <span x-text="max"></span>
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
+                        <div class="flex items-center gap-3 flex-wrap">
+                            <input type="file" name="file" id="edit-file-{{ $dataEntri->id }}" class="hidden"
+                                   @change="fileName = $event.target.files[0]?.name || ''">
+                            <label for="edit-file-{{ $dataEntri->id }}" class="inline-flex items-center gap-2 px-3 py-1.5 border border-slate-200 dark:border-white/10 rounded-lg text-[11px] font-bold text-slate-500 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-white/5 transition-all cursor-pointer">
+                                <i data-lucide="paperclip" class="w-3.5 h-3.5"></i>
+                                <span x-text="fileName || '{{ $dataEntri->file_path ? 'Ganti File' : 'Lampirkan File' }}'"></span>
+                            </label>
+
+                            @if($dataEntri->file_path)
+                                <label class="inline-flex items-center gap-1.5 text-[11px] font-bold text-red-400 cursor-pointer">
+                                    <input type="checkbox" name="hapus_file" value="1" x-model="hapusFile" class="rounded">
+                                    Hapus file lama
+                                </label>
+                            @endif
+                        </div>
+
+                        <div class="flex items-center gap-2">
+                            <button type="button" @click="editing = false; catatan = @js($dataEntri->catatan); hapusFile = false; fileName = ''"
+                                    class="px-4 py-2 text-[11px] font-black uppercase tracking-widest text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 rounded-lg transition-all">
+                                Batal
+                            </button>
+                            <button type="submit" class="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white font-black text-[11px] uppercase tracking-widest rounded-lg transition-all shadow-lg shadow-blue-500/20 flex items-center gap-2">
+                                Simpan
+                                <i data-lucide="check" class="w-3.5 h-3.5"></i>
+                            </button>
+                        </div>
+                    </div>
+                </form>
+                @endif
+
                 @if($dataEntri->file_path)
-                <div class="pt-4 border-t border-slate-100 dark:border-white/5">
+                <div x-show="!editing" class="pt-4 border-t border-slate-100 dark:border-white/5">
                     <a href="{{ asset('storage/' . $dataEntri->file_path) }}" target="_blank" class="inline-flex items-center gap-3 px-4 py-2 bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 rounded-xl text-xs font-bold hover:bg-blue-100 dark:hover:bg-blue-500/20 transition-all group/file">
                         <div class="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white group-hover/file:scale-110 transition-transform">
                             <i data-lucide="file-text" class="w-4 h-4"></i>

@@ -60,6 +60,17 @@
 
                 <div class="w-full lg:w-48 relative z-[45]">
                     <label class="block text-[10px] uppercase tracking-widest text-slate-400 font-black mb-2 ml-1">Bidang</label>
+
+                    @if($bidangTerkunci)
+                    {{-- Kabid / Pegawai: bidang terkunci --}}
+                    <div class="h-12 px-4 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl flex items-center justify-between gap-2 cursor-not-allowed select-none" title="{{ $bidwasTerpilih->nm_bidwas ?? '' }}">
+                        <span class="text-sm font-bold text-blue-600 dark:text-blue-400 truncate">
+                            {{ $bidwasTerpilih ? $bidwasTerpilih->short_name : '-' }}
+                        </span>
+                        <i data-lucide="lock" class="w-3.5 h-3.5 text-slate-400 shrink-0"></i>
+                    </div>
+                    @else
+                    {{-- Pimpinan: dropdown bebas --}}
                     <div class="custom-dropdown-container w-full">
                         <div class="status-filter-dropdown dark:bg-white/5 bg-white h-12 border border-slate-200 dark:border-white/10 rounded-xl">
                             <input hidden="" class="sr-only" name="bidwas-dropdown" id="bidwas-dropdown" type="checkbox" />
@@ -78,6 +89,7 @@
                             </ul>
                         </div>
                     </div>
+                    @endif
                 </div>
 
                 <div class="flex items-center gap-2 w-full lg:w-auto">
@@ -103,13 +115,91 @@
         </form>
     </div>
 
+@php
+    $daftarNamaBulan = ['','Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+    $namaBulan = $daftarNamaBulan[(int)$bulanTerpilih] ?? '-';
+    $labelPeriode = $tanggalMulai && $tanggalSelesai
+        ? \Carbon\Carbon::parse($tanggalMulai)->format('d M Y') . ' – ' . \Carbon\Carbon::parse($tanggalSelesai)->format('d M Y')
+        : $namaBulan . ' ' . $tahunTerpilih;
+@endphp
+<div class="flex items-center gap-3 mb-5">
+    <div class="w-1 h-8 bg-blue-500 rounded-full"></div>
+    <div>
+        <h2 class="text-lg font-black text-slate-800 dark:text-slate-100">
+            Penugasan — <span class="text-blue-600 dark:text-blue-400">{{ $labelPeriode }}</span>
+        </h2>
+        <p class="text-[11px] text-slate-400 font-medium mt-0.5">
+            @if($tanggalMulai && $tanggalSelesai)
+                Periode kustom yang dipilih
+            @else
+                {{ $bulanTerpilih == \Carbon\Carbon::now()->month && $tahunTerpilih == \Carbon\Carbon::now()->year ? 'Bulan berjalan' : 'Bulan terpilih' }}
+            @endif
+        </p>
+    </div>
+</div>
+
+@if(auth()->user()->role === 'pegawai')
+    {{-- TAMPILAN STAFF: daftar surat tugas langsung --}}
+    <div class="glass dark:bg-slate-900/30 bg-white rounded-2xl overflow-hidden shadow-xl border border-slate-200/50 dark:border-white/5">
+        <div class="px-6 py-4 border-b border-slate-100 dark:border-white/5 flex items-center gap-3">
+            <div class="w-8 h-8 bg-blue-500/10 rounded-lg flex items-center justify-center">
+                <i data-lucide="clipboard-list" class="w-4 h-4 text-blue-500"></i>
+            </div>
+            <div>
+                <h3 class="text-sm font-black text-slate-700 dark:text-slate-200">Penugasan {{ $labelPeriode }}</h3>
+                <p class="text-[10px] text-slate-400">{{ $daftarStStaff->count() }} surat tugas ditemukan</p>
+            </div>
+        </div>
+        <div class="divide-y divide-slate-100 dark:divide-white/5">
+            @forelse($daftarStStaff as $st)
+            <a href="{{ route('st.detail', $st->id_st) }}" class="flex items-center gap-4 px-6 py-4 hover:bg-blue-50/50 dark:hover:bg-white/[0.02] transition-all group">
+                <div class="w-10 h-10 bg-gradient-to-br from-blue-500/20 to-indigo-500/10 rounded-xl flex items-center justify-center shrink-0">
+                    <i data-lucide="briefcase" class="w-4 h-4 text-blue-500"></i>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-bold text-slate-800 dark:text-slate-200 group-hover:text-blue-600 transition-colors line-clamp-1">{{ $st->nama_penugasan }}</p>
+                    <div class="flex items-center gap-3 mt-1 flex-wrap">
+                        @if($st->no_surat_tugas)
+                        <span class="text-[10px] font-mono font-bold text-slate-400">{{ $st->no_surat_tugas }}</span>
+                        @endif
+                        <span class="text-[10px] font-bold text-slate-400">
+                            {{ \Carbon\Carbon::parse($st->start_date)->format('d M Y') }} — {{ \Carbon\Carbon::parse($st->end_date)->format('d M Y') }}
+                        </span>
+                        @if($st->peran)
+                        <span class="text-[10px] font-bold bg-violet-50 dark:bg-violet-500/10 text-violet-600 dark:text-violet-400 px-2 py-0.5 rounded-md">{{ $st->peran }}</span>
+                        @endif
+                    </div>
+                </div>
+                @php
+                    $warna = match($st->status_st) {
+                        'Konsep'          => 'bg-slate-100 dark:bg-white/10 text-slate-500 dark:text-slate-400',
+                        'Realisasi'       => 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400',
+                        'Perpanjangan ST' => 'bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-400',
+                        'Final'           => 'bg-violet-100 dark:bg-violet-500/20 text-violet-700 dark:text-violet-400',
+                        'Batal'           => 'bg-red-100 dark:bg-red-500/20 text-red-700 dark:text-red-400',
+                        default           => 'bg-slate-100 dark:bg-white/10 text-slate-500 dark:text-slate-400',
+                    };
+                @endphp
+                <span class="text-[10px] font-bold px-2.5 py-1 rounded-lg shrink-0 {{ $warna }}">{{ $st->status_st ?? 'Konsep' }}</span>
+            </a>
+            @empty
+            <div class="py-16 text-center">
+                <div class="w-16 h-16 bg-slate-100 dark:bg-white/5 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                    <i data-lucide="inbox" class="w-8 h-8 text-slate-300 dark:text-slate-600"></i>
+                </div>
+                <p class="text-slate-500 dark:text-slate-400 font-medium text-sm">Tidak ada penugasan di periode ini</p>
+            </div>
+            @endforelse
+        </div>
+    </div>
+
+@else
+    {{-- TAMPILAN PIMPINAN & KORWAS: kartu pegawai --}}
     <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
         @forelse($rekapPenugasanBulanan as $dataStatistik)
         <a href="{{ route('employee.detail', ['nip' => $dataStatistik->nip, 'start_date' => $tanggalMulai, 'end_date' => $tanggalSelesai, 'bidwas' => $idBidwas]) }}"
            class="glass dark:bg-slate-900/40 bg-white p-6 rounded-[2rem] border border-slate-200/50 dark:border-white/5 hover:border-blue-500/30 hover:shadow-2xl hover:shadow-blue-500/10 transition-all group relative overflow-hidden flex items-center justify-between">
-
             <div class="absolute -right-6 -bottom-6 w-24 h-24 bg-blue-500/5 blur-3xl group-hover:bg-blue-500/20 transition-all duration-700"></div>
-
             <div class="flex items-center gap-5 relative z-10">
                 <div class="w-16 h-16 bg-gradient-to-br from-blue-500/20 to-indigo-500/10 dark:from-blue-500/10 dark:to-indigo-500/5 rounded-[1.25rem] border border-blue-500/20 shadow-inner flex items-center justify-center text-2xl font-black text-blue-600 dark:text-blue-400 group-hover:rotate-6 transition-transform">
                     {{ substr($dataStatistik->nama, 0, 1) }}
@@ -125,7 +215,6 @@
                     </div>
                 </div>
             </div>
-
             <div class="relative w-16 h-16 flex items-center justify-center relative z-10 shrink-0">
                 <svg class="w-full h-full -rotate-90 transform" viewBox="0 0 36 36">
                     <circle cx="18" cy="18" r="16" fill="none" class="stroke-slate-100 dark:stroke-white/5" stroke-width="4"></circle>
@@ -149,6 +238,7 @@
         </div>
         @endforelse
     </div>
+@endif
 @endsection
 
 @include('components.custom-dropdown-css')

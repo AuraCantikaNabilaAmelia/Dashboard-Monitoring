@@ -32,31 +32,21 @@ class AuthController extends Controller
         }
 
         $peranUser = \App\Models\User::ROLE_PEGAWAI;
-        $idBidang = null;
+
+        // Ambil bidang_id langsung dari r_pegawai (sudah benar untuk semua role termasuk staff)
+        $idBidang = $dataPegawai->id_bidwas ?? null;
 
         if (isset($dataPegawai->user_role)) {
-            $peranDariDatabase = strtolower($dataPegawai->user_role);
+            $peranDariDatabase = strtolower(trim($dataPegawai->user_role));
 
-            if (str_contains($peranDariDatabase, 'apd')) $idBidang = 159;
-            elseif (str_contains($peranDariDatabase, 'an')) $idBidang = 160;
-            elseif (str_contains($peranDariDatabase, 'ipp')) $idBidang = 158;
-            elseif (str_contains($peranDariDatabase, 'investigasi')) $idBidang = 161;
-            elseif (str_contains($peranDariDatabase, 'p3a') || str_contains($peranDariDatabase, 'program')) $idBidang = 320;
-            elseif (str_contains($peranDariDatabase, 'keuangan')) $idBidang = 552;
-            elseif (str_contains($peranDariDatabase, 'kepegawaian')) $idBidang = 551;
-            elseif (str_contains($peranDariDatabase, 'umum')) $idBidang = 553;
-            elseif (str_contains($peranDariDatabase, 'bagian tata usaha')) $idBidang = 157;
+            // Role super-special (akses semua divisi): kepala perwakilan & kepala bagian umum
+            $rolePimpinan = ['kepala_perwakilan', 'kepala_bagian_umum', 'pimpinan', 'admin'];
 
-            if (
-                str_contains($peranDariDatabase, 'admin') ||
-                str_contains($peranDariDatabase, 'pimpinan') ||
-                str_contains($peranDariDatabase, 'kepala_perwakilan')
-            ) {
+            if (in_array($peranDariDatabase, $rolePimpinan, true) || str_contains($peranDariDatabase, 'pimpinan')) {
                 $peranUser = \App\Models\User::ROLE_PIMPINAN;
             } elseif (
                 str_contains($peranDariDatabase, 'korwas') ||
                 str_contains($peranDariDatabase, 'kabid') ||
-                str_contains($peranDariDatabase, 'kepala bagian') ||
                 str_contains($peranDariDatabase, 'subkoor')
             ) {
                 $peranUser = \App\Models\User::ROLE_KABID;

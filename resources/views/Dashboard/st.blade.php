@@ -86,7 +86,7 @@
                         <i data-lucide="filter" class="w-4 h-4 group-hover:scale-110 transition-transform"></i>
                         <span class="text-sm">Filter</span>
                     </button>
-                    
+
                     <div class="flex items-center gap-2">
                         <a href="{{ route('export.st.excel', request()->query()) }}" class="h-12 px-5 bg-emerald-50 dark:bg-emerald-500/10 hover:bg-emerald-100 dark:hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 rounded-xl transition-all flex items-center justify-center border border-emerald-200 dark:border-emerald-500/20 group gap-2" title="Export Excel">
                             <i data-lucide="file-spreadsheet" class="w-4 h-4 group-hover:scale-110 transition-transform"></i>
@@ -103,12 +103,13 @@
                             <i data-lucide="x" class="w-4 h-4 group-hover:scale-110 transition-transform"></i>
                         </a>
                     @endif
+
                 </div>
             </div>
         </form>
     </div>
 
-    <div class="flex flex-wrap gap-3 mb-6">
+    <div class="flex flex-wrap gap-3 mb-6 items-center">
         <div class="glass dark:bg-blue-500/10 bg-blue-50 border border-blue-200/50 dark:border-blue-500/20 rounded-xl px-4 py-2.5 flex items-center gap-3">
             <div class="w-8 h-8 bg-blue-500/20 rounded-lg flex items-center justify-center">
                 <i data-lucide="clipboard-list" class="w-4 h-4 text-blue-500"></i>
@@ -118,6 +119,12 @@
                 <div class="text-lg font-black text-blue-600 dark:text-blue-400">{{ $daftarSuratTugas->total() }}</div>
             </div>
         </div>
+        @if(auth()->user()->role !== 'pegawai')
+        <button type="button" onclick="openModalTambahST()" class="h-[52px] px-5 bg-gradient-to-r from-violet-600 to-violet-500 hover:from-violet-700 hover:to-violet-600 text-white rounded-xl transition-all font-bold shadow-lg shadow-violet-500/25 flex items-center gap-2 group">
+            <i data-lucide="plus" class="w-4 h-4 group-hover:scale-110 transition-transform"></i>
+            <span class="text-sm">Tambah Surat Tugas</span>
+        </button>
+        @endif
         @if($kataKunci || $statusTerpilih || $tanggalMulai || $tanggalSelesai)
         <div class="glass dark:bg-amber-500/10 bg-amber-50 border border-amber-200/50 dark:border-amber-500/20 rounded-xl px-4 py-2.5 flex items-center gap-3">
             <div class="w-8 h-8 bg-amber-500/20 rounded-lg flex items-center justify-center">
@@ -157,6 +164,9 @@
                             </div>
                         </th>
                         <th class="px-6 py-4 text-[10px] uppercase tracking-widest font-black text-slate-500 dark:text-slate-400 text-center">Status</th>
+                        @if(in_array(auth()->user()->role, ['pimpinan', 'kabid']))
+                        <th class="px-6 py-4 text-[10px] uppercase tracking-widest font-black text-slate-500 dark:text-slate-400 text-center">Aksi</th>
+                        @endif
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100 dark:divide-white/5">
@@ -201,13 +211,13 @@
                                 $statusColor = match(strtolower($suratTugas->status_st)) {
                                     'batal' => 'red',
                                     'final', 'selesai' => 'emerald',
-                                    'tidak aktif' => 'slate',
+                                    'Tidak Aktif' => 'slate',
                                     default => 'amber'
                                 };
                                 $statusIcon = match(strtolower($suratTugas->status_st)) {
                                     'batal' => 'x-circle',
                                     'final', 'selesai' => 'check-circle',
-                                    'tidak aktif' => 'minus-circle',
+                                    'Tidak Aktif' => 'minus-circle',
                                     default => 'clock'
                                 };
                             @endphp
@@ -216,6 +226,31 @@
                                 {{ $suratTugas->status_st }}
                             </span>
                         </td>
+                        @php
+                            $bolehEdit = auth()->user()->role === 'pimpinan'
+                                || (auth()->user()->role === 'kabid' && $suratTugas->id_bidwas == $userBidangId);
+                            $bolehHapus = auth()->user()->role === 'pimpinan';
+                        @endphp
+                        @if($bolehEdit || $bolehHapus)
+                        <td class="px-6 py-5">
+                            <div class="flex items-center justify-center gap-2 flex-nowrap">
+                                @if($bolehEdit)
+                                <button type="button"
+                                    onclick="openModalEditST({{ $suratTugas->id_st }}, '{{ addslashes($suratTugas->nama_penugasan) }}', '{{ addslashes($suratTugas->no_surat_tugas) }}', {{ $suratTugas->id_bidwas }}, '{{ $suratTugas->status_st }}', '{{ $suratTugas->start_date }}', '{{ $suratTugas->end_date }}')"
+                                    class="inline-flex items-center gap-1.5 h-8 px-3 bg-amber-50 dark:bg-amber-500/10 hover:bg-amber-100 dark:hover:bg-amber-500/20 text-amber-600 dark:text-amber-400 rounded-lg border border-amber-200 dark:border-amber-500/20 transition-all text-xs font-bold whitespace-nowrap">
+                                    <i data-lucide="pencil" class="w-3.5 h-3.5"></i> Edit
+                                </button>
+                                @endif
+                                @if($bolehHapus)
+                                <button type="button"
+                                    onclick="konfirmasiHapusST('{{ route('st.destroy', $suratTugas->id_st) }}', '{{ addslashes($suratTugas->nama_penugasan) }}')"
+                                    class="inline-flex items-center gap-1.5 h-8 px-3 bg-red-50 dark:bg-red-500/10 hover:bg-red-100 dark:hover:bg-red-500/20 text-red-600 dark:text-red-400 rounded-lg border border-red-200 dark:border-red-500/20 transition-all text-xs font-bold whitespace-nowrap">
+                                    <i data-lucide="trash-2" class="w-3.5 h-3.5"></i> Hapus
+                                </button>
+                                @endif
+                            </div>
+                        </td>
+                        @endif
                     </tr>
                     @empty
                     <tr>
@@ -265,6 +300,143 @@
         </div>
         @endif
     </div>
+{{-- Notifikasi sukses --}}
+@if(session('success'))
+<div id="toast-sukses" class="fixed bottom-6 right-6 z-[9999] flex items-center gap-3 bg-emerald-600 text-white px-5 py-3.5 rounded-2xl shadow-2xl shadow-emerald-500/30 font-bold text-sm">
+    <i data-lucide="check-circle" class="w-5 h-5 shrink-0"></i>
+    {{ session('success') }}
+</div>
+<script>setTimeout(() => { const t = document.getElementById('toast-sukses'); if(t) t.remove(); }, 3500);</script>
+@endif
+
+{{-- Form hapus tersembunyi --}}
+<form id="form-hapus-st" method="POST" action="" class="hidden">
+    @csrf @method('DELETE')
+</form>
+
+{{-- Modal Konfirmasi Hapus --}}
+<div id="modal-konfirmasi-hapus" class="fixed inset-0 z-[9995] hidden">
+    <div class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
+    <div class="absolute inset-0 flex items-center justify-center p-4">
+        <div class="relative bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-sm border border-slate-200 dark:border-white/10 p-6">
+            <div class="flex items-center gap-4 mb-4">
+                <div class="w-12 h-12 bg-red-100 dark:bg-red-500/20 rounded-2xl flex items-center justify-center shrink-0">
+                    <i data-lucide="triangle-alert" class="w-6 h-6 text-red-500"></i>
+                </div>
+                <div>
+                    <h3 class="font-black text-slate-800 dark:text-white text-base">Hapus Surat Tugas?</h3>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Tindakan ini tidak bisa dibatalkan</p>
+                </div>
+            </div>
+            <p class="text-sm text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-white/5 rounded-xl px-4 py-3 font-medium mb-5" id="konfirmasi-nama-st"></p>
+            <div class="flex gap-3">
+                <button type="button" onclick="document.getElementById('modal-konfirmasi-hapus').classList.add('hidden')"
+                    class="flex-1 h-10 bg-slate-100 dark:bg-white/10 text-slate-700 dark:text-slate-300 rounded-xl text-sm font-bold hover:bg-slate-200 dark:hover:bg-white/20 transition-all">
+                    Batal
+                </button>
+                <button type="button" onclick="document.getElementById('form-hapus-st').submit()"
+                    class="flex-1 h-10 bg-gradient-to-r from-red-600 to-red-500 hover:from-red-700 hover:to-red-600 text-white rounded-xl text-sm font-bold shadow-lg shadow-red-500/25 transition-all">
+                    Ya, Hapus
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{-- Modal Tambah ST --}}
+@if(auth()->user()->role !== 'pegawai')
+<div id="modal-tambah-st" class="fixed inset-0 z-[9990] hidden">
+    <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" onclick="closeModalST()"></div>
+    <div class="absolute inset-0 flex items-center justify-center p-4">
+        <div class="relative bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-lg border border-slate-200 dark:border-white/10">
+            <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-white/10">
+                <h2 id="modal-st-title" class="text-base font-black text-slate-800 dark:text-white">Tambah Surat Tugas</h2>
+                <button onclick="closeModalST()" class="w-8 h-8 bg-slate-100 dark:bg-white/10 rounded-lg flex items-center justify-center text-slate-500 hover:text-red-500 transition-colors">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+            </div>
+            <form id="form-st" method="POST" action="{{ route('st.store') }}" class="px-6 py-5 space-y-4">
+                @csrf
+                <input type="hidden" name="_method" id="form-st-method" value="POST">
+                <input type="hidden" name="_id_st" id="form-st-id" value="">
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1.5">Nama Penugasan <span class="text-red-500">*</span></label>
+                    <input type="text" name="nama_penugasan" id="st-nama" required
+                        class="w-full h-11 px-4 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl text-sm text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 transition-all font-medium">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1.5">No. Surat Tugas</label>
+                    <input type="text" name="no_surat_tugas" id="st-nomor"
+                        class="w-full h-11 px-4 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl text-sm text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 transition-all font-medium">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1.5">Bidang <span class="text-red-500">*</span></label>
+                    <select name="id_bidwas" id="st-bidwas" required
+                        class="w-full h-11 px-4 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl text-sm text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 transition-all font-medium">
+                        <option value="">Pilih Bidang</option>
+                        @foreach($daftarBidwas as $bidwas)
+                        <option value="{{ $bidwas->id_bidwas }}">{{ $bidwas->nm_bidwas }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1.5">Status <span class="text-red-500">*</span></label>
+                    <input type="hidden" name="status_st" id="st-status" value="">
+                    <div class="form-dropdown-wrap relative">
+                        <button type="button" id="st-status-trigger" onclick="toggleFormDropdown('st-status-list')"
+                            class="w-full h-11 px-4 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl text-sm font-medium text-left flex items-center transition-all hover:border-violet-400 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500">
+                            <span id="st-status-label" style="color:rgb(148 163 184);font-weight:500;flex:1">Status</span>
+                            <svg id="st-status-arrow" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" style="color:rgb(148 163 184);transition:transform 0.2s ease;flex-shrink:0"><polyline points="6 9 12 15 18 9"/></svg>
+                        </button>
+                        <ul id="st-status-list" class="hidden absolute left-0 right-0 top-full mt-2 bg-white/98 dark:bg-slate-900/98 backdrop-blur-xl border border-slate-200 dark:border-white/10 rounded-2xl shadow-2xl z-[9999] overflow-hidden py-2">
+                            @foreach(['Konsep','Realisasi','Perpanjangan ST','Final','Batal'] as $s)
+                            <li><button type="button" onclick="setFormDropdown('st-status','st-status-label','st-status-list','st-status-arrow','{{ $s }}')"
+                                class="w-full text-left px-4 py-2.5 text-sm font-semibold text-slate-600 dark:text-slate-300 hover:bg-blue-50 dark:hover:bg-blue-500/15 hover:text-blue-600 dark:hover:text-blue-400 transition-all">{{ $s }}</button></li>
+                            @endforeach
+                        </ul>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1.5">Tanggal Mulai <span class="text-red-500">*</span></label>
+                        <input type="text" name="start_date" id="st-start" required readonly placeholder="Pilih tanggal"
+                            class="w-full h-11 px-4 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl text-sm text-slate-800 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 transition-all font-medium cursor-pointer">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1.5">Tanggal Selesai <span class="text-red-500">*</span></label>
+                        <input type="text" name="end_date" id="st-end" required readonly placeholder="Pilih tanggal"
+                            class="w-full h-11 px-4 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl text-sm text-slate-800 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 transition-all font-medium cursor-pointer">
+                    </div>
+                </div>
+
+                {{-- Anggota Tim --}}
+                <div>
+                    <div class="flex items-center justify-between mb-2">
+                        <label class="text-xs font-bold text-slate-500 dark:text-slate-400">Anggota Tim</label>
+                        <button type="button" onclick="tambahBarisTim()" class="flex items-center gap-1.5 text-xs font-bold text-violet-600 dark:text-violet-400 hover:text-violet-700 transition-colors">
+                            <i data-lucide="plus" class="w-3.5 h-3.5"></i> Tambah Anggota
+                        </button>
+                    </div>
+                    @error('nip')
+                    <div class="mb-2 p-3 bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/30 rounded-xl text-xs text-red-600 dark:text-red-400 font-semibold">
+                        <i data-lucide="alert-triangle" class="w-3.5 h-3.5 inline mr-1"></i>{{ $message }}
+                    </div>
+                    @enderror
+                    <div id="container-tim" class="space-y-2 max-h-48 overflow-y-auto pr-1">
+                        {{-- Baris anggota akan ditambah via JS --}}
+                    </div>
+                </div>
+
+                <div class="flex justify-end gap-3 pt-2">
+                    <button type="button" onclick="closeModalST()" class="h-10 px-5 bg-slate-100 dark:bg-white/10 text-slate-700 dark:text-slate-300 rounded-xl text-sm font-bold hover:bg-slate-200 dark:hover:bg-white/20 transition-all">Batal</button>
+                    <button type="submit" class="h-10 px-6 bg-gradient-to-r from-violet-600 to-violet-500 text-white rounded-xl text-sm font-bold shadow-lg shadow-violet-500/25 hover:from-violet-700 hover:to-violet-600 transition-all">Simpan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+@endif
 @endsection
 
 @include('components.custom-dropdown-css')
@@ -273,6 +445,107 @@
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.bootstrap5.min.css">
+<script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
+
+<style>
+    /* Tom Select – konsisten dengan halaman LHP */
+    .ts-wrapper { width: 100% !important; }
+    .ts-control {
+        min-height: 44px !important;
+        padding: 0 12px !important;
+        padding-right: 36px !important;
+        background: rgb(248 250 252) !important;
+        border: 1px solid rgb(226 232 240) !important;
+        border-radius: 12px !important;
+        box-shadow: none !important;
+        font-size: 0.875rem !important;
+        font-weight: 500 !important;
+        color: rgb(71 85 105) !important;
+        display: flex !important;
+        align-items: center !important;
+        background-image: none !important; /* hapus arrow bawaan bootstrap5 theme */
+    }
+    [data-theme="dark"] .ts-control {
+        background: rgba(255,255,255,0.05) !important;
+        border-color: rgba(255,255,255,0.1) !important;
+        color: #cbd5e1 !important;
+        background-image: none !important;
+    }
+    /* Warna teks seragam – semua pakai abu muda */
+    .ts-wrapper .ts-control .placeholder,
+    .ts-wrapper .ts-control .item,
+    .ts-wrapper .ts-control > input { color: rgb(148 163 184) !important; font-size: 0.875rem !important; font-weight: 500 !important; opacity: 1 !important; }
+    [data-theme="dark"] .ts-wrapper .ts-control .placeholder,
+    [data-theme="dark"] .ts-wrapper .ts-control .item,
+    [data-theme="dark"] .ts-wrapper .ts-control > input { color: rgba(203 213 225 / 0.6) !important; opacity: 1 !important; }
+    /* Sembunyikan arrow bawaan bootstrap5 & single */
+    .ts-wrapper.single .ts-control::after,
+    .ts-wrapper .ts-control::after { display: none !important; }
+    .ts-dropdown,
+    body > .ts-dropdown {
+        background: #ffffff !important;
+        border-radius: 16px !important;
+        border: 1px solid rgb(226 232 240) !important;
+        box-shadow: 0 20px 40px -8px rgba(0,0,0,0.12), 0 4px 12px rgba(0,0,0,0.06) !important;
+        font-size: 0.875rem !important;
+        z-index: 999999 !important;
+        overflow: hidden !important;
+        padding: 6px !important;
+        margin-top: 6px !important;
+    }
+    [data-theme="dark"] .ts-dropdown,
+    [data-theme="dark"] body > .ts-dropdown {
+        background: rgb(15 23 42) !important;
+        border-color: rgba(255,255,255,0.1) !important;
+    }
+    .ts-dropdown .ts-dropdown-content,
+    body > .ts-dropdown .ts-dropdown-content { max-height: 220px !important; overflow-y: auto !important; }
+    .ts-dropdown .option,
+    body > .ts-dropdown .option {
+        padding: 10px 14px !important;
+        font-weight: 500 !important;
+        font-size: 0.875rem !important;
+        color: rgb(71 85 105) !important;
+        border-radius: 10px !important;
+        transition: background 0.15s, color 0.15s !important;
+    }
+    [data-theme="dark"] .ts-dropdown .option,
+    [data-theme="dark"] body > .ts-dropdown .option { color: #cbd5e1 !important; }
+    .ts-dropdown .option.active, .ts-dropdown .option:hover,
+    body > .ts-dropdown .option.active, body > .ts-dropdown .option:hover {
+        background: rgb(239 246 255) !important; color: rgb(37 99 235) !important;
+    }
+    [data-theme="dark"] .ts-dropdown .option.active,
+    [data-theme="dark"] .ts-dropdown .option:hover,
+    [data-theme="dark"] body > .ts-dropdown .option.active,
+    [data-theme="dark"] body > .ts-dropdown .option:hover {
+        background: rgba(59,130,246,0.15) !important; color: #60a5fa !important;
+    }
+    .ts-wrapper.focus .ts-control { border-color: rgb(139 92 246) !important; box-shadow: 0 0 0 3px rgba(139,92,246,0.15) !important; }
+    /* Tim row – dropdown ukuran lebih kecil */
+    .tim-ts-wrap .ts-dropdown, body > .ts-dropdown.tim-ts { border-radius: 12px !important; font-size: 0.75rem !important; }
+    .tim-ts-wrap .ts-dropdown .option, body > .ts-dropdown.tim-ts .option { padding: 8px 10px !important; font-size: 0.75rem !important; border-radius: 8px !important; }
+    /* Ikon panah – posisi absolut di kanan */
+    .ts-wrapper { position: relative !important; }
+    .ts-arrow-wrap {
+        position: absolute !important;
+        right: 12px !important;
+        top: 50% !important;
+        transform: translateY(-50%) !important;
+        pointer-events: none !important;
+        display: flex !important;
+        align-items: center !important;
+        z-index: 2 !important;
+    }
+    .ts-chevron { color: rgb(148 163 184); transition: transform 0.2s ease; }
+    .ts-wrapper.is-open .ts-chevron { transform: rotate(180deg); color: rgb(139 92 246); }
+    /* Drop-up: margin bawah bukan atas */
+    body > .ts-dropdown[style*="bottom"] { margin-bottom: 0 !important; margin-top: 0 !important; }
+    /* Tim row */
+    .tim-ts-wrap .ts-control { min-height: 36px !important; font-size: 0.75rem !important; border-radius: 8px !important; padding: 0 8px !important; padding-right: 28px !important; background-image: none !important; }
+    .tim-ts-wrap .ts-arrow-wrap { right: 8px !important; }
+</style>
 
 <style>
 
@@ -396,6 +669,55 @@
 </style>
 
 <script>
+    // --- Helper dropdown form ---
+    function toggleFormDropdown(listId) {
+        const list = document.getElementById(listId);
+        const arrow = document.getElementById(listId.replace('-list','-arrow'));
+        const isHidden = list.classList.contains('hidden');
+        // tutup semua dropdown form lain
+        document.querySelectorAll('.form-dropdown-wrap ul').forEach(el => el.classList.add('hidden'));
+        document.querySelectorAll('.form-dropdown-wrap svg[id$="-arrow"]').forEach(el => el.style.transform = '');
+        if (isHidden) {
+            list.classList.remove('hidden');
+            if (arrow) arrow.style.transform = 'rotate(180deg)';
+        }
+    }
+
+    function setFormDropdown(inputId, labelId, listId, arrowId, value, placeholder) {
+        const label = document.getElementById(labelId);
+        document.getElementById(inputId).value = value;
+        if (placeholder !== undefined) {
+            label.textContent = placeholder;
+            label.style.color = 'rgb(148 163 184)';
+        } else {
+            label.textContent = value;
+            label.style.color = 'rgb(71 85 105)';
+        }
+        document.getElementById(listId).classList.add('hidden');
+        document.getElementById(arrowId).style.transform = '';
+    }
+
+    // tutup dropdown form saat klik di luar
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.form-dropdown-wrap')) {
+            document.querySelectorAll('.form-dropdown-wrap ul').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.form-dropdown-wrap svg[id$="-arrow"]').forEach(el => el.style.transform = '');
+        }
+    });
+
+    // --- Flatpickr untuk form ST ---
+    const fpConfig = {
+        dateFormat: "Y-m-d",
+        altInput: true,
+        altFormat: "d M Y",
+        allowInput: false,
+        prevArrow: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"></path></svg>',
+        nextArrow: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"></path></svg>',
+    };
+
+    const fpSTStart = flatpickr("#st-start", { ...fpConfig });
+    const fpSTEnd   = flatpickr("#st-end",   { ...fpConfig });
+
     document.addEventListener('DOMContentLoaded', function() {
         const dateRangePicker = flatpickr("#date_range_picker", {
             mode: "range",
@@ -444,6 +766,166 @@
         document.getElementById('filterForm').submit();
     }
 
+    const pegawaiOptions = @json($daftarPegawai);
+    const MAX_ST_AKTIF = {{ $maxStAktif ?? 3 }};
+
+    function buatSelectPegawai(nilaiTerpilih = '') {
+        let opts = '<option value="">Pilih Pegawai</option>';
+        pegawaiOptions.forEach(p => {
+            const selected = p.nip === nilaiTerpilih ? 'selected' : '';
+            const beban = p.active_st_count ?? 0;
+            const label = beban >= MAX_ST_AKTIF
+                ? `${p.nama} (${p.nip}) ⚠ ${beban} ST aktif`
+                : `${p.nama} (${p.nip})`;
+            opts += `<option value="${p.nip}" ${selected} data-beban="${beban}">${label}</option>`;
+        });
+        return opts;
+    }
+
+    const arrowSVG = `<svg class="ts-chevron" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>`;
+
+    function addTSArrow(ts) {
+        const arrow = document.createElement('div');
+        arrow.className = 'ts-arrow-wrap';
+        arrow.innerHTML = arrowSVG;
+        ts.control.appendChild(arrow);
+    }
+
+    function posisiDropUp(ts, dropdown) {
+        const rect = ts.control.getBoundingClientRect();
+        dropdown.style.bottom = (window.innerHeight - rect.top + 4) + 'px';
+        dropdown.style.top = 'auto';
+        dropdown.style.marginTop = '0';
+    }
+
+    let tomBidwas = null;
+    (function() {
+        const el = document.getElementById('st-bidwas');
+        if (!el) return;
+        tomBidwas = new TomSelect(el, {
+            dropdownParent: 'body',
+            placeholder: 'Pilih Bidang',
+            allowEmptyOption: true,
+            searchField: ['text'],
+            render: {
+                option: (d, e) => `<div>${e(d.text)}</div>`,
+                item:   (d, e) => `<div>${e(d.text)}</div>`,
+            },
+            onInitialize() { addTSArrow(this); },
+            onDropdownOpen(dd) { requestAnimationFrame(() => posisiDropUp(this, dd)); }
+        });
+    })();
+
+    function tambahBarisTim(nipVal = '', peranVal = '') {
+        const container = document.getElementById('container-tim');
+        const div = document.createElement('div');
+        div.className = 'flex gap-2 items-center';
+
+        // Buat select element dulu
+        const sel = document.createElement('select');
+        sel.name = 'nip[]';
+        sel.className = 'tim-ts-wrap flex-1';
+        sel.innerHTML = buatSelectPegawai(nipVal);
+
+        const inp = document.createElement('input');
+        inp.type = 'text';
+        inp.name = 'peran[]';
+        inp.value = peranVal;
+        inp.placeholder = 'Peran (cth: Ketua Tim)';
+        inp.className = 'w-36 h-9 px-3 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg text-xs text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 font-medium';
+
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'w-8 h-8 bg-red-50 dark:bg-red-500/10 text-red-500 rounded-lg flex items-center justify-center border border-red-200 dark:border-red-500/20 hover:bg-red-100 transition-all shrink-0';
+        btn.innerHTML = '<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>';
+        btn.onclick = function() {
+            // destroy TomSelect sebelum remove row
+            const ts = sel._tomSelect;
+            if (ts) ts.destroy();
+            div.remove();
+        };
+
+        div.appendChild(sel);
+        div.appendChild(inp);
+        div.appendChild(btn);
+        container.appendChild(div);
+
+        // Buat warning element untuk pegawai yang sudah penuh
+        const warnEl = document.createElement('p');
+        warnEl.className = 'text-[10px] text-red-500 font-semibold mt-0.5 hidden';
+        warnEl.textContent = `⚠ Pegawai ini sudah memiliki ${MAX_ST_AKTIF} ST aktif`;
+        div.insertBefore(warnEl, inp);
+
+        // Init TomSelect setelah elemen masuk DOM
+        new TomSelect(sel, {
+            dropdownParent: 'body',
+            placeholder: 'Pilih Pegawai',
+            allowEmptyOption: true,
+            searchField: ['text'],
+            maxOptions: 80,
+            render: {
+                option: (d, e) => {
+                    const beban = parseInt(d.$option?.dataset?.beban ?? 0);
+                    const warn = beban >= MAX_ST_AKTIF
+                        ? `<span class="text-red-500 font-bold ml-1">⚠ ${beban} ST aktif</span>`
+                        : '';
+                    return `<div class="${beban >= MAX_ST_AKTIF ? 'text-red-500' : ''}">${e(d.text)}${warn}</div>`;
+                },
+                item: (d, e) => {
+                    const beban = parseInt(d.$option?.dataset?.beban ?? 0);
+                    return `<div class="${beban >= MAX_ST_AKTIF ? 'text-red-500 font-bold' : ''}">${e(d.text)}</div>`;
+                },
+            },
+            onChange(val) {
+                const opt = pegawaiOptions.find(p => p.nip === val);
+                const beban = opt ? (opt.active_st_count ?? 0) : 0;
+                warnEl.classList.toggle('hidden', beban < MAX_ST_AKTIF);
+            },
+            onInitialize() { addTSArrow(this); },
+            onDropdownOpen(dd) { requestAnimationFrame(() => posisiDropUp(this, dd)); }
+        });
+    }
+
+    function openModalTambahST() {
+        document.getElementById('modal-st-title').textContent = 'Tambah Surat Tugas';
+        document.getElementById('form-st').action = '{{ route('st.store') }}';
+        document.getElementById('form-st-method').value = 'POST';
+        document.getElementById('st-nama').value = '';
+        document.getElementById('st-nomor').value = '';
+        if (tomBidwas) tomBidwas.clear();
+        setFormDropdown('st-status','st-status-label','st-status-list','st-status-arrow','', 'Status');
+        fpSTStart.clear(); fpSTEnd.clear();
+        document.getElementById('container-tim').innerHTML = '';
+        document.getElementById('modal-tambah-st').classList.remove('hidden');
+    }
+
+    function openModalEditST(id, nama, nomor, idBidwas, status, start, end) {
+        document.getElementById('modal-st-title').textContent = 'Edit Surat Tugas';
+        document.getElementById('form-st').action = '/dashboard/st/' + id;
+        document.getElementById('form-st-method').value = 'PUT';
+        document.getElementById('st-nama').value = nama;
+        document.getElementById('st-nomor').value = nomor;
+        if (tomBidwas) tomBidwas.setValue(String(idBidwas));
+        setFormDropdown('st-status','st-status-label','st-status-list','st-status-arrow', status);
+        fpSTStart.setDate(start); fpSTEnd.setDate(end);
+        document.getElementById('container-tim').innerHTML = '';
+        fetch('/dashboard/api/tim/' + id)
+            .then(r => r.json())
+            .then(data => data.forEach(a => tambahBarisTim(a.nip, a.peran)))
+            .catch(() => {});
+        document.getElementById('modal-tambah-st').classList.remove('hidden');
+    }
+
+    function closeModalST() {
+        document.getElementById('modal-tambah-st').classList.add('hidden');
+    }
+
+    function konfirmasiHapusST(action, nama) {
+        document.getElementById('form-hapus-st').action = action;
+        document.getElementById('konfirmasi-nama-st').textContent = nama;
+        document.getElementById('modal-konfirmasi-hapus').classList.remove('hidden');
+    }
+
     document.addEventListener('click', function(e) {
         if (!e.target.closest('.custom-dropdown-container')) {
             document.querySelectorAll('.status-filter-dropdown input[type="checkbox"]').forEach(checkbox => {
@@ -461,5 +943,9 @@
             }
         });
     });
+
+    @if($errors->has('nip'))
+    document.getElementById('modal-tambah-st').classList.remove('hidden');
+    @endif
 </script>
 @endpush

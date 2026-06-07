@@ -189,13 +189,13 @@
                                         $statusColor = match(strtolower($suratTugas->status_st)) {
                                             'batal' => 'red',
                                             'final', 'selesai' => 'emerald',
-                                            'tidak aktif' => 'slate',
+                                            'Tidak Aktif' => 'slate',
                                             default => 'amber'
                                         };
                                         $statusIcon = match(strtolower($suratTugas->status_st)) {
                                             'batal' => 'x-circle',
                                             'final', 'selesai' => 'check-circle',
-                                            'tidak aktif' => 'minus-circle',
+                                            'Tidak Aktif' => 'minus-circle',
                                             default => 'clock'
                                         };
                                     @endphp

@@ -1,111 +1,29 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Daftar Surat Tugas</title>
-    <style>
-        @page { margin: 1.5cm; size: landscape; }
-        body { font-family: 'Arial', sans-serif; font-size: 10px; color: #1e293b; line-height: 1.5; background-color: #fff; }
-        
-        .kop-container { position: relative; padding-bottom: 12px; border-bottom: 2pt solid #1e293b; margin-bottom: 2px; }
-        .kop-border-thin { border-bottom: 0.5pt solid #1e293b; margin-bottom: 15px; }
-        .logo-bpkp { position: absolute; left: 0; top: -5px; width: 75px; }
-        .kop-text { text-align: center; margin-left: 20px; }
-        .kop-text h1 { font-size: 14px; margin: 0; padding: 0; text-transform: uppercase; color: #1e293b; letter-spacing: 0.5px; }
-        .kop-text h2 { font-size: 16px; margin: 2px 0; padding: 0; text-transform: uppercase; font-weight: 800; color: #1e293b; }
-        .kop-text p { font-size: 9px; margin: 2px 0 0 0; padding: 0; font-style: italic; color: #64748b; }
+@extends('exports.layout')
 
-        .doc-header { margin-top: 25px; margin-bottom: 20px; text-align: center; }
-        .doc-title { font-size: 15px; font-weight: 800; text-transform: uppercase; margin-bottom: 5px; color: #1e293b; border-bottom: 1.5pt solid #3b82f6; display: inline-block; padding-bottom: 3px; }
-        
-        .doc-metadata { width: 100%; margin-bottom: 15px; font-size: 9px; color: #64748b; }
+@section('title', 'Daftar Surat Tugas')
+@section('orientation', 'landscape')
+@section('judul', 'Daftar Surat Tugas (ST)')
 
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; border-radius: 8px; overflow: hidden; }
-        th { background-color: #1e293b; color: #ffffff; font-weight: 700; text-transform: uppercase; font-size: 9px; padding: 12px 0 12px 8px; text-align: left; border: none; }
-        td { padding: 10px 8px; border-bottom: 0.5pt solid #e2e8f0; vertical-align: middle; color: #334155; }
-        tr:nth-child(even) { background-color: #f8fafc; }
-        
-        .center { text-align: center; }
-        .right { text-align: right; }
-        .bold { font-weight: 700; }
-        .highlight { color: #3b82f6; font-weight: 700; }
-        .font-mono { font-family: 'Courier', monospace; font-size: 9px; }
-        
-        .badge { display: inline-block; padding: 3px 8px; border-radius: 4px; font-size: 9px; font-weight: 700; text-transform: uppercase; }
-        .badge-amber { background-color: #fffbeb; color: #d97706; border: 0.5pt solid #fef3c7; }
-        .badge-emerald { background-color: #ecfdf5; color: #059669; border: 0.5pt solid #d1fae5; }
-        .badge-rose { background-color: #fff1f2; color: #e11d48; border: 0.5pt solid #ffe4e6; }
-        .badge-slate { background-color: #f8fafc; color: #64748b; border: 0.5pt solid #f1f5f9; }
+@section('thead')
+    <td width="26" class="c">No.</td>
+    <td width="135">Nomor ST</td>
+    <td>Nama Penugasan</td>
+    <td width="150">Bidang</td>
+    <td width="72" class="c">Tgl. Mulai</td>
+    <td width="72" class="c">Tgl. Selesai</td>
+    <td width="88" class="c">Status</td>
+@endsection
 
-        .footer { position: fixed; bottom: 0; width: 100%; font-size: 8px; color: #94a3b8; text-align: center; padding-top: 10px; border-top: 0.5pt solid #e2e8f0; }
-    </style>
-</head>
-<body>
-    <div class="kop-container">
-        <img src="data:image/webp;base64,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" class="logo-bpkp">
-        <div class="kop-text">
-            <h1>BADAN PENGAWASAN KEUANGAN DAN PEMBANGUNAN</h1>
-            <h2>PERWAKILAN PROVINSI JAWA BARAT</h2>
-            <p>Jl. Raya Cibeureum No.50, Campaka, Kec. Andir, Kota Bandung, Jawa Barat 40184</p>
-        </div>
-    </div>
-    <div class="kop-border-thin"></div>
-
-    <div class="doc-header">
-        <div class="doc-title">DAFTAR SURAT TUGAS (ST)</div>
-    </div>
-
-    <div class="doc-metadata">
-        <table style="width: auto; margin-top: 5px; background: transparent;">
-            <tr>
-                <td style="padding: 2px 0; border: none; font-weight: 700;">Waktu Cetak</td>
-                <td style="padding: 2px 10px; border: none;">:</td>
-                <td style="padding: 2px 0; border: none;">{{ date('d-m-Y H:i') }} WIB</td>
-            </tr>
-        </table>
-    </div>
-
-    <table>
-        <thead>
-            <tr>
-                <th width="30" class="center">No.</th>
-                <th width="120">Nomor ST</th>
-                <th>Nama Penugasan</th>
-                <th width="100">Bidang</th>
-                <th width="80" class="center">Tgl. Mulai</th>
-                <th width="80" class="center">Tgl. Selesai</th>
-                <th width="90" class="center">Status</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach($daftarSuratTugas as $index => $suratTugas)
-            @php
-                $statusSlug = strtolower($suratTugas->status);
-                $kelasBadge = 'badge-slate';
-                if(str_contains($statusSlug, 'realisasi') || str_contains($statusSlug, 'perpanjangan') || str_contains($statusSlug, 'selesai') || str_contains($statusSlug, 'final')) {
-                    $kelasBadge = 'badge-emerald';
-                } elseif(str_contains($statusSlug, 'batal')) {
-                    $kelasBadge = 'badge-rose';
-                } elseif(str_contains($statusSlug, 'konsep')) {
-                    $kelasBadge = 'badge-amber';
-                }
-            @endphp
-            <tr>
-                <td class="center">{{ $index + 1 }}</td>
-                <td class="bold font-mono">{{ $suratTugas->no_st }}</td>
-                <td class="bold">{{ $suratTugas->nama }}</td>
-                <td class="center">{{ $suratTugas->nm_bidwas ? str_replace('Bidang ', '', $suratTugas->nm_bidwas) : '-' }}</td>
-                <td class="center">{{ date('d-m-Y', strtotime($suratTugas->start_date)) }}</td>
-                <td class="center">{{ date('d-m-Y', strtotime($suratTugas->end_date)) }}</td>
-                <td class="center">
-                    <span class="badge {{ $kelasBadge }}">{{ $suratTugas->status ?? '-' }}</span>
-                </td>
-            </tr>
-            @endforeach
-        </tbody>
-    </table>
-
-    <div class="footer">
-        Dicetak secara otomatis melalui Sistem Monitoring IPMS BPKP Jabar &bull; {{ date('Y') }}
-    </div>
-</body>
-</html>
+@section('tbody')
+    @foreach($daftarSuratTugas as $index => $suratTugas)
+    <tr class="{{ $index % 2 === 0 ? 'baris-ganjil' : 'baris-genap' }}">
+        <td class="col-no">{{ $index + 1 }}</td>
+        <td class="col-mono">{{ $suratTugas->no_st ?? '-' }}</td>
+        <td class="col-nama">{{ $suratTugas->nama }}</td>
+        <td class="col-sub">{{ $suratTugas->nm_bidwas ? str_replace('Koordinator Pengawasan Kelompok JFA ', '', $suratTugas->nm_bidwas) : '-' }}</td>
+        <td class="col-tgl">{{ $suratTugas->start_date ? \Carbon\Carbon::parse($suratTugas->start_date)->format('d-m-Y') : '-' }}</td>
+        <td class="col-tgl">{{ $suratTugas->end_date ? \Carbon\Carbon::parse($suratTugas->end_date)->format('d-m-Y') : '-' }}</td>
+        <td class="col-status">{{ strtoupper($suratTugas->status ?? '-') }}</td>
+    </tr>
+    @endforeach
+@endsection

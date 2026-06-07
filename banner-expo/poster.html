@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>Poster Expo — 30×80 cm</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Poppins:wght@600;700;800;900&display=swap" rel="stylesheet">
+<style>
+    /* ====== UKURAN CETAK: 30 cm x 80 cm ====== */
+    @page { size: 300mm 800mm; margin: 0; }
+    * { margin:0; padding:0; box-sizing:border-box; }
+
+    :root{
+        --navy:#15356b;
+        --navy2:#1e3a6e;
+        --blue:#2563eb;
+        --blue-soft:#eff6ff;
+        --blue-line:#bfdbfe;
+        --amber:#f59e0b;
+        --ink:#1e293b;
+        --muted:#64748b;
+    }
+
+    html,body{ width:300mm; height:800mm; }
+    body{
+        font-family:'Plus Jakarta Sans', Arial, sans-serif;
+        color:var(--ink);
+        background:#ffffff;
+        position:relative;
+        overflow:hidden;
+    }
+
+    /* aksen chevron sudut (bahasa visual BPKP) */
+    .chev{ position:absolute; width:0;height:0; z-index:0; }
+
+    .poster{ position:relative; z-index:2; width:300mm; height:800mm; padding:15mm; display:flex; flex-direction:column; gap:8mm; justify-content:space-between; }
+
+    h1,h2,h3,.title{ font-family:'Poppins', sans-serif; }
+
+    /* ===== HEADER ===== */
+    .kop{
+        background:linear-gradient(135deg,var(--navy) 0%, var(--blue) 100%);
+        border-radius:7mm;
+        padding:9mm 10mm;
+        color:#fff;
+        position:relative;
+        overflow:hidden;
+    }
+    .kop::after{ content:""; position:absolute; right:-20mm; top:-20mm; width:70mm; height:70mm;
+        background:rgba(255,255,255,.08); transform:rotate(45deg); }
+    .kop .dep{ font-weight:800; font-size:7mm; letter-spacing:.3mm; line-height:1.25; text-transform:uppercase; }
+    .kop .fak{ font-weight:600; font-size:4.6mm; opacity:.92; margin-top:1.5mm; }
+    .kop .univ{ font-weight:800; font-size:5.4mm; margin-top:.5mm; letter-spacing:.4mm; }
+    .kop .pill{ display:inline-block; margin-top:4mm; background:var(--amber); color:#3a2606;
+        font-weight:800; font-size:3.6mm; padding:2mm 5mm; border-radius:20mm; text-transform:uppercase; letter-spacing:.6mm; }
+
+    /* ===== JUDUL ===== */
+    .judul-wrap{ text-align:center; padding:2mm 2mm 0; }
+    .judul-label{ font-size:3.4mm; font-weight:800; letter-spacing:3mm; color:var(--blue); text-transform:uppercase; }
+    .judul{ font-family:'Poppins'; font-weight:900; font-size:19mm; line-height:1.02; color:var(--navy); margin-top:3mm; text-transform:uppercase; }
+    .tagline{ font-size:5mm; color:var(--muted); font-weight:500; margin-top:4mm; line-height:1.35; }
+    .divider{ width:50mm; height:2mm; background:var(--amber); border-radius:2mm; margin:6mm auto 0; }
+
+    /* ===== KARTU IDENTITAS (tim + dosen) ===== */
+    .row2{ display:flex; gap:7mm; }
+    .idcard{ flex:1; background:var(--blue-soft); border:0.6mm solid var(--blue-line); border-radius:6mm; padding:7mm; }
+    .idcard .h{ display:flex; align-items:center; gap:3mm; margin-bottom:4mm; }
+    .idcard .ico{ width:11mm;height:11mm; border-radius:3mm; background:var(--blue); color:#fff; display:flex; align-items:center; justify-content:center; font-size:6mm; }
+    .idcard .lbl{ font-weight:800; font-size:4.2mm; color:var(--navy); text-transform:uppercase; letter-spacing:.4mm; }
+    .idcard p{ font-size:4.4mm; line-height:1.6; color:var(--ink); font-weight:500; }
+    .idcard .nim{ color:var(--muted); font-weight:600; }
+
+    /* ===== SECTION CARD ===== */
+    .sec{ background:#fff; border:0.6mm solid #e2e8f0; border-left:3mm solid var(--blue); border-radius:5mm; padding:7mm 8mm;
+        box-shadow:0 1mm 4mm rgba(21,53,107,.06); }
+    .sec .head{ display:flex; align-items:center; gap:3.5mm; margin-bottom:3.5mm; }
+    .sec .num{ width:10mm;height:10mm; border-radius:2.5mm; background:var(--navy); color:#fff; font-family:'Poppins'; font-weight:800; font-size:5mm; display:flex; align-items:center; justify-content:center; }
+    .sec h3{ font-size:6mm; font-weight:800; color:var(--navy); text-transform:uppercase; letter-spacing:.3mm; }
+    .sec p, .sec li{ font-size:4.5mm; line-height:1.6; color:#334155; font-weight:500; }
+    .sec ul{ padding-left:6mm; }
+    .sec li{ margin-bottom:1.5mm; }
+
+    /* ===== TEKNOLOGI (grid logo placeholder) ===== */
+    .techgrid{ display:flex; flex-wrap:wrap; gap:4mm; margin-top:1mm; }
+    .tech{ display:flex; align-items:center; gap:3mm; background:var(--blue-soft); border:0.5mm solid var(--blue-line);
+        border-radius:3mm; padding:3mm 5mm; font-size:4.2mm; font-weight:700; color:var(--navy); }
+    .tech .dot{ width:7mm;height:7mm;border-radius:2mm;background:#fff;border:0.5mm dashed var(--blue); display:flex;align-items:center;justify-content:center; font-size:3mm; color:var(--blue); }
+
+    /* ===== HASIL / PROTOTYPE ===== */
+    .mock{ margin-top:4mm; height:85mm; border:1mm dashed var(--blue-line); border-radius:4mm; background:
+        repeating-linear-gradient(45deg, #f8fbff, #f8fbff 6mm, #eef5ff 6mm, #eef5ff 12mm);
+        display:flex; align-items:center; justify-content:center; flex-direction:column; gap:2mm; color:var(--blue); }
+    .mock .ph{ font-weight:800; font-size:4.4mm; letter-spacing:.5mm; }
+    .mock .sub{ font-size:3.4mm; color:var(--muted); font-weight:600; }
+
+    /* ===== FOOTER: QR + identitas ===== */
+    .footer{ display:flex; align-items:center; gap:8mm;
+        background:linear-gradient(135deg,var(--navy) 0%, var(--navy2) 100%); border-radius:6mm; padding:8mm 9mm; color:#fff; }
+    .qrbox{ width:46mm; height:46mm; border-radius:4mm; background:#fff; border:1mm dashed var(--amber);
+        display:flex; align-items:center; justify-content:center; flex-direction:column; gap:2mm; color:var(--navy); flex-shrink:0; }
+    .qrbox .qi{ font-size:13mm; }
+    .qrbox .qt{ font-size:3mm; font-weight:800; letter-spacing:.8mm; text-transform:uppercase; }
+    .footer .ft-txt .ft-h{ font-family:'Poppins'; font-weight:800; font-size:5.6mm; }
+    .footer .ft-txt .ft-s{ font-size:4mm; opacity:.85; margin-top:2mm; line-height:1.5; font-weight:500; }
+    .footer .ft-txt .ft-tag{ display:inline-block; margin-top:3mm; background:rgba(255,255,255,.15); padding:2mm 4mm; border-radius:10mm; font-size:3.4mm; font-weight:700; }
+
+    .hint{ position:absolute; top:3mm; left:50%; transform:translateX(-50%); font-size:3mm; color:#94a3b8; z-index:5; }
+    @media print{ .hint{ display:none; } }
+</style>
+</head>
+<body>
+    <div class="hint">▲ Ukuran asli 30 × 80 cm — Chrome → Print → "Save as PDF" → ukuran 300×800mm. Teks [dalam kurung] = ganti dengan datamu.</div>
+
+    <div class="poster">
+
+        <!-- KOP -->
+        <div class="kop">
+            <div class="dep">Departemen Informatika</div>
+            <div class="fak">Fakultas Sains dan Matematika</div>
+            <div class="univ">Universitas Diponegoro</div>
+            <span class="pill">Expo Proyek · 2026</span>
+        </div>
+
+        <!-- JUDUL -->
+        <div class="judul-wrap">
+            <div class="judul-label">Judul Proyek</div>
+            <div class="judul">[ Nama Proyek Anda ]</div>
+            <div class="tagline">[ Satu kalimat ringkas yang menjelaskan proyek — apa & untuk siapa ]</div>
+            <div class="divider"></div>
+        </div>
+
+        <!-- IDENTITAS -->
+        <div class="row2">
+            <div class="idcard">
+                <div class="h"><div class="ico">&#128101;</div><div class="lbl">Anggota Tim</div></div>
+                <p>[ Nama Anggota 1 ]<br><span class="nim">[ NIM ]</span></p>
+                <p>[ Nama Anggota 2 ]<br><span class="nim">[ NIM ]</span></p>
+                <p>[ Nama Anggota 3 ]<br><span class="nim">[ NIM ]</span></p>
+            </div>
+            <div class="idcard">
+                <div class="h"><div class="ico">&#127891;</div><div class="lbl">Dosen Pembimbing</div></div>
+                <p>[ Nama Dosen Pembimbing ]<br><span class="nim">[ NIP / Gelar ]</span></p>
+            </div>
+        </div>
+
+        <!-- LATAR BELAKANG -->
+        <div class="sec">
+            <div class="head"><div class="num">1</div><h3>Latar Belakang Masalah</h3></div>
+            <p>[ Jelaskan masalah yang melatarbelakangi proyek. 2–3 kalimat ringkas, mudah dibaca dari jarak 1 meter. ]</p>
+        </div>
+
+        <!-- TUJUAN -->
+        <div class="sec">
+            <div class="head"><div class="num">2</div><h3>Tujuan Proyek</h3></div>
+            <ul>
+                <li>[ Tujuan utama 1 ]</li>
+                <li>[ Tujuan utama 2 ]</li>
+                <li>[ Tujuan utama 3 ]</li>
+            </ul>
+        </div>
+
+        <!-- FITUR / SOLUSI -->
+        <div class="sec">
+            <div class="head"><div class="num">3</div><h3>Fitur Utama / Rancangan Solusi</h3></div>
+            <ul>
+                <li>[ Fitur / solusi 1 ]</li>
+                <li>[ Fitur / solusi 2 ]</li>
+                <li>[ Fitur / solusi 3 ]</li>
+            </ul>
+        </div>
+
+        <!-- TEKNOLOGI -->
+        <div class="sec">
+            <div class="head"><div class="num">4</div><h3>Teknologi yang Digunakan</h3></div>
+            <div class="techgrid">
+                <div class="tech"><span class="dot">logo</span>[ Teknologi 1 ]</div>
+                <div class="tech"><span class="dot">logo</span>[ Teknologi 2 ]</div>
+                <div class="tech"><span class="dot">logo</span>[ Teknologi 3 ]</div>
+                <div class="tech"><span class="dot">logo</span>[ Teknologi 4 ]</div>
+                <div class="tech"><span class="dot">logo</span>[ Teknologi 5 ]</div>
+            </div>
+        </div>
+
+        <!-- HASIL / PROTOTYPE -->
+        <div class="sec">
+            <div class="head"><div class="num">5</div><h3>Hasil Implementasi / Prototype</h3></div>
+            <p>[ Sorot fitur utama saja — 1–2 kalimat. Pastikan gambar di bawah tajam & tidak pecah saat dicetak. ]</p>
+            <div class="mock">
+                <div class="ph">[ SCREENSHOT / MOCKUP FITUR UTAMA ]</div>
+                <div class="sub">letakkan 1 gambar paling kuat di sini</div>
+            </div>
+        </div>
+
+        <!-- FOOTER + QR -->
+        <div class="footer">
+            <div class="qrbox">
+                <div class="qi">&#9633;</div>
+                <div class="qt">QR Code</div>
+            </div>
+            <div class="ft-txt">
+                <div class="ft-h">Scan untuk Selengkapnya</div>
+                <div class="ft-s">[ QR menuju: aplikasi (jika sudah deploy), dokumentasi, repository, atau arsip produk — apabila diizinkan mitra ]</div>
+                <span class="ft-tag">Tempel QR di kotak kiri ini</span>
+            </div>
+        </div>
+
+    </div>
+</body>
+</html>

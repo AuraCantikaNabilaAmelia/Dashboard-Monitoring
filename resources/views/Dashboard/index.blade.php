@@ -1,57 +1,50 @@
 @extends('layouts.app')
 
-@section('title', 'Overview Monitoring')
+@section('title', 'Overview Dashboard')
 
 @section('content')
 
-@if(auth()->check() && in_array(auth()->user()->role, ['pimpinan', 'kabid', 'admin']))
+@if($isPimpinanLevel ?? false)
 <div class="mb-8">
-    <div class="flex items-center space-x-3 mb-6">
-        <div class="p-2 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg shadow-lg shadow-blue-500/30">
-            <i data-lucide="crown" class="w-6 h-6 text-white"></i>
-        </div>
-        <div>
-        <h2 class="text-lg md:text-xl lg:text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-slate-800 to-slate-600 dark:from-white dark:to-slate-300">
-            Leadership Insights
-        </h2>
-        <p class="text-slate-500 dark:text-slate-400 text-[10px] md:text-xs">Ringkasan eksekutif untuk pengambilan keputusan</p>
-        </div>
-    </div>
-
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-start">
         <div class="glass p-6 rounded-3xl border-l-4 border-blue-500">
-            <h3 class="text-lg font-bold mb-4 flex items-center gap-2">
-                <i data-lucide="bar-chart-2" class="w-5 h-5 text-blue-500"></i>
-                Top 5 Pegawai Tersibuk
-            </h3>
-            <div class="space-y-3">
+            <h3 class="text-lg font-bold mb-4">Pegawai Beban Tinggi <span class="text-xs font-normal text-slate-400">(≥ 2 ST aktif)</span></h3>
+            <div class="space-y-3 max-h-[280px] overflow-y-auto pr-2">
                 @forelse($pegawaiPalingSibuk as $indeks => $dataPegawai)
-                <div class="flex items-center justify-between p-3 bg-slate-50 dark:bg-white/5 rounded-xl border border-slate-100 dark:border-white/5 hover:bg-slate-100 dark:hover:bg-white/10 transition-colors">
+                @php $overloaded = $dataPegawai->active_tasks >= 3; @endphp
+                <div class="flex items-center justify-between p-3 rounded-xl border transition-colors
+                    {{ $overloaded
+                        ? 'bg-red-50 dark:bg-red-500/10 border-red-200 dark:border-red-500/20'
+                        : 'bg-slate-50 dark:bg-white/5 border-slate-100 dark:border-white/5 hover:bg-slate-100 dark:hover:bg-white/10' }}">
                     <div class="flex items-center gap-3">
-                        <div class="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-500/20 flex items-center justify-center text-blue-600 dark:text-blue-400 font-bold text-sm">
+                        <div class="w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm
+                            {{ $overloaded ? 'bg-red-100 dark:bg-red-500/20 text-red-600 dark:text-red-400' : 'bg-blue-100 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400' }}">
                             {{ $indeks + 1 }}
                         </div>
                         <div>
-                            <p class="font-bold text-slate-800 dark:text-slate-200 text-sm">{{ $dataPegawai->nama }}</p>
+                            <p class="font-bold text-sm {{ $overloaded ? 'text-red-700 dark:text-red-300' : 'text-slate-800 dark:text-slate-200' }}">
+                                {{ $dataPegawai->nama }}
+                                @if($overloaded)
+                                    <span class="ml-1 text-[10px] font-black uppercase tracking-wider text-red-500">PENUH</span>
+                                @endif
+                            </p>
                             <p class="text-xs text-slate-500">{{ $dataPegawai->nip }}</p>
                         </div>
                     </div>
-                    <div class="px-3 py-1 bg-blue-500 text-white text-xs font-bold rounded-full">
+                    <div class="px-3 py-1 text-white text-xs font-bold rounded-full
+                        {{ $overloaded ? 'bg-red-500' : 'bg-blue-500' }}">
                         {{ $dataPegawai->active_tasks }} ST
                     </div>
                 </div>
                 @empty
-                <p class="text-slate-500 italic text-center py-4">Tidak ada penugasan aktif hari ini.</p>
+                <p class="text-slate-500 italic text-center py-4">Tidak ada pegawai dengan ≥ 2 ST aktif.</p>
                 @endforelse
             </div>
         </div>
 
         <div class="glass p-6 rounded-3xl border-l-4 border-emerald-500">
             <div class="flex justify-between items-center mb-4">
-                <h3 class="text-lg font-bold flex items-center gap-2">
-                    <i data-lucide="user-check" class="w-5 h-5 text-emerald-500"></i>
-                    Pegawai Tersedia ({{ $totalPegawai - $pegawaiPalingSibuk->sum('active_tasks') > 0 ? $totalPegawai - $pegawaiPalingSibuk->sum('active_tasks') : count($pegawaiTersedia) }})
-                </h3>
+                <h3 class="text-lg font-bold">Pegawai Tersedia ({{ $totalPegawaiTersedia }})</h3>
                 <button onclick="openPaginationModal('available')" class="group flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-500/10 hover:bg-blue-500 text-blue-500 hover:text-white transition-all duration-300 border border-blue-500/20 hover:border-blue-500 shadow-lg shadow-blue-500/10">
                     <span class="text-[10px] font-black uppercase tracking-widest">Selengkapnya</span>
                     <i data-lucide="arrow-right" class="w-3 h-3 group-hover:translate-x-0.5 transition-transform"></i>
@@ -62,7 +55,7 @@
                 <div class="flex items-center justify-between p-3 bg-emerald-50 dark:bg-emerald-500/10 rounded-xl border border-emerald-100 dark:border-emerald-500/20 hover:bg-emerald-100 dark:hover:bg-emerald-500/20 transition-colors">
                     <div class="flex items-center gap-3">
                         <div class="w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-500/20 flex items-center justify-center text-emerald-600 dark:text-emerald-400 font-bold text-sm">
-                            <i data-lucide="check" class="w-4 h-4"></i>
+                            {{ substr($dataPegawai->nama, 0, 1) }}
                         </div>
                         <div>
                             <p class="font-bold text-slate-800 dark:text-slate-200 text-sm">{{ $dataPegawai->nama }}</p>
@@ -83,10 +76,7 @@
 
         <div class="glass p-6 rounded-3xl border-l-4 border-red-500">
             <div class="flex justify-between items-center mb-4">
-                <h3 class="text-lg font-bold flex items-center gap-2">
-                    <i data-lucide="alert-triangle" class="w-5 h-5 text-red-500"></i>
-                    Perhatian Khusus ({{ $totalBelumSelesai }})
-                </h3>
+                <h3 class="text-lg font-bold">Perhatian Khusus ({{ $totalBelumSelesai }})</h3>
                 <button onclick="openPaginationModal('overdue')" class="group flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-500/10 hover:bg-blue-500 text-blue-500 hover:text-white transition-all duration-300 border border-blue-500/20 hover:border-blue-500 shadow-lg shadow-blue-500/10">
                     <span class="text-[10px] font-black uppercase tracking-widest">Selengkapnya</span>
                     <i data-lucide="arrow-right" class="w-3 h-3 group-hover:translate-x-0.5 transition-transform"></i>
@@ -100,14 +90,11 @@
                             {{ $suratTugas->nama_penugasan }}
                         </p>
                         <span class="text-xs font-bold text-red-500 bg-red-100 dark:bg-red-500/20 px-2 py-0.5 rounded flex-shrink-0 ml-2">
-                            Telat {{ \Carbon\Carbon::parse($suratTugas->end_date)->diffInDays(now()) }} H
+                            Telat {{ (int) \Carbon\Carbon::parse($suratTugas->end_date)->diffInDays(now()) }} H
                         </span>
                     </div>
                     <div class="flex justify-between items-center mt-2">
-                        <span class="text-xs text-slate-500 flex items-center gap-1">
-                            <i data-lucide="calendar" class="w-3 h-3"></i>
-                            {{ \Carbon\Carbon::parse($suratTugas->end_date)->format('d M Y') }}
-                        </span>
+                        <span class="text-xs text-slate-500">{{ \Carbon\Carbon::parse($suratTugas->end_date)->format('d M Y') }}</span>
                         <a href="{{ route('st.detail', $suratTugas->id_st) }}" class="text-xs text-blue-500 hover:underline">Detail &rarr;</a>
                     </div>
                 </div>
@@ -125,61 +112,113 @@
 </div>
 @endif
 
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-    <div class="glass p-6 rounded-2xl relative overflow-hidden group">
-        <div class="absolute -right-4 -top-4 w-24 h-24 bg-blue-500/10 rounded-full blur-2xl group-hover:bg-blue-500/20 transition-all"></div>
-        <div class="flex items-center space-x-4">
-            <div class="p-3 bg-blue-500/20 rounded-xl text-blue-400">
-                <i data-lucide="clipboard-list" class="w-6 h-6"></i>
-            </div>
-            <div>
-                <h3 class="text-slate-600 dark:text-slate-400 text-sm font-bold mb-1">ST Aktif Hari Ini</h3>
-                <p class="text-3xl font-black text-slate-900 dark:text-white">{{ $totalSuratTugasAktif }}</p>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
+
+    {{-- ST Aktif - Purple --}}
+    <div class="rounded-2xl p-5 relative overflow-hidden group cursor-default transition-transform duration-200 hover:-translate-y-0.5" style="background: linear-gradient(135deg, #c4b5fd 0%, #a78bfa 100%); box-shadow: 0 8px 24px rgba(167,139,250,0.35);">
+        <div class="flex items-start justify-between mb-4">
+            <p class="text-sm font-semibold" style="color: rgba(255,255,255,0.8);">ST Aktif Hari Ini</p>
+            <div class="p-2 rounded-xl" style="background: rgba(255,255,255,0.2);">
+                <i data-lucide="clipboard-list" class="w-5 h-5 text-white"></i>
             </div>
         </div>
+        <p class="text-3xl font-black text-white mb-1">{{ $totalSuratTugasAktif }}</p>
+        <p class="text-xs font-medium" style="color: rgba(255,255,255,0.65);">{{ $statStaf ? 'Penugasan saya hari ini' : 'Penugasan berjalan hari ini' }}</p>
     </div>
 
-    <div class="glass p-6 rounded-2xl relative overflow-hidden group">
-        <div class="absolute -right-4 -top-4 w-24 h-24 bg-emerald-500/10 rounded-full blur-2xl group-hover:bg-emerald-500/20 transition-all"></div>
-        <div class="flex items-center space-x-4">
-            <div class="p-3 bg-emerald-500/20 rounded-xl text-emerald-400">
-                <i data-lucide="users" class="w-6 h-6"></i>
-            </div>
-            <div>
-                <h3 class="text-slate-600 dark:text-slate-400 text-sm font-bold mb-1">Total Pegawai</h3>
-                <p class="text-3xl font-black text-slate-900 dark:text-white">{{ $totalPegawai }}</p>
+    {{-- Kartu 2: Total Pegawai / (staf) Total ST - Blue --}}
+    <div class="rounded-2xl p-5 relative overflow-hidden group cursor-default transition-transform duration-200 hover:-translate-y-0.5" style="background: linear-gradient(135deg, #93c5fd 0%, #6ea8f7 100%); box-shadow: 0 8px 24px rgba(99,164,253,0.35);">
+        <div class="flex items-start justify-between mb-4">
+            <p class="text-sm font-semibold" style="color: rgba(255,255,255,0.8);">{{ $statStaf ? 'Total ST' : 'Total Pegawai' }}</p>
+            <div class="p-2 rounded-xl" style="background: rgba(255,255,255,0.2);">
+                <i data-lucide="{{ $statStaf ? 'briefcase' : 'users' }}" class="w-5 h-5 text-white"></i>
             </div>
         </div>
+        <p class="text-3xl font-black text-white mb-1">{{ $statStaf ? $statStaf['total_st'] : $totalPegawai }}</p>
+        <p class="text-xs font-medium" style="color: rgba(255,255,255,0.65);">{{ $statStaf ? 'Surat tugas yang saya ikuti' : ($labelBidang ? 'Bidang '.$labelBidang : 'Seluruh pegawai terdaftar') }}</p>
     </div>
 
-    <div class="glass p-6 rounded-2xl relative overflow-hidden group">
-        <div class="absolute -right-4 -top-4 w-24 h-24 bg-purple-500/10 rounded-full blur-2xl group-hover:bg-purple-500/20 transition-all"></div>
-        <div class="flex items-center space-x-4">
-            <div class="p-3 bg-purple-500/20 rounded-xl text-purple-400">
-                <i data-lucide="file-check" class="w-6 h-6"></i>
-            </div>
-            <div>
-                <h3 class="text-slate-600 dark:text-slate-400 text-sm font-bold mb-1">Total LHP Terbit</h3>
-                <p class="text-3xl font-black text-slate-900 dark:text-white">{{ $totalLHP }}</p>
+    {{-- Kartu 3: Total LHP / (staf) ST Aktif - Mint Green --}}
+    <div class="rounded-2xl p-5 relative overflow-hidden group cursor-default transition-transform duration-200 hover:-translate-y-0.5" style="background: linear-gradient(135deg, #6ee7b7 0%, #34d399 100%); box-shadow: 0 8px 24px rgba(52,211,153,0.35);">
+        <div class="flex items-start justify-between mb-4">
+            <p class="text-sm font-semibold" style="color: rgba(255,255,255,0.8);">{{ $statStaf ? 'ST Aktif' : 'Total LHP Terbit' }}</p>
+            <div class="p-2 rounded-xl" style="background: rgba(255,255,255,0.2);">
+                <i data-lucide="{{ $statStaf ? 'activity' : 'file-check' }}" class="w-5 h-5 text-white"></i>
             </div>
         </div>
+        <p class="text-3xl font-black text-white mb-1">{{ $statStaf ? $statStaf['st_aktif'] : $totalLHP }}</p>
+        <p class="text-xs font-medium" style="color: rgba(255,255,255,0.65);">{{ $statStaf ? 'Penugasan sedang berjalan' : ($labelBidang ? 'LHP Bidang '.$labelBidang : 'Laporan hasil pengawasan') }}</p>
     </div>
 
-    <div class="glass p-6 rounded-2xl relative overflow-hidden group">
-        <div class="absolute -right-4 -top-4 w-24 h-24 bg-amber-500/10 rounded-full blur-2xl group-hover:bg-amber-500/20 transition-all"></div>
-        <div class="flex items-center space-x-4">
-            <div class="p-3 bg-amber-500/20 rounded-xl text-amber-400">
-                <i data-lucide="target" class="w-6 h-6"></i>
-            </div>
-            <div>
-                <h3 class="text-slate-600 dark:text-slate-400 text-sm font-bold mb-1">Target PKPT</h3>
-                <p class="text-3xl font-black text-slate-900 dark:text-white">{{ $targetPKPT }}</p>
+    {{-- Kartu 4: Target PKPT / (staf) ST Belum Selesai - Teal --}}
+    <div class="rounded-2xl p-5 relative overflow-hidden group cursor-default transition-transform duration-200 hover:-translate-y-0.5" style="background: linear-gradient(135deg, #2dd4bf 0%, #0d9488 100%); box-shadow: 0 8px 24px rgba(13,148,136,0.35);">
+        <div class="flex items-start justify-between mb-4">
+            <p class="text-sm font-semibold" style="color: rgba(255,255,255,0.8);">{{ $statStaf ? 'ST Selesai ' : 'Target PKPT' }}</p>
+            <div class="p-2 rounded-xl" style="background: rgba(255,255,255,0.2);">
+                <i data-lucide="{{ $statStaf ? 'check-circle' : 'target' }}" class="w-5 h-5 text-white"></i>
             </div>
         </div>
+        <p class="text-3xl font-black text-white mb-1">{{ $statStaf ? $statStaf['selesai'] : $targetPKPT }}</p>
+        <p class="text-xs font-medium" style="color: rgba(255,255,255,0.65);">{{ $statStaf ? 'Penugasan saya yang tuntas' : 'Rencana pengawasan tahun ini' }}</p>
     </div>
 </div>
 
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+    @if($statStaf)
+    {{-- Staf: Daftar Penugasan Saya --}}
+    <div class="glass p-6 rounded-3xl relative">
+        <h3 class="text-lg font-bold mb-5 flex items-center gap-2">
+            <i data-lucide="clipboard-list" class="w-5 h-5 text-blue-500"></i>
+            Penugasan Saya
+        </h3>
+        <div class="space-y-3 max-h-[300px] overflow-y-auto pr-2">
+            @forelse($daftarStSaya as $st)
+            @php
+                $warnaStatus = match($st->status_st) {
+                    'Realisasi'        => 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400',
+                    'Perpanjangan ST'  => 'bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-400',
+                    'Final'            => 'bg-violet-100 dark:bg-violet-500/20 text-violet-700 dark:text-violet-400',
+                    'Tidak Aktif'      => 'bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-400',
+                    'Batal'            => 'bg-red-100 dark:bg-red-500/20 text-red-700 dark:text-red-400',
+                    default            => 'bg-slate-100 dark:bg-white/10 text-slate-600 dark:text-slate-400',
+                };
+            @endphp
+            <a href="{{ route('st.detail', $st->id_st) }}" class="block p-3 bg-slate-50 dark:bg-white/5 rounded-xl border border-slate-100 dark:border-white/5 hover:border-blue-300 dark:hover:border-blue-500/40 transition-all group">
+                <div class="flex justify-between items-start gap-2 mb-1">
+                    <p class="font-bold text-slate-800 dark:text-slate-200 text-sm line-clamp-1 group-hover:text-blue-600" title="{{ $st->nama_penugasan }}">{{ $st->nama_penugasan }}</p>
+                    <span class="text-[10px] font-bold px-2 py-0.5 rounded shrink-0 {{ $warnaStatus }}">{{ strtoupper($st->status_st ?? '-') }}</span>
+                </div>
+                <div class="flex items-center gap-3 flex-wrap text-[11px] text-slate-500">
+                    @if($st->peran)<span class="font-semibold text-violet-600 dark:text-violet-400">{{ $st->peran }}</span>@endif
+                    <span class="flex items-center gap-1"><i data-lucide="calendar" class="w-3 h-3"></i>{{ \Carbon\Carbon::parse($st->start_date)->format('d M') }} – {{ \Carbon\Carbon::parse($st->end_date)->format('d M Y') }}</span>
+                </div>
+            </a>
+            @empty
+            <div class="flex flex-col items-center justify-center py-12 text-center">
+                <div class="w-12 h-12 bg-slate-100 dark:bg-white/5 rounded-full flex items-center justify-center mb-3">
+                    <i data-lucide="inbox" class="w-6 h-6 text-slate-400"></i>
+                </div>
+                <p class="text-slate-500 font-medium text-sm">Belum ada penugasan</p>
+            </div>
+            @endforelse
+        </div>
+    </div>
+    @elseif($bebanPegawaiDivisi->isNotEmpty())
+    {{-- Kabid: Beban Kerja per Pegawai (divisinya) --}}
+    <div class="glass p-6 rounded-3xl relative">
+        <div class="flex justify-between items-center mb-6">
+            <h3 class="text-lg font-bold flex items-center gap-2">
+                <i data-lucide="users-round" class="w-5 h-5 text-blue-500"></i>
+                Beban Kerja per Pegawai
+            </h3>
+            <button onclick="expandChart('bebanChart', 'Beban Kerja per Pegawai')" class="p-2 bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 rounded-lg transition-all text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-white/10 shadow-sm">
+                <i data-lucide="maximize-2" class="w-5 h-5"></i>
+            </button>
+        </div>
+        <div class="h-[300px] w-full relative"><canvas id="bebanChart"></canvas></div>
+    </div>
+    @else
+    {{-- Pimpinan & Staf: Distribusi per Bidang --}}
     <div class="glass p-6 rounded-3xl relative">
         <div class="flex justify-between items-center mb-6">
             <h3 class="text-lg font-bold">Distribusi Penugasan per Bidang</h3>
@@ -191,67 +230,116 @@
             <canvas id="bidwasChart"></canvas>
         </div>
     </div>
+    @endif
 
-    <div class="glass p-6 rounded-3xl relative">
-        <div class="flex justify-between items-center mb-6">
-            <h3 class="text-lg font-bold">Tren Penugasan Bulanan ({{ date('Y') }})</h3>
-            <button onclick="expandChart('trendChart', 'Tren Penugasan Bulanan')" class="p-2 bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 rounded-lg transition-all text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-white/10 shadow-sm">
-                <i data-lucide="maximize-2" class="w-5 h-5"></i>
-            </button>
-        </div>
-        <div class="h-[300px] w-full relative">
-            <canvas id="trendChart"></canvas>
+    @if($leaderboardBidang->isNotEmpty())
+    {{-- Pimpinan: Peringkat Bidang per Rasio LHP (menggantikan Tren ST) --}}
+    <div class="glass p-6 rounded-3xl">
+        <h3 class="text-lg font-bold mb-5 flex items-center gap-2">
+            <i data-lucide="trophy" class="w-5 h-5 text-amber-500"></i>
+            Peringkat Bidang Berdasarkan Rasio LHP
+        </h3>
+        <div class="space-y-3 max-h-[300px] overflow-y-auto pr-2">
+            @foreach($leaderboardBidang as $i => $b)
+            <div class="flex items-center gap-3 p-3 bg-slate-50 dark:bg-white/5 rounded-xl border border-slate-100 dark:border-white/5">
+                <div class="w-7 h-7 rounded-lg flex items-center justify-center text-xs font-black shrink-0 bg-slate-200 dark:bg-white/10 text-slate-600 dark:text-slate-300">
+                    {{ $i + 1 }}
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-bold text-slate-800 dark:text-slate-200 truncate" title="{{ $b->nama_bidwas }}">{{ $b->nama_pendek }}</p>
+                    <p class="text-[11px] text-slate-500">{{ $b->total_lhp }} LHP / {{ $b->total_st }} ST</p>
+                </div>
+                <span class="text-lg font-black text-blue-600 dark:text-blue-400 shrink-0">{{ $b->rasio }}%</span>
+            </div>
+            @endforeach
         </div>
     </div>
+    @else
+    {{-- Kabid: Tren LHP | Staf: Tren ST --}}
+    <div class="glass p-6 rounded-3xl relative">
+        <div class="flex justify-between items-center mb-6">
+            @if($statStaf)
+                <h3 class="text-lg font-bold">Tren Penugasan Saya ({{ date('Y') }})</h3>
+            @else
+                <h3 class="text-lg font-bold">Tren LHP Terbit ({{ date('Y') }})</h3>
+            @endif
+        </div>
+        @if($statStaf)
+            <div class="h-[300px] w-full relative"><canvas id="trendChart"></canvas></div>
+        @else
+            <div class="h-[300px] w-full relative"><canvas id="trendLhpChart"></canvas></div>
+        @endif
+    </div>
+    @endif
 </div>
 
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
     <div class="glass p-6 rounded-3xl lg:col-span-1">
         <div class="flex justify-between items-center mb-6">
-            <h3 class="text-lg font-bold">Status Penugasan</h3>
-            <button onclick="expandChart('statusChart', 'Status Penugasan')" class="p-2 bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 rounded-lg transition-all text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-white/10 shadow-sm">
-                <i data-lucide="maximize-2" class="w-5 h-5"></i>
-            </button>
+            <h3 class="text-lg font-bold flex items-center gap-2">
+                <i data-lucide="alarm-clock" class="w-5 h-5 text-red-500"></i>
+                ST Terlambat
+            </h3>
         </div>
+        @if(array_sum($agingData) > 0)
         <div class="h-[300px] flex items-center justify-center relative">
-            <canvas id="statusChart"></canvas>
+            <canvas id="agingChart"></canvas>
         </div>
+        @else
+        <div class="h-[300px] flex flex-col items-center justify-center text-center">
+            <div class="w-16 h-16 bg-emerald-100 dark:bg-emerald-500/20 rounded-full flex items-center justify-center mb-4">
+                <i data-lucide="check-circle" class="w-8 h-8 text-emerald-500"></i>
+            </div>
+            <p class="text-slate-600 dark:text-slate-300 font-bold">Tidak ada ST terlambat</p>
+            <p class="text-slate-400 text-xs mt-1">Semua penugasan masih sesuai jadwal</p>
+        </div>
+        @endif
     </div>
 
     <div class="glass p-6 rounded-3xl lg:col-span-2">
-        <h3 class="text-lg font-bold mb-6">Informasi Kinerja Terkini</h3>
+        <h3 class="text-lg font-bold mb-6">Indikator Kinerja {{ $labelBidang ? '— Bidang '.$labelBidang : ($statStaf ? '— Personal' : '') }}</h3>
+        @php
+            $warnaMap = [
+                'blue'    => ['text-blue-500 dark:text-blue-400', 'bg-blue-500'],
+                'emerald' => ['text-emerald-500 dark:text-emerald-400', 'bg-emerald-500'],
+                'amber'   => ['text-amber-500 dark:text-amber-400', 'bg-amber-500'],
+                'purple'  => ['text-purple-500 dark:text-purple-400', 'bg-purple-500'],
+            ];
+        @endphp
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div class="p-4 bg-slate-50 dark:bg-white/5 rounded-2xl border border-slate-200 dark:border-white/5 group hover:border-blue-500/50 transition-all shadow-sm">
-                <div class="flex items-center space-x-3 mb-2 text-blue-400">
-                    <i data-lucide="trending-up" class="w-5 h-5"></i>
-                    <span class="font-bold">Efisiensi Audit</span>
+            @foreach($metrikKinerja as $m)
+            @php $w = $warnaMap[$m['warna']] ?? $warnaMap['blue']; @endphp
+            <div class="p-4 bg-slate-50 dark:bg-white/5 rounded-2xl border border-slate-200 dark:border-white/5 shadow-sm">
+                <div class="flex items-center justify-between mb-2">
+                    <div class="flex items-center space-x-2 {{ $w[0] }}">
+                        <i data-lucide="{{ $m['icon'] }}" class="w-4 h-4"></i>
+                        <span class="font-bold text-sm text-slate-700 dark:text-slate-200">{{ $m['label'] }}</span>
+                    </div>
+                    <span class="text-xl font-black {{ $w[0] }}">{{ $m['nilai'] }}</span>
                 </div>
-                <p class="text-sm text-slate-500 dark:text-slate-400 font-medium">Rasio rata-rata penyelesaian ST tepat waktu mencapai 82% pada kuartal ini.</p>
-            </div>
-            <div class="p-4 bg-slate-50 dark:bg-white/5 rounded-2xl border border-slate-200 dark:border-white/5 group hover:border-emerald-500/50 transition-all shadow-sm">
-                <div class="flex items-center space-x-3 mb-2 text-emerald-500 dark:text-emerald-400">
-                    <i data-lucide="shield-check" class="w-5 h-5"></i>
-                    <span class="font-bold">Kualitas Output</span>
+                @if(!is_null($m['bar']))
+                <div class="w-full h-1.5 bg-slate-200 dark:bg-white/10 rounded-full overflow-hidden mb-2">
+                    <div class="h-full {{ $w[1] }} rounded-full transition-all" style="width: {{ max(2, min(100, $m['bar'])) }}%"></div>
                 </div>
-                <p class="text-sm text-slate-500 dark:text-slate-400 font-medium">Total 124 LHP terakreditasi 'A' dalam sistem monitoring kualitas internal.</p>
+                @endif
+                <p class="text-xs text-slate-500 dark:text-slate-400 font-medium">{{ $m['sub'] }}</p>
             </div>
-            <div class="p-4 bg-slate-50 dark:bg-white/5 rounded-2xl border border-slate-200 dark:border-white/5 group hover:border-amber-500/50 transition-all shadow-sm">
-                <div class="flex items-center space-x-3 mb-2 text-amber-500 dark:text-amber-400">
-                    <i data-lucide="zap" class="w-5 h-5"></i>
-                    <span class="font-bold">Respon Cepat</span>
-                </div>
-                <p class="text-sm text-slate-500 dark:text-slate-400 font-medium">Rata-rata waktu disposisi surat masuk menjadi surat tugas adalah 2 hari kerja.</p>
-            </div>
-            <div class="p-4 bg-slate-50 dark:bg-white/5 rounded-2xl border border-slate-200 dark:border-white/5 group hover:border-purple-500/50 transition-all shadow-sm">
-                <div class="flex items-center space-x-3 mb-2 text-purple-500 dark:text-purple-400">
-                    <i data-lucide="award" class="w-5 h-5"></i>
-                    <span class="font-bold">Inovasi Monitoring</span>
-                </div>
-                <p class="text-sm text-slate-500 dark:text-slate-400 font-medium">Visualisasi data interaktif membantu pimpinan memantau beban kerja secara real-time.</p>
-            </div>
+            @endforeach
         </div>
     </div>
 </div>
+
+@if($leaderboardBidang->isNotEmpty())
+{{-- Pimpinan: Tren LHP full-width (leaderboard sudah di atas) --}}
+<div class="mb-8">
+    <div class="glass p-6 rounded-3xl relative">
+        <div class="flex justify-between items-center mb-6">
+            <h3 class="text-lg font-bold">Tren LHP Terbit ({{ date('Y') }})</h3>
+        </div>
+        <div class="h-[280px] w-full relative"><canvas id="trendLhpChart"></canvas></div>
+    </div>
+</div>
+@endif
 
 @push('modals')
 <div id="chartModal" class="fixed inset-0 dark:bg-slate-950/95 bg-white/98 backdrop-blur-3xl z-[100] hidden flex flex-col p-4 md:p-8 modal-root">
@@ -335,18 +423,26 @@
         return $trendBulanan->where('bulan', $m)->first()->total ?? 0;
     })) !!};
 
+    const trendLhpData = {!! json_encode(collect(range(1, 12))->map(function($m) use ($trendLhpBulanan) {
+        return $trendLhpBulanan->where('bulan', $m)->first()->total ?? 0;
+    })) !!};
+
     const statusLabels = {!! json_encode($distribusiStatus->pluck('status_st')) !!};
     const statusData = {!! json_encode($distribusiStatus->pluck('total')) !!};
+
+    const agingData = {!! json_encode($agingData) !!};
+
+    const bebanLabels = {!! json_encode($bebanPegawaiDivisi->pluck('nama')) !!};
+    const bebanData = {!! json_encode($bebanPegawaiDivisi->pluck('total')) !!};
 
     document.addEventListener('DOMContentLoaded', function() {
         Chart.register(ChartDataLabels);
 
         const getChartColors = () => {
-            const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+            const isLight = document.documentElement.getAttribute('data-theme') !== 'dark';
             return {
-                text: isLight ? '#1e293b' : '#cbd5e1',
-                grid: isLight ? 'rgba(0, 0, 0, 0.1)' : 'rgba(255, 255, 255, 0.05)',
-                shadow: isLight ? 'rgba(0, 0, 0, 0.05)' : 'rgba(255, 255, 255, 0.02)'
+                text: isLight ? '#9ca3af' : '#cbd5e1',
+                grid: isLight ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.05)',
             };
         };
 
@@ -414,6 +510,42 @@
             });
         }
 
+        // ── Beban Kerja per Pegawai (kabid) — horizontal bar ──
+        const canvasBeban = document.getElementById('bebanChart');
+        if (canvasBeban) {
+            const ctxBeban = canvasBeban.getContext('2d');
+            const colorsB = getChartColors();
+            charts['bebanChart'] = new Chart(ctxBeban, {
+                type: 'bar',
+                data: {
+                    labels: bebanLabels,
+                    datasets: [{
+                        label: 'ST Berjalan',
+                        data: bebanData,
+                        backgroundColor: '#3b82f6',
+                        borderRadius: 6,
+                        maxBarThickness: 22
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        datalabels: {
+                            anchor: 'end', align: 'end', color: colorsB.text,
+                            font: { weight: 'bold', size: 11 }, formatter: (v) => v > 0 ? v : ''
+                        }
+                    },
+                    scales: {
+                        x: { beginAtZero: true, grid: { color: colorsB.grid }, ticks: { color: colorsB.text, precision: 0, font: { weight: '500' } } },
+                        y: { grid: { display: false }, ticks: { color: colorsB.text, font: { weight: '500' } } }
+                    }
+                }
+            });
+        }
+
         const canvasTrend = document.getElementById('trendChart');
         if (canvasTrend) {
             const ctxTrend = canvasTrend.getContext('2d');
@@ -462,46 +594,72 @@
             });
         }
 
-        const canvasStatus = document.getElementById('statusChart');
-        if (canvasStatus) {
-            const ctxStatus = canvasStatus.getContext('2d');
-            const colors = getChartColors();
-            const statusColorMap = {
-                'Realisasi': '#10b981',
-                'Batal': '#ef4444',
-                'Konsep': '#f59e0b',
-                'Final': '#3b82f6',
-                'Selesai': '#6366f1',
-                'tidak aktif': '#94a3b8',
-                'Review Dalnis': '#8b5cf6',
-                'Review Daltu': '#06b6d4'
-            };
-
-            charts['statusChart'] = new Chart(ctxStatus, {
-                type: 'pie',
+        // ── Tren LHP (emerald) ──
+        const canvasTrendLhp = document.getElementById('trendLhpChart');
+        if (canvasTrendLhp) {
+            const ctxL = canvasTrendLhp.getContext('2d');
+            const colorsL = getChartColors();
+            const gradL = ctxL.createLinearGradient(0, 0, 0, 280);
+            gradL.addColorStop(0, 'rgba(16, 185, 129, 0.35)');
+            gradL.addColorStop(1, 'rgba(16, 185, 129, 0)');
+            charts['trendLhpChart'] = new Chart(ctxL, {
+                type: 'line',
                 data: {
-                    labels: statusLabels,
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'],
                     datasets: [{
-                        data: statusData,
-                        backgroundColor: statusLabels.map(label => statusColorMap[label] || '#ec4899'),
-                        borderWidth: 1,
-                        borderColor: document.documentElement.getAttribute('data-theme') === 'light' ? '#fff' : 'rgba(15, 23, 42, 0.5)'
+                        label: 'LHP Terbit',
+                        data: trendLhpData,
+                        borderColor: '#10b981',
+                        borderWidth: 4,
+                        fill: true,
+                        backgroundColor: gradL,
+                        tension: 0.4,
+                        pointBackgroundColor: '#10b981',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        pointRadius: 5
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
+                    plugins: { legend: { display: false }, datalabels: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true, grid: { color: colorsL.grid }, ticks: { color: colorsL.text, font: { weight: '500' } } },
+                        x: { grid: { display: false }, ticks: { color: colorsL.text, font: { weight: '500' } } }
+                    }
+                }
+            });
+        }
+
+        const canvasAging = document.getElementById('agingChart');
+        if (canvasAging) {
+            const ctxAging = canvasAging.getContext('2d');
+            const colors = getChartColors();
+            charts['agingChart'] = new Chart(ctxAging, {
+                type: 'doughnut',
+                data: {
+                    labels: ['1–6 hari', '7–30 hari', '> 30 hari'],
+                    datasets: [{
+                        data: agingData,
+                        backgroundColor: ['#f59e0b', '#f97316', '#ef4444'],
+                        borderWidth: 2,
+                        borderColor: document.documentElement.getAttribute('data-theme') === 'dark' ? 'rgba(15, 23, 42, 0.5)' : '#fff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '60%',
                     plugins: {
                         legend: {
                             position: 'bottom',
-                            labels: {
-                                color: colors.text,
-                                padding: 20,
-                                font: { size: 11, weight: '500' }
-                            }
+                            labels: { color: colors.text, padding: 16, font: { size: 11, weight: '500' } }
                         },
                         datalabels: {
-                            display: false
+                            color: '#fff',
+                            font: { weight: 'bold', size: 13 },
+                            formatter: (v) => v > 0 ? v : ''
                         }
                     }
                 }
@@ -535,10 +693,10 @@
         const ctx = canvas.getContext('2d');
         const desc = document.getElementById('chartDescription');
 
-        const isLight = document.documentElement.getAttribute('data-theme') === 'light';
-        const textColor = isLight ? '#020617' : '#ffffff';
-        const mutedTextColor = isLight ? '#334155' : '#94a3b8';
-        const gridColor = isLight ? 'rgba(0,0,0,0.15)' : 'rgba(255,255,255,0.1)';
+        const isLight = document.documentElement.getAttribute('data-theme') !== 'dark';
+        const textColor = isLight ? '#0f172a' : '#ffffff';
+        const mutedTextColor = isLight ? '#475569' : '#94a3b8';
+        const gridColor = isLight ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.1)';
 
         modalTitle.innerText = title;
         modal.classList.remove('hidden');
@@ -605,6 +763,13 @@
             expandedData.datasets[0].backgroundColor = grad;
         } else if (chartId === 'statusChart') {
             expandedOptions.plugins.legend.position = 'right';
+        } else if (chartId === 'bebanChart') {
+            expandedOptions.indexAxis = 'y';
+            expandedOptions.scales.x.beginAtZero = true;
+            expandedOptions.scales.x.ticks.precision = 0;
+            expandedOptions.scales.y.ticks.autoSkip = false;
+            expandedOptions.plugins.legend.display = false;
+            expandedData.datasets[0].backgroundColor = '#3b82f6';
         }
 
         expandedChartInstance = new Chart(canvas, {
