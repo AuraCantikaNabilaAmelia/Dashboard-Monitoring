@@ -163,12 +163,12 @@
 
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8 items-start">
     @if($statStaf)
-    <div class="glass p-6 rounded-3xl relative">
-        <h3 class="text-lg font-bold mb-5 flex items-center gap-2">
+    <div class="glass p-6 rounded-3xl relative flex flex-col" style="height: 460px;">
+        <h3 class="text-lg font-bold mb-5 flex items-center gap-2 shrink-0">
             <i data-lucide="clipboard-list" class="w-5 h-5 text-blue-500"></i>
             Penugasan Saya
         </h3>
-        <div class="space-y-3 max-h-[360px] overflow-y-auto pr-2">
+        <div class="space-y-3 overflow-y-auto pr-2 flex-1">
             @forelse($daftarStSaya as $st)
             @php
                 $warnaStatus = match($st->status_st) {
@@ -249,8 +249,8 @@
         </div>
     </div>
     @else
-    <div class="glass p-6 rounded-3xl relative">
-        <div class="flex justify-between items-center mb-6">
+    <div class="glass p-6 rounded-3xl relative flex flex-col" style="height: 460px;">
+        <div class="flex justify-between items-center mb-6 shrink-0">
             @if($statStaf)
                 <h3 class="text-lg font-bold">Tren Penugasan Saya ({{ date('Y') }})</h3>
             @else
@@ -258,9 +258,9 @@
             @endif
         </div>
         @if($statStaf)
-            <div class="h-[360px] w-full relative"><canvas id="trendChart"></canvas></div>
+            <div class="w-full relative flex-1"><canvas id="trendChart"></canvas></div>
         @else
-            <div class="h-[360px] w-full relative"><canvas id="trendLhpChart"></canvas></div>
+            <div class="w-full relative flex-1"><canvas id="trendLhpChart"></canvas></div>
         @endif
     </div>
     @endif
