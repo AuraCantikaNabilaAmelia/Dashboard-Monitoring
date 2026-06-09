@@ -161,14 +161,14 @@
     </div>
 </div>
 
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8 items-start">
     @if($statStaf)
     <div class="glass p-6 rounded-3xl relative">
         <h3 class="text-lg font-bold mb-5 flex items-center gap-2">
             <i data-lucide="clipboard-list" class="w-5 h-5 text-blue-500"></i>
             Penugasan Saya
         </h3>
-        <div class="space-y-3 max-h-75 overflow-y-auto pr-2">
+        <div class="space-y-3 max-h-[360px] overflow-y-auto pr-2">
             @forelse($daftarStSaya as $st)
             @php
                 $warnaStatus = match($st->status_st) {
@@ -233,7 +233,7 @@
             <i data-lucide="trophy" class="w-5 h-5 text-amber-500"></i>
             Peringkat Bidang Berdasarkan Rasio LHP
         </h3>
-        <div class="space-y-3 max-h-75 overflow-y-auto pr-2">
+        <div class="space-y-3 max-h-[360px] overflow-y-auto pr-2">
             @foreach($leaderboardBidang as $i => $b)
             <div class="flex items-center gap-3 p-3 bg-slate-50 dark:bg-white/5 rounded-xl border border-slate-100 dark:border-white/5">
                 <div class="w-7 h-7 rounded-lg flex items-center justify-center text-xs font-black shrink-0 bg-slate-200 dark:bg-white/10 text-slate-600 dark:text-slate-300">
@@ -258,9 +258,9 @@
             @endif
         </div>
         @if($statStaf)
-            <div class="h-75 w-full relative"><canvas id="trendChart"></canvas></div>
+            <div class="h-[360px] w-full relative"><canvas id="trendChart"></canvas></div>
         @else
-            <div class="h-75 w-full relative"><canvas id="trendLhpChart"></canvas></div>
+            <div class="h-[360px] w-full relative"><canvas id="trendLhpChart"></canvas></div>
         @endif
     </div>
     @endif

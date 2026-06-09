@@ -27,7 +27,7 @@ class AuthController extends Controller
             return back()->withErrors(['nip' => 'NIP tidak ditemukan dalam database kepegawaian']);
         }
 
-        if ($request->password !== $dataPegawai->nip) {
+        if ((string) $request->password !== (string) $dataPegawai->nip) {
             return back()->withErrors(['password' => 'Password salah']);
         }
 
@@ -53,20 +53,35 @@ class AuthController extends Controller
             }
         }
 
-        $dataUser = \App\Models\User::updateOrCreate(
-            ['nip' => $dataPegawai->nip],
-            [
-                'name' => $dataPegawai->nama,
-                'email' => $dataPegawai->nip . '@bpkp.go.id',
-                'password' => bcrypt($dataPegawai->nip),
-                'role' => $peranUser,
-                'jabatan' => $dataPegawai->user_role ?? '-',
+        try {
+            $dataUser = \App\Models\User::updateOrCreate(
+                ['nip' => $dataPegawai->nip],
+                [
+                    'name'      => $dataPegawai->nama,
+                    'email'     => $dataPegawai->nip . '@bpkp.go.id',
+                    'password'  => bcrypt($dataPegawai->nip),
+                    'role'      => $peranUser,
+                    'jabatan'   => $dataPegawai->user_role ?? '-',
+                    'bidang_id' => $idBidang,
+                ]
+            );
+        } catch (\Illuminate\Database\QueryException $e) {
+            // Handle duplicate email — update by email jika nip belum tersimpan
+            $dataUser = \App\Models\User::where('email', $dataPegawai->nip . '@bpkp.go.id')->first();
+            if (!$dataUser) {
+                return back()->withErrors(['nip' => 'Terjadi kesalahan saat memproses akun. Hubungi admin.']);
+            }
+            $dataUser->update([
+                'name'      => $dataPegawai->nama,
+                'nip'       => $dataPegawai->nip,
+                'role'      => $peranUser,
+                'jabatan'   => $dataPegawai->user_role ?? '-',
                 'bidang_id' => $idBidang,
-            ]
-        );
+            ]);
+        }
 
-        Auth::login($dataUser);
         $request->session()->regenerate();
+        Auth::login($dataUser);
 
         return redirect()->intended('/dashboard');
     }
