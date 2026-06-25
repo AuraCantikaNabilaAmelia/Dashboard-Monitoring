@@ -6,10 +6,10 @@
 
 @if($isPimpinanLevel ?? false)
 <div class="mb-8">
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-start">
-        <div class="glass p-6 rounded-3xl border-l-4 border-blue-500">
-            <h3 class="text-lg font-bold mb-4">Pegawai Beban Tinggi <span class="text-xs font-normal text-slate-400">(≥ 2 ST aktif)</span></h3>
-            <div class="space-y-3 max-h-70 overflow-y-auto pr-2">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-stretch">
+        <div class="glass p-6 rounded-3xl border-l-4 border-blue-500 flex flex-col">
+            <h3 class="text-lg font-bold mb-4 shrink-0">Pegawai Beban Tinggi <span class="text-xs font-normal text-slate-400">(≥ 2 ST aktif)</span></h3>
+            <div class="space-y-3 flex-1 overflow-y-auto pr-2">
                 @forelse($pegawaiPalingSibuk as $indeks => $dataPegawai)
                 @php $overloaded = $dataPegawai->active_tasks >= 3; @endphp
                 <div class="flex items-center justify-between p-3 rounded-xl border transition-colors
@@ -44,15 +44,15 @@
             </div>
         </div>
 
-        <div class="glass p-6 rounded-3xl border-l-4 border-emerald-500">
-            <div class="flex justify-between items-center mb-4">
+        <div class="glass p-6 rounded-3xl border-l-4 border-emerald-500 flex flex-col">
+            <div class="flex justify-between items-center mb-4 shrink-0">
                 <h3 class="text-lg font-bold">Pegawai Tersedia ({{ $totalPegawaiTersedia }})</h3>
                 <button onclick="openPaginationModal('available')" class="group flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-500/10 hover:bg-blue-500 text-blue-500 hover:text-white transition-all duration-300 border border-blue-500/20 hover:border-blue-500 shadow-lg shadow-blue-500/10">
                     <span class="text-[10px] font-black uppercase tracking-widest">Selengkapnya</span>
                     <i data-lucide="arrow-right" class="w-3 h-3 group-hover:translate-x-0.5 transition-transform"></i>
                 </button>
             </div>
-            <div class="space-y-3 max-h-70 overflow-y-auto pr-2">
+            <div class="space-y-3 flex-1 overflow-y-auto pr-2">
                 @forelse($pegawaiTersedia as $dataPegawai)
                 <div class="flex items-center justify-between p-3 bg-emerald-50 dark:bg-emerald-500/10 rounded-xl border border-emerald-100 dark:border-emerald-500/20 hover:bg-emerald-100 dark:hover:bg-emerald-500/20 transition-colors">
                     <div class="flex items-center gap-3">
@@ -76,15 +76,15 @@
             </div>
         </div>
 
-        <div class="glass p-6 rounded-3xl border-l-4 border-red-500">
-            <div class="flex justify-between items-center mb-4">
+        <div class="glass p-6 rounded-3xl border-l-4 border-red-500 flex flex-col">
+            <div class="flex justify-between items-center mb-4 shrink-0">
                 <h3 class="text-lg font-bold">Perhatian Khusus ({{ $totalBelumSelesai }})</h3>
                 <button onclick="openPaginationModal('overdue')" class="group flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-500/10 hover:bg-blue-500 text-blue-500 hover:text-white transition-all duration-300 border border-blue-500/20 hover:border-blue-500 shadow-lg shadow-blue-500/10">
                     <span class="text-[10px] font-black uppercase tracking-widest">Selengkapnya</span>
                     <i data-lucide="arrow-right" class="w-3 h-3 group-hover:translate-x-0.5 transition-transform"></i>
                 </button>
             </div>
-             <div class="space-y-3 max-h-70 overflow-y-auto pr-2">
+            <div class="space-y-3 flex-1 overflow-y-auto pr-2">
                 @forelse($daftarSuratTugasBelumSelesai as $suratTugas)
                 <div class="p-3 bg-red-50 dark:bg-red-500/10 rounded-xl border border-red-100 dark:border-red-500/20 hover:border-red-500/40 transition-all">
                     <div class="flex justify-between items-start mb-1">
@@ -161,9 +161,9 @@
     </div>
 </div>
 
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8 items-start">
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8 items-stretch">
     @if($statStaf)
-    <div class="glass p-6 rounded-3xl relative flex flex-col" style="height: 460px;">
+    <div class="glass p-6 rounded-3xl relative flex flex-col">
         <h3 class="text-lg font-bold mb-5 flex items-center gap-2 shrink-0">
             <i data-lucide="clipboard-list" class="w-5 h-5 text-blue-500"></i>
             Penugasan Saya
@@ -201,8 +201,8 @@
         </div>
     </div>
     @elseif($bebanPegawaiDivisi->isNotEmpty())
-    <div class="glass p-6 rounded-3xl relative">
-        <div class="flex justify-between items-center mb-6">
+    <div class="glass p-6 rounded-3xl relative flex flex-col">
+        <div class="flex justify-between items-center mb-6 shrink-0">
             <h3 class="text-lg font-bold flex items-center gap-2">
                 <i data-lucide="users-round" class="w-5 h-5 text-blue-500"></i>
                 Beban Kerja per Pegawai
@@ -211,29 +211,29 @@
                 <i data-lucide="maximize-2" class="w-5 h-5"></i>
             </button>
         </div>
-        <div class="h-75 w-full relative"><canvas id="bebanChart"></canvas></div>
+        <div class="flex-1 min-h-[280px] w-full relative"><canvas id="bebanChart"></canvas></div>
     </div>
     @else
-    <div class="glass p-6 rounded-3xl relative">
-        <div class="flex justify-between items-center mb-6">
+    <div class="glass p-6 rounded-3xl relative flex flex-col">
+        <div class="flex justify-between items-center mb-6 shrink-0">
             <h3 class="text-lg font-bold">Distribusi Penugasan per Bidang</h3>
             <button onclick="expandChart('bidwasChart', 'Distribusi Penugasan per Bidang')" class="p-2 bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 rounded-lg transition-all text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-white/10 shadow-sm">
                 <i data-lucide="maximize-2" class="w-5 h-5"></i>
             </button>
         </div>
-        <div class="h-[280px] w-full relative">
+        <div class="flex-1 min-h-[280px] w-full relative">
             <canvas id="bidwasChart"></canvas>
         </div>
     </div>
     @endif
 
     @if($leaderboardBidang->isNotEmpty())
-    <div class="glass p-6 rounded-3xl">
-        <h3 class="text-lg font-bold mb-5 flex items-center gap-2">
+    <div class="glass p-6 rounded-3xl flex flex-col">
+        <h3 class="text-lg font-bold mb-5 flex items-center gap-2 shrink-0">
             <i data-lucide="trophy" class="w-5 h-5 text-amber-500"></i>
             Peringkat Bidang Berdasarkan Rasio LHP
         </h3>
-        <div class="space-y-3 max-h-[360px] overflow-y-auto pr-2">
+        <div class="space-y-3 flex-1 overflow-y-auto pr-2">
             @foreach($leaderboardBidang as $i => $b)
             <div class="flex items-center gap-3 p-3 bg-slate-50 dark:bg-white/5 rounded-xl border border-slate-100 dark:border-white/5">
                 <div class="w-7 h-7 rounded-lg flex items-center justify-center text-xs font-black shrink-0 bg-slate-200 dark:bg-white/10 text-slate-600 dark:text-slate-300">
@@ -249,7 +249,7 @@
         </div>
     </div>
     @else
-    <div class="glass p-6 rounded-3xl relative flex flex-col" style="height: 460px;">
+    <div class="glass p-6 rounded-3xl relative flex flex-col">
         <div class="flex justify-between items-center mb-6 shrink-0">
             @if($statStaf)
                 <h3 class="text-lg font-bold">Tren Penugasan Saya ({{ date('Y') }})</h3>
